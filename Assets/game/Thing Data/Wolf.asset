@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66ea201254eca344a720cf434198797, type: 3}
+  m_Name: Wolf
+  m_EditorClassIdentifier: Assembly-CSharp::ThingData
+  thingName: Wolf
+  prefab: {fileID: 852538494185195702, guid: 2621d31170358c74eb670055e424cc3a, type: 3}
+  battlePrefab: {fileID: 852538494185195702, guid: f34615c31d2da6f43b7dde22d6bb1fee, type: 3}
+  spawnWeight: 50
+  hp: 15
+  attack: 15
+  defense: 6
+  speed: 40
