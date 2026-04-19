@@ -1,7 +1,7 @@
 1. TỔNG QUAN DỰ ÁN
 Thể loại: Tactical RPG / Grid-based Battler (Nhập vai Chiến thuật trên lưới) kết hợp thu thập quái vật và Auto-chess
 .
-Lối chơi cốt lõi: Thu thập Pokemon, dàn trận chiến thuật 1vs1 hoặc 2vs2 trên đấu trường lưới chia phe độc lập
+Lối chơi cốt lõi: Các monster được gọi là Thing, sẽ thu thập Thing, dàn trận chiến thuật 1vs1 hoặc 2vs2 trên đấu trường lưới chia phe độc lập
 .
 Engine: Unity
 .
@@ -12,7 +12,7 @@ Góc nhìn Lai ghép (Hybrid Perspective): Bản đồ Overworld dùng góc Top-
 .
 Pixel Perfect Cứng: Không dùng code để scale (phóng to/thu nhỏ) đối tượng, PPU cố định
 .
-Quy chuẩn Kích thước: Phân loại Pokemon từ hạng XS (Canvas 40x48px) đến XXL/Boss (Canvas 208x208px) trên đấu trường
+Quy chuẩn Kích thước: Phân loại Thing từ hạng XS (Canvas 40x48px) đến XXL/Boss (Canvas 208x208px) trên đấu trường
 , và kích thước tương ứng thu nhỏ lại trên Overworld
 .
 Quy tắc phối màu: Không dùng màu đen thuần cho viền, bắt buộc có 3 tông màu sáng tối (base/shadow/highlight)
@@ -26,7 +26,7 @@ Giai đoạn 1 (Nhập lệnh): Hai bên bí mật chọn lệnh di chuyển và
 .
 Giai đoạn 2 (Thực thi): Đồng thời di chuyển
 .
-Giai đoạn 3 (Phán xét): Pokemon có Tốc độ (Speed) cao hơn sẽ tung chiêu trước
+Giai đoạn 3 (Phán xét): Thing có Tốc độ (Speed) cao hơn sẽ tung chiêu trước
 .
 Giao diện Tối giản (Minimal UI): Không hiện số máu chính xác (trừ PvP) hay Icon Tộc/Hệ trên đầu
 . Hiện khung Tinh Thể (Crystal Aura) quanh thanh máu để báo hiệu chất lượng nguyên liệu
@@ -56,7 +56,7 @@ Gacha Kỹ Năng: Lên cấp sẽ Gacha ngẫu nhiên chiêu thức mới, có t
 Độ tinh thông Kỹ năng (Move Mastery): Nâng cấp chiêu thức ngẫu nhiên hệ số từ x0.9 đến x1.1 (tối đa 3 khe). Cần dùng tiền tệ game để "Tẩy luyện" (Reroll) thành x1.1
 .
 6. KHÁM PHÁ & THU THẬP (OVERWORLD & LOOTING)
-Hệ sinh thái Động: Pokemon trốn trong bụi cỏ dạng Bóng đen (Shadows)
+Hệ sinh thái Động: Thing trốn trong bụi cỏ dạng Bóng đen (Shadows)
 . Người chơi có thể đặt Mồi nhử (Bait) để tăng tỷ lệ ra quái hiếm
 .
 Tương tác ngắm bắn trên Map: Phím A để ném bóng (thu phục), Phím B để bắn đạn (vào trận lấy nguyên liệu)
@@ -68,11 +68,11 @@ Cơ chế Thu phục (Minigame): Ném bóng có vùng ảnh hưởng 3x3. Trúng
 . Lệnh ném bóng là Hành động ưu tiên (Giai đoạn 0)
 .
 7. QUẢN LÝ CỨ ĐIỂM & KINH TẾ (BASE BUILDING)
-Resort Sinh Thái: Xây chuồng trại theo Hệ cho Pokemon
+Resort Sinh Thái: Xây chuồng trại theo Hệ cho Thing
 .
-Kinh tế & Chế tạo: Pokemon ở nhà tạo ra nguyên liệu thụ động. Ghép nguyên liệu và chiến lợi phẩm 3 Sao để chế bóng/mồi nhử xịn
+Kinh tế & Chế tạo: Thing ở nhà tạo ra nguyên liệu thụ động. Ghép nguyên liệu và chiến lợi phẩm 3 Sao để chế bóng/mồi nhử xịn
 .
-Du lịch: Pokemon hiếm tạo Điểm Hấp Dẫn kéo NPC đến tham quan và vứt tiền xu. Có thể thuê NPC tự động hóa thu hoạch
+Du lịch: Thing hiếm tạo Điểm Hấp Dẫn kéo NPC đến tham quan và vứt tiền xu. Có thể thuê NPC tự động hóa thu hoạch
 .
 8. HỆ THỐNG GUILD, NHIỆM VỤ & THI ĐẤU (GUILD & EXAMINER)
 Phân cấp (Rank F đến S): Thăng hạng thông qua tích lũy Quota (Nhiệm vụ) và đánh bại Giám khảo (Examiner)
