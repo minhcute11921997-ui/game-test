@@ -1,3 +1,57 @@
+Cấu trúc thư mục
+├───animations
+│   └───player
+├───Art
+│   ├───characters
+│   │   ├───npc
+│   │   ├───Player
+│   │   └───things
+│   │       └───shadow
+│   └───Tilesets
+│       ├───balls
+│       ├───buildings
+│       ├───bullet
+│       ├───grasszone
+│       ├───ground
+│       ├───nature
+│       └───water
+├───Audio
+├───Data
+│   └───Thing Data
+├───Prefabs
+│   ├───Buildings
+│   ├───Player
+│   ├───Projectiles
+│   │   ├───balls
+│   │   ├───bullet
+│   │   ├───grass
+│   │   └───ground
+│   ├───Things
+│   └───UI
+├───Resources
+├───Scenes
+├───ScriptableObjects
+└───Scripts
+    ├───.vs
+    │   └───Scripts.slnx
+    │       ├───FileContentIndex
+    │       └───v18
+    ├───Combat
+    ├───Core
+    ├───Data
+    ├───Entities
+    ├───Player
+    │   └───Player
+    ├───SaveLoad
+    ├───Systems
+    ├───Tools
+    ├───UI
+    └───World
+        ├───Encounters
+        ├───Interaction
+        └───Map
+
+
 1. TỔNG QUAN DỰ ÁN
 Thể loại: Tactical RPG / Grid-based Battler (Nhập vai Chiến thuật trên lưới) kết hợp thu thập quái vật và Auto-chess
 .
@@ -119,4 +173,4 @@ Tốt nghiệp: Thành tích thi đấu Tứ kết -> Chung kết quyết địn
 . Sau đó gia nhập Guild tham gia thế giới rộng lớn.
 Cốt lõi Thế giới: Năng lượng từ Đại tinh thể (Primal Crystals) tạo ra biến thể vùng miền (Regional Variants) và hình thành các Tộc/Hệ. Các thế lực tội phạm muốn khai thác tinh thể tạo ra quái vật cuồng nộ
 . Các vùng xuất hiện tinh thể đột biến (Crystal Surge) gia tăng quái hiếm
-.
+
