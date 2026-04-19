@@ -7,6 +7,8 @@ TagManager:
   - Interactable
   - TallGrass
   - Monster
+  - Ally
+  - Enemy
   layers:
   - Default
   - TransparentFX
