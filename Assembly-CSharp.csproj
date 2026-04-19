@@ -48,16 +48,22 @@
     <Analyzer Include="E:\unity\6000.4.3f1-x86_64\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleEnemyLoader.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerInteraction.cs" />
-    <Compile Include="Assets\_Project\Scripts\GrassZoneManager.cs" />
-    <Compile Include="Assets\_Project\Scripts\ThingData.cs" />
-    <Compile Include="Assets\_Project\Scripts\Projectile.cs" />
-    <Compile Include="Assets\_Project\Scripts\ThingCollection.cs" />
-    <Compile Include="Assets\_Project\Scripts\BattleManager.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\ThingCollection.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
+    <Compile Include="Assets\_Project\Scripts\SetStarterThing.cs" />
+    <Compile Include="Assets\_Project\Scripts\World\ShadowRoaming.cs" />
+    <Compile Include="Assets\_Project\TestLoadBattle.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />
-    <Compile Include="Assets\_Project\Scripts\GlobalBattleBridge.cs" />
-    <Compile Include="Assets\_Project\Scripts\ShadowRoaming.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\Projectile.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleManager.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattlePlayerLoader.cs" />
+    <Compile Include="Assets\_Project\Scripts\World\GrassZoneManager.cs" />
+    <Compile Include="Assets\_Project\Scripts\GlobalPlayerBridge.cs" />
+    <Compile Include="Assets\_Project\Scripts\Core\GlobalBattleBridge.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleEnemy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

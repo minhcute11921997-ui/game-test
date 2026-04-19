@@ -15,8 +15,8 @@ public class GrassZoneManager : MonoBehaviour
     public LayerMask grassLayer;
     public LayerMask blockLayer;
     public int maxThings = 2;
-    public float minSpawnDelay = 20f;
-    public float maxSpawnDelay = 40f;
+    public float minSpawnDelay = 3f;
+    public float maxSpawnDelay = 5f;
 
     private int currentActiveThings = 0;
     private bool isPlayerInside = false;
