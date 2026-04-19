@@ -82,13 +82,13 @@ public class PlayerActions : MonoBehaviour
 
         // 1. Tạo vật thể
         GameObject proj = Instantiate(prefab, transform.position, Quaternion.identity);
-        Projectile script = proj.GetComponent<Projectile>();
+        EncounterProjectile script = proj.GetComponent<EncounterProjectile>();
 
         if (script != null)
         {
             script.isBall = isBall;
             // 2. Gửi vị trí tâm của hồng tâm hiện tại làm điểm đích
-            script.SetTarget(activeReticle.transform.position);
+            script.SetDestination(activeReticle.transform.position);
         }
 
         // 3. Xoay vật thể để nhìn cho tự nhiên (hướng về phía tâm)

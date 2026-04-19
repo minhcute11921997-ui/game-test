@@ -110,7 +110,7 @@ public class ShadowRoaming : MonoBehaviour
             Debug.Log("<color=red>PHỤC KÍCH! Thing đã tấn công bạn!</color>");
 
             // Nạp dữ liệu và chuyển cảnh
-            GlobalBattleBridge.encounteredThing = myData;
+            RuntimeGameState.CurrentEnemy = myData;
             OnCaptured();
             SceneManager.LoadScene("BattleScene");
         }

@@ -1,11 +1,17 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Projectile : MonoBehaviour
+public class EncounterProjectile : MonoBehaviour
 {
     [Header("Cấu hình bay")]
     public float speed = 15f;
     public bool isBall = false;
+    public enum EncounterProjectileType
+    {
+        CaptureBall,
+        BattleShot
+    }
+    public EncounterProjectileType projectileType;
 
     [Header("Cơ chế Thu phục")]
     public float captureChance = 40f;
@@ -14,7 +20,7 @@ public class Projectile : MonoBehaviour
     private bool hasReachedDestination = false;
 
     // Được gọi từ PlayerActions khi bắn
-    public void SetTarget(Vector3 destination)
+    public void SetDestination(Vector3 destination)
     {
         targetDestination = destination;
     }
@@ -46,8 +52,8 @@ public class Projectile : MonoBehaviour
             ShadowRoaming thing = hit.GetComponent<ShadowRoaming>();
             if (thing != null)
             {
-                if (isBall) HandleCapture(thing);
-                else HandleStartBattle(thing);
+                if (isBall) TryCaptureEncounter(thing);
+                else StartEncounterBattle(thing);
             }
         }
         else
@@ -58,7 +64,7 @@ public class Projectile : MonoBehaviour
         Destroy(gameObject); // Xóa viên đạn sau khi nổ/chạm đích
     }
 
-    void HandleCapture(ShadowRoaming thing)
+    void TryCaptureEncounter(ShadowRoaming thing)
     {
         float roll = Random.Range(0f, 100f);
         if (roll <= captureChance)
@@ -72,12 +78,12 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    void HandleStartBattle(ShadowRoaming thing)
+    void StartEncounterBattle(ShadowRoaming thing)
     {
         Debug.Log("<color=red>KHIÊU CHIẾN! Chuyển sang cảnh 8x8.</color>");
 
         // 1. Nạp dữ liệu vào Cầu nối
-        GlobalBattleBridge.encounteredThing = thing.myData;
+        RuntimeGameState.CurrentEnemy = thing.myData;
 
         // 2. Báo cho Thing biến mất ở Overworld (để giải phóng slot cho bụi cỏ)
         thing.OnCaptured();

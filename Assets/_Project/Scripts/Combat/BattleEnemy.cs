@@ -8,7 +8,7 @@ public class BattleEnemy : MonoBehaviour
 
     void Start()
     {
-        data = GlobalBattleBridge.encounteredThing;
+        data = RuntimeGameState.CurrentEnemy;
 
         if (data != null)
         {

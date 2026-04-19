@@ -6,7 +6,7 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         // 3. Lấy dữ liệu con Thing từ Overworld gửi sang qua "Cầu"
-        ThingData enemyToSpawn = GlobalBattleBridge.encounteredThing;
+        ThingData enemyToSpawn = RuntimeGameState.CurrentEnemy;
 
         if (enemyToSpawn != null)
         {

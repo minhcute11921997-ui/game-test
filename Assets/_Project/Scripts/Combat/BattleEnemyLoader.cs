@@ -4,13 +4,13 @@ public class BattleEnemyLoader : MonoBehaviour
 {
     void Start()
     {
-        if (GlobalBattleBridge.encounteredThing == null)
+        if (RuntimeGameState.CurrentEnemy == null)
         {
             Debug.LogWarning("Không có dữ liệu quái.");
             return;
         }
 
-        ThingData data = GlobalBattleBridge.encounteredThing;
+        ThingData data = RuntimeGameState.CurrentEnemy;
 
         if (data.battlePrefab != null)
         {
