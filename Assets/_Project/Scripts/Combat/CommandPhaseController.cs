@@ -103,7 +103,10 @@ public class CommandPhaseController : MonoBehaviour
         if (BattlePhaseManager.Instance.CurrentPhase != BattlePhase.CommandPhase) return;
         if (!Input.GetMouseButtonDown(0)) return;
 
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = Mathf.Abs(Camera.main.transform.position.z); // ← thêm
+        Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos); // ← dùng mousePos
+        worldPos.z = 0;
         GridPos clickedPos = BattleGridManager.Instance.WorldToGrid(worldPos);
 
         switch (_step)
