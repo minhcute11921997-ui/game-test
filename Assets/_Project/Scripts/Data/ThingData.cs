@@ -1,18 +1,5 @@
 using UnityEngine;
 
-public enum ElementType
-{
-    Neutral = 0,
-    Fire = 1,  // Hỏa
-    Wood = 2,  // Mộc
-    Water = 3,  // Thủy
-    Earth = 4,  // Thổ
-    Thunder = 5,  // Lôi
-    Wind = 6,  // Phong
-    Ice = 7,  // Băng
-    Light = 8,  // Quang
-    Dark = 9   // Ám
-}
 
 [CreateAssetMenu(fileName = "NewThing", menuName = "Game/Thing Data")]
 public class ThingData : ScriptableObject

@@ -13,8 +13,8 @@ public class BattleManager : MonoBehaviour
         if (enemy == null) { Debug.LogWarning("[Battle] Không có enemy Thing!"); return; }
 
         var grid = BattleGridManager.Instance;
-        SpawnEntity(grid, player, teamId: 0, col: 5, row: 4);
-        SpawnEntity(grid, enemy, teamId: 1, col: 12, row: 4);
+        SpawnEntity(grid, player, teamId: 0, col: 3, row: 4);
+        SpawnEntity(grid, enemy, teamId: 1, col: 14, row: 4);
     }
        
     void SpawnEntity(BattleGridManager grid, ThingData data, int teamId, int col, int row)
