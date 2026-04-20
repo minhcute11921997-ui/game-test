@@ -97,6 +97,7 @@ public class BattleGridManager : MonoBehaviour
         _occupied.Remove(from);
         _occupied[to] = entity;
         entity.GridPos = to;
+        entity.transform.position = GridToWorld(to);
     }
     public void ShowMovableRange(BattleEntity entity, int moveRange)
     {

@@ -118,6 +118,9 @@ public class CommandPhaseController : MonoBehaviour
 
     void HandleMoveSelection(GridPos clicked)
     {
+        Debug.Log($"[Debug] clicked={clicked} | validCells count={_validMoveCells.Count}");
+        foreach (var c in _validMoveCells) Debug.Log($"  valid: {c}");
+
         if (!_validMoveCells.Contains(clicked))
         {
             Debug.Log($"[Command] Ô {clicked} không hợp lệ để di chuyển");
