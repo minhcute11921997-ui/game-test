@@ -49,9 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\_Project\Scripts\Combat\BattleEnemyLoader.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleGridconfig.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerInteraction.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\RuntimeGameState.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\ShadowRoaming.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\GridPos.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleEntity.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingCollection.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\EncounterProjectile.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
@@ -62,8 +65,8 @@
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattlePlayerLoader.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleGridManager.cs" />
     <Compile Include="Assets\_Project\Scripts\GlobalPlayerBridge.cs" />
-    <Compile Include="Assets\_Project\Scripts\Combat\BattleEnemy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
