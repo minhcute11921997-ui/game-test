@@ -21,6 +21,8 @@ public class BattleGridManager : MonoBehaviour
     public TileBase tileGap;
     public TileBase tileHighlight;
 
+
+
     private readonly Dictionary<GridPos, BattleEntity> _occupied = new();
     private readonly HashSet<GridPos> _highlightedCells = new();
 
@@ -182,5 +184,68 @@ public class BattleGridManager : MonoBehaviour
         }
         return result;
     }
-   
+
+    public List<GridPos> GetAoECells(GridPos centerPos, AttackShape shape, GridPos attackerPos)
+    {
+        var result = new List<GridPos>();
+        var cfg = config;
+
+        switch (shape)
+        {
+            case AttackShape.Single:
+                result.Add(centerPos);
+                break;
+
+            case AttackShape.Cross:
+                result.Add(centerPos);
+                result.Add(new GridPos(centerPos.col + 1, centerPos.row));
+                result.Add(new GridPos(centerPos.col - 1, centerPos.row));
+                result.Add(new GridPos(centerPos.col, centerPos.row + 1));
+                result.Add(new GridPos(centerPos.col, centerPos.row - 1));
+                break;
+
+            case AttackShape.Square2x2:
+                // 4 ô: tâm, phải, trên, phải-trên
+                for (int dc = 0; dc <= 1; dc++)
+                    for (int dr = 0; dr <= 1; dr++)
+                        result.Add(new GridPos(centerPos.col + dc, centerPos.row + dr));
+                break;
+
+            case AttackShape.Square3x3:
+                for (int dc = -1; dc <= 1; dc++)
+                    for (int dr = -1; dr <= 1; dr++)
+                        result.Add(new GridPos(centerPos.col + dc, centerPos.row + dr));
+                break;
+
+            case AttackShape.Line:
+                // Hướng từ attacker đến tâm, kéo dài đến hết bảng
+                int dirCol = centerPos.col > attackerPos.col ? 1 :
+                             centerPos.col < attackerPos.col ? -1 : 0;
+                int dirRow = centerPos.row > attackerPos.row ? 1 :
+                             centerPos.row < attackerPos.row ? -1 : 0;
+                var cur = centerPos;
+                for (int i = 0; i < 18; i++)
+                {
+                    if (!cfg.IsInBounds(cur.col, cur.row)) break;
+                    result.Add(cur);
+                    cur = new GridPos(cur.col + dirCol, cur.row + dirRow);
+                }
+                break;
+        }
+
+        // Lọc bỏ ô nằm ngoài bảng
+        result.RemoveAll(p => !cfg.IsInBounds(p.col, p.row));
+        return result;
     }
+
+    /// <summary>Highlight AoE preview (màu riêng, không đè highlight di chuyển)</summary>
+    public void ShowAoEPreview(List<GridPos> cells)
+    {
+        // Dùng lại tilemapHighlight nhưng với tileHighlight — đủ dùng cho preview
+        // Sprint sau có thể tách tilemap riêng cho AoE
+        tilemapHighlight.ClearAllTiles();
+        foreach (var p in cells)
+            tilemapHighlight.SetTile(new Vector3Int(p.col, p.row, 0), tileHighlight);
+    }
+
+}

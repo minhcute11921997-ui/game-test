@@ -67,14 +67,15 @@ public class BattlePhaseManager : MonoBehaviour
     {
         CurrentPhase = BattlePhase.ExecutionPhase;
         Debug.Log("[BattlePhase] === EXECUTION PHASE ===");
-        // TODO Sprint 2: animate di chuyển đồng thời
-        // Tạm thời: apply ngay
+
+        // Di chuyển tất cả entity đến vị trí đã chọn
         foreach (var kvp in _commands)
         {
             var grid = BattleGridManager.Instance;
             if (!kvp.Value.moveTarget.Equals(kvp.Key.GridPos))
                 grid.MoveEntity(kvp.Key, kvp.Key.GridPos, kvp.Value.moveTarget);
         }
+
         BeginJudgePhase();
     }
 
@@ -83,8 +84,67 @@ public class BattlePhaseManager : MonoBehaviour
     {
         CurrentPhase = BattlePhase.JudgePhase;
         Debug.Log("[BattlePhase] === JUDGE PHASE ===");
-        // TODO Sprint 2: tính sát thương theo Speed, type matchup
-        // Tạm thời: loopback về Command
+
+        // Sắp xếp theo Speed giảm dần — thing nhanh hơn đánh trước
+        var orderedAttackers = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<BattleEntity, BattleCommand>>(_commands);
+        orderedAttackers.Sort((a, b) => b.Key.Speed.CompareTo(a.Key.Speed));
+
+        foreach (var kvp in orderedAttackers)
+        {
+            BattleEntity attacker = kvp.Key;
+            BattleCommand cmd = kvp.Value;
+
+            // Bỏ qua nếu attacker đã bị hạ
+            if (attacker == null) continue;
+            if (!cmd.HasAttack) continue;
+
+            // Tìm entity trên ô attackTarget
+            MoveData move = attacker.GetMove();
+            if (move == null) continue;
+
+            var aoeCells = BattleGridManager.Instance.GetAoECells(
+                cmd.attackTarget, move.shape, attacker.GridPos);
+
+            foreach (var cell in aoeCells)
+            {
+                BattleEntity target = BattleGridManager.Instance.GetEntityAt(cell);
+                if (target == null || target.TeamId == attacker.TeamId) continue; // bỏ qua đồng đội
+
+                var result = CombatCalculator.Calculate(attacker.Data, target.Data, move);
+                string eff = result.typeMultiplier > 1f ? " HIỆU QUẢ!" :
+                              result.typeMultiplier < 1f ? " Không hiệu quả..." : "";
+                string crit = result.isCritical ? " CHÍ MẠNG!" : "";
+                string stab = result.isStab ? " [STAB]" : "";
+                Debug.Log($"[Combat] {attacker.Data.thingName}{stab} → {target.Data.thingName}: " +
+                          $"{result.damage} dmg (x{result.typeMultiplier}){eff}{crit}");
+                target.TakeDamage(result.damage);
+            }
+            if (target == null) continue;
+
+            // Lấy move mặc định (Sprint 3 sẽ có chọn move)
+            if (move == null)
+            {
+                Debug.LogWarning($"[Judge] {attacker.name} không có move! Bỏ qua.");
+                continue;
+            }
+
+            // === COMBAT CALCULATION ===
+            var result = CombatCalculator.Calculate(attacker.Data, target.Data, move);
+
+            // Log kết quả cho debug
+            string effectiveness = result.typeMultiplier > 1f ? "HIỆU QUẢ!" :
+                                   result.typeMultiplier < 1f ? "Không hiệu quả..." : "";
+            string crit = result.isCritical ? " CHÍ MẠNG!" : "";
+            string stab = result.isStab ? " [STAB]" : "";
+
+            Debug.Log($"[Combat] {attacker.name}{stab} → {target.name}: {result.damage} dmg " +
+                      $"(x{result.typeMultiplier} type){effectiveness}{crit}");
+
+            // Áp sát thương
+            target.TakeDamage(result.damage);
+        }
+
+        // Kết thúc lượt, quay về Command Phase
         BeginCommandPhase();
     }
 }

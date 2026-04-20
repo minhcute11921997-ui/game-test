@@ -63,11 +63,13 @@
     <Compile Include="Assets\_Project\Scripts\World\Encounters\GrassZoneManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CommandPhaseController.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\CombatCalculator.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleGridManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleInputHandler.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleCommand.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\MoveData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

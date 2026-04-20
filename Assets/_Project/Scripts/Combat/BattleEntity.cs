@@ -7,31 +7,37 @@ public class BattleEntity : MonoBehaviour
     [HideInInspector] public int TeamId;
 
     public int Speed { get; private set; }
-    public int MoveRange { get; private set; } // ← đọc từ ThingData
+    public int MoveRange { get; private set; }
+    public ThingData Data { get; private set; }  // ← MỚI: expose để CombatCalculator dùng
 
-    private ThingData _data;
     private int _currentHp;
+    private int _maxHp;
 
     public void Init(ThingData data, int teamId)
     {
-        _data = data;
+        Data = data;
         TeamId = teamId;
         _currentHp = data.hp;
+        _maxHp = data.hp;
         Speed = (int)data.speed;
-        MoveRange = data.moveRange; // ← đọc từ data, không hardcode
-        Debug.Log($"[BattleEntity] Spawn {data.thingName} | Team {teamId} | HP {_currentHp} | Speed {Speed} | MoveRange {MoveRange}");
+        MoveRange = data.moveRange;
+        Debug.Log($"[BattleEntity] Spawn {data.thingName} | Team {teamId} | HP {_currentHp} | Spd {Speed}");
     }
+
+    /// <summary>Lấy move của entity (hiện tại dùng defaultMove từ ThingData)</summary>
+    public MoveData GetMove() => Data != null ? Data.defaultMove : null;
 
     public void TakeDamage(int dmg)
     {
-        _currentHp -= dmg;
-        Debug.Log($"{_data.thingName} còn {_currentHp} HP");
+        _currentHp = Mathf.Max(0, _currentHp - dmg);
+        float hpPercent = (float)_currentHp / _maxHp * 100f;
+        Debug.Log($"[HP] {Data.thingName}: {_currentHp}/{_maxHp} ({hpPercent:F0}%)");
         if (_currentHp <= 0) Die();
     }
 
     void Die()
     {
-        Debug.Log($"{_data.thingName} bị hạ!");
+        Debug.Log($"[Battle] {Data.thingName} bị hạ! Quay về Overworld.");
         BattleGridManager.Instance.RemoveEntity(GridPos);
         Destroy(gameObject);
         SceneManager.LoadScene("MainScene");
