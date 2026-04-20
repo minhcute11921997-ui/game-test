@@ -97,6 +97,28 @@ public class BattleGridManager : MonoBehaviour
         _occupied[to] = entity;
         entity.GridPos = to;
     }
+    public void ShowMovableRange(BattleEntity entity, int moveRange)
+    {
+        var cells = new List<GridPos>();
+        GridPos origin = entity.GridPos; // ← đúng tên property
+
+        int minCol = entity.TeamId == 0 ? 0 : 10;
+        int maxCol = entity.TeamId == 0 ? 7 : 17;
+
+        for (int dc = -moveRange; dc <= moveRange; dc++)
+            for (int dr = -moveRange; dr <= moveRange; dr++)
+            {
+                if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue;
+                int c = origin.col + dc;
+                int r = origin.row + dr;
+                if (c < minCol || c > maxCol || r < 0 || r > config.boardRows - 1) continue;
+                if (c == origin.col && r == origin.row) continue;
+                if (IsOccupied(new GridPos(c, r))) continue; // bỏ qua ô đã có entity
+
+                cells.Add(new GridPos(c, r));
+            }
+
+    }
 
     public void RemoveEntity(GridPos pos) => _occupied.Remove(pos);
 
@@ -121,26 +143,5 @@ public class BattleGridManager : MonoBehaviour
         }
         return result;
     }
-    public void ShowMovableRange(BattleEntity entity, int moveRange)
-    {
-        var cells = new List<GridPos>();
-        GridPos origin = entity.GridPos; // ← đúng tên property
-
-        int minCol = entity.TeamId == 0 ? 0 : 10;
-        int maxCol = entity.TeamId == 0 ? 7 : 17;
-
-        for (int dc = -moveRange; dc <= moveRange; dc++)
-            for (int dr = -moveRange; dr <= moveRange; dr++)
-            {
-                if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue;
-                int c = origin.col + dc;
-                int r = origin.row + dr;
-                if (c < minCol || c > maxCol || r < 0 || r > config.boardRows - 1) continue;
-                if (c == origin.col && r == origin.row) continue;
-                if (IsOccupied(new GridPos(c, r))) continue; // bỏ qua ô đã có entity
-
-                cells.Add(new GridPos(c, r));
-            }
-
-    }
+   
     }
