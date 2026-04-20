@@ -12,9 +12,12 @@ public class BattleInputHandler : MonoBehaviour
         if (!Input.GetMouseButtonDown(0)) return;
 
         var grid = BattleGridManager.Instance;
-        Vector3 world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = Mathf.Abs(Camera.main.transform.position.z); // ← bổ sung Z
+        Vector3 world = Camera.main.ScreenToWorldPoint(mousePos);
         world.z = 0;
         GridPos clicked = grid.WorldToGrid(world);
+        Debug.Log($"[Input] world={world} clicked={clicked} isHighlighted={grid.IsHighlighted(clicked)} waitingMove={_waitingForMove}");
 
         if (!_waitingForMove)
         {
