@@ -14,12 +14,14 @@ public class BattleGridManager : MonoBehaviour
     public Tilemap tilemapRight;
     public Tilemap tilemapGap;
     public Tilemap tilemapHighlight;
+    public Tilemap tilemapGrid;
 
     [Header("Tiles — kéo vào từ Project")]
     public TileBase tileLeft;
     public TileBase tileRight;
     public TileBase tileGap;
     public TileBase tileHighlight;
+    public TileBase tileGrid;
 
 
 
@@ -29,10 +31,39 @@ public class BattleGridManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        if (tileGrid == null) tileGrid = CreateGridTile();
+
         BuildGrid();
         FitCamera();
     }
+    TileBase CreateGridTile()
+    {
+        // Tạo texture 16x16 với border 1px màu trắng mờ
+        int size = 16;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
 
+        Color fill = new Color(1, 1, 1, 0f);    // trong suốt bên trong
+        Color border = new Color(1, 1, 1, 0.25f); // viền trắng mờ 25%
+
+        for (int x = 0; x < size; x++)
+            for (int y = 0; y < size; y++)
+            {
+                bool isBorder = x == 0 || y == 0 || x == size - 1 || y == size - 1;
+                tex.SetPixel(x, y, isBorder ? border : fill);
+            }
+        tex.Apply();
+
+        var sprite = Sprite.Create(tex,
+            new Rect(0, 0, size, size),
+            new Vector2(0.5f, 0.5f),
+            size); // pixels per unit = size để khớp với cell
+
+        var tile = ScriptableObject.CreateInstance<UnityEngine.Tilemaps.Tile>();
+        tile.sprite = sprite;
+        tile.color = Color.white;
+        return tile;
+    }
     void BuildGrid()
     {
         for (int col = 0; col < config.TotalCols; col++)
@@ -44,6 +75,11 @@ public class BattleGridManager : MonoBehaviour
                 if (team == 0) tilemapLeft.SetTile(cell, tileLeft);
                 else if (team == 1) tilemapRight.SetTile(cell, tileRight);
                 else tilemapGap.SetTile(cell, tileGap);
+
+
+                // ← THÊM: vẽ grid line lên trên tất cả ô (trừ gap)
+                if (team != -1 && tilemapGrid != null && tileGrid != null)
+                    tilemapGrid.SetTile(cell, tileGrid);
             }
     }
 
@@ -247,5 +283,7 @@ public class BattleGridManager : MonoBehaviour
         foreach (var p in cells)
             tilemapHighlight.SetTile(new Vector3Int(p.col, p.row, 0), tileHighlight);
     }
+
+    
 
 }
