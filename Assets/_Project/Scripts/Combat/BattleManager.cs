@@ -15,6 +15,11 @@ public class BattleManager : MonoBehaviour
         var grid = BattleGridManager.Instance;
         SpawnEntity(grid, player, teamId: 0, col: 5, row: 4);
         SpawnEntity(grid, enemy, teamId: 1, col: 12, row: 4);
+
+        // TEST: show movable range của player ngay khi vào battle
+        var playerEntity = BattleGridManager.Instance.GetEntityAt(new GridPos(5, 4));
+        if (playerEntity != null)
+            BattleGridManager.Instance.ShowMovableRange(playerEntity, playerEntity.MoveRange);
     }
 
     void SpawnEntity(BattleGridManager grid, ThingData data, int teamId, int col, int row)

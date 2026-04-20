@@ -123,21 +123,24 @@ public class BattleGridManager : MonoBehaviour
     }
     public void ShowMovableRange(BattleEntity entity, int moveRange)
     {
-        GridPos origin = entity.GridPosition;
-        int minCol = entity.TeamId == 0 ? 0 : 10;  // giới hạn sân
+        var cells = new List<GridPos>();
+        GridPos origin = entity.GridPos; // ← đúng tên property
+
+        int minCol = entity.TeamId == 0 ? 0 : 10;
         int maxCol = entity.TeamId == 0 ? 7 : 17;
 
         for (int dc = -moveRange; dc <= moveRange; dc++)
             for (int dr = -moveRange; dr <= moveRange; dr++)
             {
-                if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue; // diamond range
+                if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue;
                 int c = origin.col + dc;
                 int r = origin.row + dr;
-                if (c < minCol || c > maxCol || r < 0 || r > 7) continue;
+                if (c < minCol || c > maxCol || r < 0 || r > config.boardRows - 1) continue;
                 if (c == origin.col && r == origin.row) continue;
+                if (IsOccupied(new GridPos(c, r))) continue; // bỏ qua ô đã có entity
 
-                // Tô màu ô (dùng Tilemap hoặc instantiate highlight prefab)
-                HighlightCell(c, r, Color.cyan);
+                cells.Add(new GridPos(c, r));
             }
+
     }
-}
+    }
