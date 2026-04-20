@@ -66,6 +66,7 @@
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleGridManager.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\BattleInputHandler.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleCommand.cs" />
   </ItemGroup>
   <ItemGroup>

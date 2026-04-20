@@ -22,6 +22,7 @@ public class BattleGridManager : MonoBehaviour
     public TileBase tileHighlight;
 
     private readonly Dictionary<GridPos, BattleEntity> _occupied = new();
+    private readonly HashSet<GridPos> _highlightedCells = new();
 
     void Awake()
     {
@@ -100,10 +101,10 @@ public class BattleGridManager : MonoBehaviour
     public void ShowMovableRange(BattleEntity entity, int moveRange)
     {
         var cells = new List<GridPos>();
-        GridPos origin = entity.GridPos; // ← đúng tên property
+        GridPos origin = entity.GridPos;
 
-        int minCol = entity.TeamId == 0 ? 0 : 10;
-        int maxCol = entity.TeamId == 0 ? 7 : 17;
+        int minCol = entity.TeamId == 0 ? 0 : config.RightMinCol;
+        int maxCol = entity.TeamId == 0 ? config.LeftMaxCol : config.TotalCols - 1;
 
         for (int dc = -moveRange; dc <= moveRange; dc++)
             for (int dr = -moveRange; dr <= moveRange; dr++)
@@ -111,13 +112,14 @@ public class BattleGridManager : MonoBehaviour
                 if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue;
                 int c = origin.col + dc;
                 int r = origin.row + dr;
-                if (c < minCol || c > maxCol || r < 0 || r > config.boardRows - 1) continue;
+                if (!config.IsWalkable(c, r)) continue;
+                if (c < minCol || c > maxCol) continue;
                 if (c == origin.col && r == origin.row) continue;
-                if (IsOccupied(new GridPos(c, r))) continue; // bỏ qua ô đã có entity
-
+                if (IsOccupied(new GridPos(c, r))) continue;
                 cells.Add(new GridPos(c, r));
             }
 
+        ShowHighlight(cells);
     }
 
     public void RemoveEntity(GridPos pos) => _occupied.Remove(pos);
@@ -125,11 +127,47 @@ public class BattleGridManager : MonoBehaviour
     public void ShowHighlight(IEnumerable<GridPos> cells)
     {
         tilemapHighlight.ClearAllTiles();
+        _highlightedCells.Clear();
         foreach (var p in cells)
+        {
             tilemapHighlight.SetTile(new Vector3Int(p.col, p.row, 0), tileHighlight);
+            _highlightedCells.Add(p);
+        }
     }
 
-    public void ClearHighlight() => tilemapHighlight.ClearAllTiles();
+    public void ClearHighlight()
+    {
+        tilemapHighlight.ClearAllTiles();
+        _highlightedCells.Clear();
+    }
+
+    public bool IsHighlighted(GridPos pos) => _highlightedCells.Contains(pos);
+
+
+    public System.Collections.IEnumerator MoveEntitySmooth(
+    BattleEntity entity, GridPos to, System.Action onDone = null, float duration = 0.25f)
+    {
+        GridPos from = entity.GridPos;
+        Vector3 startPos = entity.transform.position;
+        Vector3 endPos = GridToWorld(to);
+
+        // Update data ngay
+        _occupied.Remove(from);
+        _occupied[to] = entity;
+        entity.GridPos = to;
+
+        // Lerp visual
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / duration;
+            entity.transform.position = Vector3.Lerp(startPos, endPos, Mathf.SmoothStep(0, 1, t));
+            yield return null;
+        }
+        entity.transform.position = endPos;
+
+        onDone?.Invoke();
+    }
 
     public List<GridPos> GetLine(GridPos origin, GridPos dir, int maxRange = 18)
     {
