@@ -15,4 +15,7 @@ public class ThingData : ScriptableObject
     public int attack = 20;
     public int defense = 15;
     public float speed = 10f;
+
+    [Header("Di chuyển")]
+    public int moveRange = 1;
 }

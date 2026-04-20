@@ -2,43 +2,29 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-    [Header("Prefab placeholder (nếu ThingData chưa có battlePrefab)")]
     public GameObject fallbackPrefab;
-    [Header("TEST — kéo ThingData vào đây để test")]
-    public ThingData testEnemy;
-    public ThingData testPlayer;
 
     void Start()
     {
+        ThingData player = RuntimeGameState.ActiveThing;
+        ThingData enemy = RuntimeGameState.CurrentEnemy;
+
+        if (player == null) { Debug.LogWarning("[Battle] Không có player Thing!"); return; }
+        if (enemy == null) { Debug.LogWarning("[Battle] Không có enemy Thing!"); return; }
+
         var grid = BattleGridManager.Instance;
+        SpawnEntity(grid, player, teamId: 0, col: 5, row: 4);
+        SpawnEntity(grid, enemy, teamId: 1, col: 12, row: 4);
+    }
 
-        // ── Spawn địch (team 1, bên phải: col 10–17) ───────────
-        ThingData enemy = testEnemy != null ? testEnemy : RuntimeGameState.CurrentEnemy;
-        ThingData player = testPlayer != null ? testPlayer : GlobalPlayerBridge.activeThing;
-        if (enemy != null && enemy.battlePrefab != null)
-        {
-            var pos = new GridPos(12, 4); // ô spawn mặc định bên phải
-            var prefab = enemy.battlePrefab;
-            var go = Instantiate(prefab);
-            var entity = go.GetComponent<BattleEntity>();
-            if (entity == null) entity = go.AddComponent<BattleEntity>();
-            entity.Init(enemy, teamId: 1);
-            grid.PlaceEntity(entity, pos);
-        }
-        else Debug.LogWarning("Không có enemy data.");
+    void SpawnEntity(BattleGridManager grid, ThingData data, int teamId, int col, int row)
+    {
+        GameObject prefab = data.battlePrefab != null ? data.battlePrefab : fallbackPrefab;
+        if (prefab == null) return;
 
-        // ── Spawn pet người chơi (team 0, bên trái: col 0–7) ───
-        
-        if (player != null && player.battlePrefab != null)
-        {
-            var pos = new GridPos(5, 4); // ô spawn mặc định bên trái
-            var prefab = player.battlePrefab;
-            var go = Instantiate(prefab);
-            var entity = go.GetComponent<BattleEntity>();
-            if (entity == null) entity = go.AddComponent<BattleEntity>();
-            entity.Init(player, teamId: 0);
-            grid.PlaceEntity(entity, pos);
-        }
-        else Debug.LogWarning("Không có player pet data.");
+        var go = Instantiate(prefab);
+        var entity = go.GetComponent<BattleEntity>() ?? go.AddComponent<BattleEntity>();
+        entity.Init(data, teamId);
+        grid.PlaceEntity(entity, new GridPos(col, row));
     }
 }

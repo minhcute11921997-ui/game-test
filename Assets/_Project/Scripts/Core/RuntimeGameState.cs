@@ -1,9 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Phải có chữ "public static" ở đây
 public static class RuntimeGameState
 {
     public static ThingData CurrentEnemy;
     public static List<ThingData> Party = new();
+
+    public static ThingData ActiveThing => Party.Count > 0 ? Party[0] : null;
 }

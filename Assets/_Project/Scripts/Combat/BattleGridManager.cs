@@ -121,4 +121,23 @@ public class BattleGridManager : MonoBehaviour
         }
         return result;
     }
+    public void ShowMovableRange(BattleEntity entity, int moveRange)
+    {
+        GridPos origin = entity.GridPosition;
+        int minCol = entity.TeamId == 0 ? 0 : 10;  // giới hạn sân
+        int maxCol = entity.TeamId == 0 ? 7 : 17;
+
+        for (int dc = -moveRange; dc <= moveRange; dc++)
+            for (int dr = -moveRange; dr <= moveRange; dr++)
+            {
+                if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue; // diamond range
+                int c = origin.col + dc;
+                int r = origin.row + dr;
+                if (c < minCol || c > maxCol || r < 0 || r > 7) continue;
+                if (c == origin.col && r == origin.row) continue;
+
+                // Tô màu ô (dùng Tilemap hoặc instantiate highlight prefab)
+                HighlightCell(c, r, Color.cyan);
+            }
+    }
 }

@@ -1,14 +1,13 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Component gắn vào prefab của mọi Thing trong Battle 
-/// Thay thế BattleEnemy.cs cũ.
-/// </summary>
 public class BattleEntity : MonoBehaviour
 {
     [HideInInspector] public GridPos GridPos;
-    [HideInInspector] public int TeamId; // 0 = trái (player), 1 = phải (enemy)
+    [HideInInspector] public int TeamId;
+
+    public int Speed { get; private set; }
+    public int MoveRange { get; private set; } // ← đọc từ ThingData
 
     private ThingData _data;
     private int _currentHp;
@@ -18,7 +17,9 @@ public class BattleEntity : MonoBehaviour
         _data = data;
         TeamId = teamId;
         _currentHp = data.hp;
-        Debug.Log($"[BattleEntity] Spawn {data.thingName} | Team {teamId} | HP {_currentHp}");
+        Speed = (int)data.speed;
+        MoveRange = data.moveRange; // ← đọc từ data, không hardcode
+        Debug.Log($"[BattleEntity] Spawn {data.thingName} | Team {teamId} | HP {_currentHp} | Speed {Speed} | MoveRange {MoveRange}");
     }
 
     public void TakeDamage(int dmg)
@@ -33,8 +34,6 @@ public class BattleEntity : MonoBehaviour
         Debug.Log($"{_data.thingName} bị hạ!");
         BattleGridManager.Instance.RemoveEntity(GridPos);
         Destroy(gameObject);
-
-        // TODO: thay bằng event khi có BattlePhaseManager
         SceneManager.LoadScene("MainScene");
     }
 }

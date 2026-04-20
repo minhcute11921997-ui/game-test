@@ -70,7 +70,8 @@ public class EncounterProjectile : MonoBehaviour
         if (roll <= captureChance)
         {
             Debug.Log("<color=green>THÀNH CÔNG! Đã bắt được Thing.</color>");
-            thing.OnCaptured(); // Gọi hàm biến mất và báo về Manager
+            RuntimeGameState.Party.Add(thing.myData); // ← thêm vào Party
+            thing.OnCaptured();
         }
         else
         {
