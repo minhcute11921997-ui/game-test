@@ -21,25 +21,44 @@
 - [x] BattleScene đã load đúng
 - [x] Scene flow chạy thật: Overworld → bắn trúng Shadow/Thing → chuyển sang BattleScene
 
-### Battle — Data Bridge
-- [x] `GlobalBattleBridge.encounteredThing` — lưu monster vừa gặp ngoài map, BattleScene đọc lại đúng dữ liệu
-- [x] `GlobalPlayerBridge.activeThing` — pet mặc định người chơi (tạm thời, chưa có party system)
+### Battle — Data Bridge *(đã refactor)*
+- [x] `RuntimeGameState.CurrentEnemy` — lưu monster vừa gặp, BattleScene đọc đúng
+- [x] `RuntimeGameState.Party` — danh sách Thing của người chơi
+- [x] `RuntimeGameState.ActiveThing` — helper lấy Thing đầu tiên trong party
+- [x] `SetStarterThing` — set Thing mặc định vào Party khi bắt đầu game
+- [x] Xóa `GlobalPlayerBridge` — không còn dùng nữa, tất cả tập trung về `RuntimeGameState`
+- [x] Xóa `BattlePlayerLoader` + `BattleEnemyLoader` — không còn cần, `BattleManager` xử lý spawn
 
 ### Battle — Spawn
 - [x] BattleScene spawn đúng quái đã gặp (Slime / Wolf / Dragon đều đúng)
 - [x] HP battle đọc đúng từ `ThingData.hp` — không hardcode
-  - Slime.hp = 100 | Wolf.hp = 180 | Dragon.hp = 400
 - [x] BattleScene có đủ 2 phe: bên trái = pet người chơi, bên phải = quái encounter
+- [x] Spawn đọc từ `RuntimeGameState` thay vì test fields kéo tay
 
-### Battle — Grid System *(mới hoàn thành)*
-- [x] Tạo struct `GridPos` (col, row) — tọa độ logic cho toàn bộ hệ thống lưới
-- [x] Tạo `BattleGridConfig` ScriptableObject — cấu hình kích thước sân (8×8×2 sân, 2 cột gap)
-- [x] Tạo `BattleGridManager` — xây lưới 18×8 bằng Tilemap, quản lý vị trí entity, highlight ô
-- [x] Tạo `BattleEntity` — component gắn vào mọi Thing trong battle (thay thế BattleEnemy cũ)
-- [x] Lưới 3 vùng màu hiển thị đúng: xanh lá (sân trái) | xám (gap) | đỏ (sân phải)
-- [x] Camera tự động fit toàn bộ lưới qua `FitCamera()` — đọc Cell Size thực tế từ Grid component
-- [x] Entity spawn đúng vị trí ô lưới qua `PlaceEntity()` — snap tự động vào tâm ô
-- [x] Console log HP đúng khi spawn: `[BattleEntity] Spawn {name} | Team {id} | HP {hp}`
+### Battle — Grid System
+- [x] Struct `GridPos` (col, row) — tọa độ logic cho toàn bộ hệ thống lưới
+- [x] `BattleGridConfig` ScriptableObject — cấu hình kích thước sân (8×8×2 sân, 2 cột gap)
+- [x] `BattleGridManager` — xây lưới 18×8 bằng Tilemap, quản lý vị trí entity, highlight ô
+- [x] `BattleEntity` — component gắn vào mọi Thing trong battle
+- [x] Lưới 3 vùng màu: xanh lá (sân trái) | xám (gap) | đỏ (sân phải)
+- [x] Camera tự fit toàn bộ lưới qua `FitCamera()`
+- [x] Entity spawn đúng vị trí ô lưới qua `PlaceEntity()` — snap tâm ô
+- [x] `MoveEntity()` update cả data lẫn `transform.position` đồng thời
+- [x] `MoveEntitySmooth()` — di chuyển mượt Lerp (sẵn sàng dùng cho Sprint 2)
+- [x] `ShowHighlight()` / `ClearHighlight()` / `IsHighlighted()` — quản lý highlight tilemap
+- [x] `ShowMovableRange()` — highlight vùng di chuyển hợp lệ theo MoveRange của entity
+
+### Battle — Command Phase *(mới hoàn thành)*
+- [x] `BattlePhaseManager` — quản lý vòng đời phase: CommandPhase → ExecutionPhase → JudgePhase → loop
+- [x] `CommandPhaseController` — nhận input người chơi theo 3 bước: SelectUnit → SelectMove → SelectAttack
+- [x] Highlight ô di chuyển hợp lệ (hình vuông Chebyshev, giới hạn trong sân của phe)
+- [x] Highlight ô tấn công hợp lệ (toàn bộ ô có entity địch)
+- [x] Click chọn Thing → hiện vùng di chuyển → click ô → hiện vùng tấn công → click xác nhận
+- [x] Camera Z fix — `mousePos.z = Mathf.Abs(Camera.main.transform.position.z)` đảm bảo click đúng ô
+- [x] `BattleCommand` — lưu lệnh (moveTarget + attackTarget) cho mỗi entity mỗi lượt
+- [x] Enemy tự động submit lệnh đứng yên (AI placeholder)
+- [x] `SubmitCommand` tự động trigger ExecutionPhase khi đủ 2 lệnh
+- [x] Entity thực sự di chuyển tới ô đã chọn sau ExecutionPhase
 
 ---
 
@@ -58,24 +77,30 @@
 
 ---
 
-## 📁 Files Đã Tạo (Session này)
+## 📁 Files Quan Trọng
 
 | File | Thư mục | Mô tả |
 |---|---|---|
-| `GridPos.cs` | `Assets/_Project/Scripts/Combat/` | Struct tọa độ ô lưới |
-| `BattleGridConfig.cs` | `Assets/_Project/Scripts/Combat/` | ScriptableObject config lưới |
-| `BattleGridManager.cs` | `Assets/_Project/Scripts/Combat/` | Manager xây & quản lý lưới |
-| `BattleEntity.cs` | `Assets/_Project/Scripts/Combat/` | Component Thing trong battle |
-| `BattleGridConfig` (asset) | `Assets/_Project/ScriptableObjects/` | Config instance (boardCols=8, boardRows=8, gapCols=2) |
-| `Tile_Left` / `Tile_Right` / `Tile_Gap` / `Tile_Highlight` | `Assets/_Project/Art/Tiles/` | 4 tile màu cho lưới |
+| `GridPos.cs` | `Scripts/Combat/` | Struct tọa độ ô lưới |
+| `BattleGridConfig.cs` | `Scripts/Combat/` | ScriptableObject config lưới |
+| `BattleGridManager.cs` | `Scripts/Combat/` | Manager xây & quản lý lưới |
+| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle |
+| `BattleManager.cs` | `Scripts/Combat/` | Spawn 2 phe từ RuntimeGameState |
+| `BattlePhaseManager.cs` | `Scripts/Combat/` | Quản lý vòng đời phase |
+| `CommandPhaseController.cs` | `Scripts/Combat/` | Input người chơi theo phase |
+| `BattleCommand.cs` | `Scripts/Combat/` | Data lệnh mỗi lượt |
+| `RuntimeGameState.cs` | `Scripts/Core/` | Bridge data Overworld → Battle |
+| `SetStarterThing.cs` | `Scripts/` | Set Thing mặc định khi bắt đầu |
 
 ---
 
-## 🔜 Việc Tiếp Theo
+## 🔜 Việc Tiếp Theo (Sprint 2)
 
-- [ ] Hệ thống nhập lệnh (Command Phase) — chọn di chuyển & tấn công tọa độ
-- [ ] Thực thi lệnh đồng thời (Execution Phase)
-- [ ] Phán xét Speed — Thing nhanh hơn ra chiêu trước
-- [ ] Highlight ô di chuyển hợp lệ khi chọn Thing
-- [ ] Animation di chuyển Entity mượt trên lưới
-- [ ] Party system thay thế GlobalPlayerBridge tạm
+- [ ] **Combat Calculation** — tính sát thương theo 6 chỉ số (Atk, Def, Sp.Atk, Sp.Def, Speed, HP)
+- [ ] **Bảng tương khắc 9 Hệ** — Hỏa/Mộc/Thủy/Thổ/Lôi/Phong/Băng/Quang/Ám
+- [ ] **Speed Judge** — Thing nhanh hơn ra chiêu trước trong ExecutionPhase
+- [ ] **Animation di chuyển mượt** — dùng `MoveEntitySmooth()` thay teleport trong ExecutionPhase
+- [ ] **Animation tấn công** — hiệu ứng khi Thing tấn công
+- [ ] **Enemy AI** — địch chọn lệnh di chuyển + tấn công thực sự thay vì đứng yên
+- [ ] **Party System** — hỗ trợ 2vs2, quản lý danh sách Thing đã thu phục
+- [ ] **Gacha Kỹ Năng** — hệ thống lên cấp mở skill
