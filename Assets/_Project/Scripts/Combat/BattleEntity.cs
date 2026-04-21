@@ -10,6 +10,7 @@ public class BattleEntity : MonoBehaviour
     public int Speed { get; private set; }
     public int MoveRange { get; private set; }
     public ThingData Data { get; private set; }  // ← MỚI: expose để CombatCalculator dùng
+    public int Level => Data != null ? Data.level : 1;
 
     private int _currentHp;
     public int CurrentHp => _currentHp;

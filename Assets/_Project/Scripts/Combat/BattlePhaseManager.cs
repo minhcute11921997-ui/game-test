@@ -106,7 +106,26 @@ public class BattlePhaseManager : MonoBehaviour
                 BattleEntity target = BattleGridManager.Instance.GetEntityAt(cell);
                 if (target == null || target.TeamId == attacker.TeamId) continue;
 
-                var r = CombatCalculator.Calculate(attacker.Data, target.Data, move);
+                // Tính cellDistanceType cho AoE 3x3
+                int distType = 0;
+                if (move.shape == AttackShape.Square3x3)
+                {
+                    int dc = Mathf.Abs(cell.col - cmd.attackTarget.col);
+                    int dr = Mathf.Abs(cell.row - cmd.attackTarget.row);
+                    if (dc == 0 && dr == 0) distType = 0;       // tâm
+                    else if (dc + dr == 1) distType = 1;       // cận tâm
+                    else distType = 2;       // rìm góc
+                }
+
+                var r = CombatCalculator.Calculate(
+                    attacker.Data,
+                    target.Data,
+                    move,
+                    attackerLevel: attacker.Level,
+                    attackerLuck: attacker.Data.luck,
+                    aoeShape: move.shape,
+                    cellDistanceType: distType
+                );
 
                 string eff = r.typeMultiplier > 1f ? " HIỆU QUẢ!" :
                               r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
