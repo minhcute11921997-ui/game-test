@@ -19,22 +19,27 @@ public class BattleManager : MonoBehaviour
 
     void SpawnEntity(BattleGridManager grid, ThingData data, int teamId, int col, int row)
     {
-        // THÊM 3 DÒNG NÀY ĐỂ DEBUG:
-        Debug.Log($"[Spawn] data={data?.thingName} battlePrefab={data?.battlePrefab} fallback={fallbackPrefab}");
-
         GameObject prefab = data.battlePrefab != null ? data.battlePrefab : fallbackPrefab;
-
-        Debug.Log($"[Spawn] prefab chọn = {prefab}");  // ← xem cái gì được chọn
-
-        if (prefab == null)
-        {
-            Debug.LogError($"[Spawn] PREFAB NULL cho {data.thingName}!");
-            return;
-        }
+        if (prefab == null) { Debug.LogError($"[Spawn] Không có prefab cho {data.thingName}!"); return; }
 
         var go = Instantiate(prefab);
         var entity = go.GetComponent<BattleEntity>() ?? go.AddComponent<BattleEntity>();
         entity.Init(data, teamId);
         grid.PlaceEntity(entity, new GridPos(col, row));
+
+        // ── Sprint 3: spawn HP bar ──────────────────────────────
+        var hpBarPrefab = Resources.Load<GameObject>("HpBar");
+        if (hpBarPrefab != null)
+        {
+            var hpBarGo = Instantiate(hpBarPrefab);
+            var hpBar = hpBarGo.GetComponent<EntityHpBar>();
+            hpBar.Init(entity.transform);
+            hpBar.SetHp(data.hp, data.hp);   // hiện đầy máu lúc spawn
+            entity.hpBar = hpBar;             // gắn vào entity để TakeDamage cập nhật
+        }
+        else
+        {
+            Debug.LogWarning("[HpBar] Prefab chưa có trong Resources/ — bỏ qua");
+        }
     }
 }
