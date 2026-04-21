@@ -111,7 +111,7 @@ public static class CombatCalculator
         // 3. STAB x1.5
         bool  isStab   = move.elementType == attacker.elementType
                       && attacker.elementType != ElementType.Neutral;
-        float stabMult = isStab ? 1.5f : 1.0f;
+        float stabMult = isStab ? 1.2f : 1.0f;
 
         // 4. Tương khắc hệ
         float typeMult = GetTypeMultiplier(move.elementType, defender.elementType);
