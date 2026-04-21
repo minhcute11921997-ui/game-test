@@ -7,7 +7,7 @@ public class BattleResultManager : MonoBehaviour
 {
     public bool CheckBattleEnd()
     {
-        var allEntities = FindObjectsByType<BattleEntity>(FindObjectsSortMode.None);
+        var allEntities = FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         var team0 = new List<BattleEntity>();
         var team1 = new List<BattleEntity>();
 

@@ -18,9 +18,11 @@ public class ThingData : ScriptableObject
     public int hp = 100;
     public int attack = 20;
     public int defense = 15;
-    public int spAtk = 15;  // ← MỚI
-    public int spDef = 15;  // ← MỚI
+    public int spAtk = 15;
+    public int spDef = 15;
     public float speed = 10f;
+    public int level = 1;      // ← THÊM
+    public int luck = 0;
 
     [Header("Kỹ năng mặc định")]
     public MoveData defaultMove;  // ← MỚI (tạo ở Bước 2)
