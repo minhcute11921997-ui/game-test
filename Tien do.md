@@ -48,6 +48,7 @@
 - [x] `ShowHighlight()` / `ClearHighlight()` / `IsHighlighted()` — quản lý highlight tilemap
 - [x] `ShowMovableRange()` — highlight vùng di chuyển hợp lệ theo MoveRange của entity
 - [x] **Grid mờ (border 1px)** — `TilemapGrid` layer riêng, tự tạo sprite runtime qua `CreateGridTile()`
+- [x] **Tắt màu nền 2 sân** — tắt TilemapRenderer của TilemapLeft / TilemapRight để highlight rõ hơn
 
 ### Battle — Command Phase
 - [x] `BattlePhaseManager` — quản lý vòng đời phase: CommandPhase → ExecutionPhase → JudgePhase → loop
@@ -79,6 +80,16 @@
 - [x] **`BattleEntity` mở rộng** — thêm `Data` property, `GetMove()`, `TakeDamage()` với log HP %
 - [x] Combat pipeline hoạt động end-to-end: Input → Command → Execute → Judge → Damage → Loop
 
+### Battle — Visual Feedback *(Sprint 3 — hoàn thành)*
+- [x] **Animation di chuyển mượt** — `BattlePhaseManager` dùng coroutine `MoveEntitySmooth()`, chờ tất cả entity xong mới sang JudgePhase
+- [x] **`BattlePhaseManager` refactor** — `BeginExecutionPhase` đổi thành `IEnumerator`, `SubmitCommand` dùng `StartCoroutine`
+- [x] **Floating damage number** — `DamagePopup.cs` + Prefab trong `Assets/Resources/`; số bay lên, fade out 0.8s, màu vàng khi chí mạng
+- [x] **HP Bar** — `EntityHpBar.cs` + Prefab trong `Assets/Resources/`; World Space Canvas theo đầu entity, đổi màu xanh/vàng/đỏ theo % máu
+- [x] **`BattleEntity` mở rộng Sprint 3** — thêm `CurrentHp` property, `hpBar` field, `TakeDamage(dmg, isCrit)` gọi popup + cập nhật bar
+- [x] **`BattleManager` mở rộng Sprint 3** — spawn HP bar từ `Resources.Load` sau khi tạo entity, gắn vào `entity.hpBar`
+- [x] **`BattleResultManager`** — kiểm tra toàn bộ entity 1 phe = 0 HP sau mỗi lượt → hiện Win/Lose panel → load về Overworld
+- [x] **`CheckBattleEndThenLoop()`** — sau JudgePhase chờ 0.5s cho popup kịp hiện, rồi check kết thúc hoặc loop lượt mới
+
 ---
 
 ## 🔧 Cấu Hình Kỹ Thuật Hiện Tại
@@ -103,12 +114,15 @@
 | `GridPos.cs` | `Scripts/Combat/` | Struct tọa độ ô lưới |
 | `BattleGridConfig.cs` | `Scripts/Combat/` | ScriptableObject config lưới |
 | `BattleGridManager.cs` | `Scripts/Combat/` | Manager xây & quản lý lưới, AoE cells, grid mờ |
-| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle, TakeDamage, GetMove |
-| `BattleManager.cs` | `Scripts/Combat/` | Spawn 2 phe từ RuntimeGameState |
-| `BattlePhaseManager.cs` | `Scripts/Combat/` | Quản lý vòng đời phase, JudgePhase tính damage |
+| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle, TakeDamage, GetMove, HP bar |
+| `BattleManager.cs` | `Scripts/Combat/` | Spawn 2 phe + HP bar từ RuntimeGameState |
+| `BattlePhaseManager.cs` | `Scripts/Combat/` | Quản lý vòng đời phase, smooth move coroutine, battle end check |
+| `BattleResultManager.cs` | `Scripts/Combat/` | Kiểm tra thắng/thua, hiện panel, load Overworld |
 | `CommandPhaseController.cs` | `Scripts/Combat/` | Input người chơi + AoE hover preview |
 | `BattleCommand.cs` | `Scripts/Combat/` | Data lệnh mỗi lượt |
 | `CombatCalculator.cs` | `Scripts/Combat/` | Static class tính sát thương + bảng tương khắc |
+| `DamagePopup.cs` | `Scripts/UI/` | Floating damage number, fade out 0.8s |
+| `EntityHpBar.cs` | `Scripts/UI/` | HP bar World Space theo đầu entity |
 | `MoveData.cs` | `Scripts/Data/` | ScriptableObject chiêu thức (hệ, shape, power) |
 | `ThingData.cs` | `Scripts/Data/` | ScriptableObject stats Thing (có spAtk, spDef, elementType) |
 | `RuntimeGameState.cs` | `Scripts/Core/` | Bridge data Overworld → Battle |
@@ -116,19 +130,25 @@
 
 ---
 
-## 🔜 Việc Tiếp Theo (Sprint 3)
+## 📦 Assets/Resources/ (Prefabs load bằng code)
+
+| Prefab | Mô tả |
+|---|---|
+| `DamagePopup.prefab` | World Space Canvas + TMP text, gắn script `DamagePopup` |
+| `HpBar.prefab` | World Space Canvas + Fill Image, gắn script `EntityHpBar` |
+
+---
+
+## 🔜 Việc Tiếp Theo (Sprint 4)
 
 ### Ưu tiên cao
-- [ ] **Animation di chuyển mượt** — dùng `MoveEntitySmooth()` (đã có) thay `MoveEntity()` trong `ExecutionPhase`, dùng `StartCoroutine` + chờ tất cả entity xong mới sang JudgePhase
-- [ ] **Floating damage number** — UI Text bay lên khi bị đánh, fade out sau 0.8s
-- [ ] **HP Bar** — thanh máu trên đầu mỗi entity, cập nhật real-time khi `TakeDamage()`
+- [ ] **Win/Lose Panel** — tạo 2 UI Panel trong BattleScene, kéo vào `BattleResultManager`, hiện khi battle kết thúc
+- [ ] **Enemy AI thực sự** — địch tự chọn ô di chuyển gần nhất + tấn công Thing khắc hệ nếu có
 
 ### Ưu tiên trung bình
-- [ ] **Enemy AI thực sự** — địch tự chọn ô di chuyển gần nhất + tấn công Thing khắc hệ nếu có
 - [ ] **Animation tấn công** — hit flash + knockback nhỏ khi Thing bị đánh
-- [ ] **Kết thúc battle** — kiểm tra toàn bộ entity 1 phe = 0 → hiện màn hình thắng/thua → về Overworld
+- [ ] **Party System 2vs2** — quản lý danh sách Thing đã thu phục, chiến đấu 2 bên mỗi bên 2 thing
 
 ### Ưu tiên sau
-- [ ] **Party System 2vs2** — quản lý danh sách Thing đã thu phục, chiến đấu 2 bên mỗi bên 2 thing
 - [ ] **Gacha Kỹ Năng** — hệ thống lên cấp mở skill ngẫu nhiên, lưu vào kho
 - [ ] **Âm thanh** — SFX tấn công, nhạc nền battle
