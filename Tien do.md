@@ -47,18 +47,37 @@
 - [x] `MoveEntitySmooth()` — di chuyển mượt Lerp (sẵn sàng dùng cho Sprint 2)
 - [x] `ShowHighlight()` / `ClearHighlight()` / `IsHighlighted()` — quản lý highlight tilemap
 - [x] `ShowMovableRange()` — highlight vùng di chuyển hợp lệ theo MoveRange của entity
+- [x] **Grid mờ (border 1px)** — `TilemapGrid` layer riêng, tự tạo sprite runtime qua `CreateGridTile()`
 
-### Battle — Command Phase *(mới hoàn thành)*
+### Battle — Command Phase
 - [x] `BattlePhaseManager` — quản lý vòng đời phase: CommandPhase → ExecutionPhase → JudgePhase → loop
 - [x] `CommandPhaseController` — nhận input người chơi theo 3 bước: SelectUnit → SelectMove → SelectAttack
 - [x] Highlight ô di chuyển hợp lệ (hình vuông Chebyshev, giới hạn trong sân của phe)
-- [x] Highlight ô tấn công hợp lệ (toàn bộ ô có entity địch)
+- [x] Highlight ô tấn công hợp lệ (toàn bộ ô có thể nhắm trong sân địch)
 - [x] Click chọn Thing → hiện vùng di chuyển → click ô → hiện vùng tấn công → click xác nhận
 - [x] Camera Z fix — `mousePos.z = Mathf.Abs(Camera.main.transform.position.z)` đảm bảo click đúng ô
 - [x] `BattleCommand` — lưu lệnh (moveTarget + attackTarget) cho mỗi entity mỗi lượt
 - [x] Enemy tự động submit lệnh đứng yên (AI placeholder)
 - [x] `SubmitCommand` tự động trigger ExecutionPhase khi đủ 2 lệnh
 - [x] Entity thực sự di chuyển tới ô đã chọn sau ExecutionPhase
+
+### Battle — Combat Calculation *(Sprint 2 — hoàn thành)*
+- [x] **`MoveData` ScriptableObject** — lưu thông tin chiêu thức: tên, hệ, loại (Physical/Special/Status), sức mạnh, độ chính xác, PP
+- [x] **Enum `ElementType`** — 9 hệ: Neutral / Hỏa / Mộc / Thủy / Thổ / Lôi / Phong / Băng / Quang / Ám
+- [x] **Enum `AttackShape`** — 5 hình dạng AoE: Single / Cross / Square2x2 / Square3x3 / Line
+- [x] **`CombatCalculator` (static class)** — tính sát thương theo công thức:
+  - Base: `((BasePower × Atk / Def) / 50 + 2)`
+  - × STAB x1.2 nếu move cùng hệ với attacker
+  - × Bảng tương khắc 9 hệ (x0.5 / x1.0 / x2.0)
+  - × Chí mạng x1.5 (6.25% cơ bản)
+  - × Random ±5%
+- [x] **Bảng tương khắc 9 hệ** — `TypeChart[10,10]` đầy đủ trong `CombatCalculator`
+- [x] **Speed Judge** — sort theo Speed giảm dần, thing nhanh hơn tấn công trước trong JudgePhase
+- [x] **AoE damage** — `GetAoECells()` tính tất cả ô bị ảnh hưởng, `BeginJudgePhase` áp damage cho từng ô
+- [x] **AoE hover preview** — di chuột vào vùng tấn công hiện shape AoE real-time theo `move.shape`
+- [x] **`ThingData` mở rộng** — thêm `spAtk`, `spDef`, `elementType`, `defaultMove`
+- [x] **`BattleEntity` mở rộng** — thêm `Data` property, `GetMove()`, `TakeDamage()` với log HP %
+- [x] Combat pipeline hoạt động end-to-end: Input → Command → Execute → Judge → Damage → Loop
 
 ---
 
@@ -83,24 +102,33 @@
 |---|---|---|
 | `GridPos.cs` | `Scripts/Combat/` | Struct tọa độ ô lưới |
 | `BattleGridConfig.cs` | `Scripts/Combat/` | ScriptableObject config lưới |
-| `BattleGridManager.cs` | `Scripts/Combat/` | Manager xây & quản lý lưới |
-| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle |
+| `BattleGridManager.cs` | `Scripts/Combat/` | Manager xây & quản lý lưới, AoE cells, grid mờ |
+| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle, TakeDamage, GetMove |
 | `BattleManager.cs` | `Scripts/Combat/` | Spawn 2 phe từ RuntimeGameState |
-| `BattlePhaseManager.cs` | `Scripts/Combat/` | Quản lý vòng đời phase |
-| `CommandPhaseController.cs` | `Scripts/Combat/` | Input người chơi theo phase |
+| `BattlePhaseManager.cs` | `Scripts/Combat/` | Quản lý vòng đời phase, JudgePhase tính damage |
+| `CommandPhaseController.cs` | `Scripts/Combat/` | Input người chơi + AoE hover preview |
 | `BattleCommand.cs` | `Scripts/Combat/` | Data lệnh mỗi lượt |
+| `CombatCalculator.cs` | `Scripts/Combat/` | Static class tính sát thương + bảng tương khắc |
+| `MoveData.cs` | `Scripts/Data/` | ScriptableObject chiêu thức (hệ, shape, power) |
+| `ThingData.cs` | `Scripts/Data/` | ScriptableObject stats Thing (có spAtk, spDef, elementType) |
 | `RuntimeGameState.cs` | `Scripts/Core/` | Bridge data Overworld → Battle |
 | `SetStarterThing.cs` | `Scripts/` | Set Thing mặc định khi bắt đầu |
 
 ---
 
-## 🔜 Việc Tiếp Theo (Sprint 2)
+## 🔜 Việc Tiếp Theo (Sprint 3)
 
-- [ ] **Combat Calculation** — tính sát thương theo 6 chỉ số (Atk, Def, Sp.Atk, Sp.Def, Speed, HP)
-- [ ] **Bảng tương khắc 9 Hệ** — Hỏa/Mộc/Thủy/Thổ/Lôi/Phong/Băng/Quang/Ám
-- [ ] **Speed Judge** — Thing nhanh hơn ra chiêu trước trong ExecutionPhase
-- [ ] **Animation di chuyển mượt** — dùng `MoveEntitySmooth()` thay teleport trong ExecutionPhase
-- [ ] **Animation tấn công** — hiệu ứng khi Thing tấn công
-- [ ] **Enemy AI** — địch chọn lệnh di chuyển + tấn công thực sự thay vì đứng yên
-- [ ] **Party System** — hỗ trợ 2vs2, quản lý danh sách Thing đã thu phục
-- [ ] **Gacha Kỹ Năng** — hệ thống lên cấp mở skill
+### Ưu tiên cao
+- [ ] **Animation di chuyển mượt** — dùng `MoveEntitySmooth()` (đã có) thay `MoveEntity()` trong `ExecutionPhase`, dùng `StartCoroutine` + chờ tất cả entity xong mới sang JudgePhase
+- [ ] **Floating damage number** — UI Text bay lên khi bị đánh, fade out sau 0.8s
+- [ ] **HP Bar** — thanh máu trên đầu mỗi entity, cập nhật real-time khi `TakeDamage()`
+
+### Ưu tiên trung bình
+- [ ] **Enemy AI thực sự** — địch tự chọn ô di chuyển gần nhất + tấn công Thing khắc hệ nếu có
+- [ ] **Animation tấn công** — hit flash + knockback nhỏ khi Thing bị đánh
+- [ ] **Kết thúc battle** — kiểm tra toàn bộ entity 1 phe = 0 → hiện màn hình thắng/thua → về Overworld
+
+### Ưu tiên sau
+- [ ] **Party System 2vs2** — quản lý danh sách Thing đã thu phục, chiến đấu 2 bên mỗi bên 2 thing
+- [ ] **Gacha Kỹ Năng** — hệ thống lên cấp mở skill ngẫu nhiên, lưu vào kho
+- [ ] **Âm thanh** — SFX tấn công, nhạc nền battle
