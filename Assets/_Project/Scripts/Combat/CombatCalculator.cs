@@ -7,15 +7,15 @@ using UnityEngine;
 /// Damage:  BaseDamage = floor(((2*Level/5 + 2) * Power * Atk/Def) / 10)
 ///          FinalDamage = BaseDamage * STAB * Weakness * Critical * RNG * Falloff
 ///
-/// STAB:    x1.5 nếu move cùng hệ với attacker (trừ Neutral)
+/// STAB:     x1.5 nếu move cùng hệ với attacker (trừ Neutral)
 /// Weakness: x2.0 / x1.0 / x0.5 / x0.0 (miễn dịch)
-/// Critical: 5% + Luck/10 cơ bản, nhân x1.5 khi trúng
-/// RNG:     0.9 – 1.0 (chung cho mọi chiêu)
+/// Critical: 5% + Luck/10, nhân x1.5 khi trúng
+/// RNG:      0.9 – 1.0 (chung cho mọi chiêu)
 /// AoE Falloff:
-///   - Single 1x1   : x1.0
-///   - Square 3x3   : tâm x1.0 | cận tâm x0.75 | góc chéo x0.5
-///   - Square 2x2   : RNG riêng 0.85–1.0 nhân thêm vào RNG chung → tổng 0.765–1.0
-///   - Cross / Line  : x1.0 mọi ô (xử lý ngoài, không falloff)
+///   - Single 1x1  : x1.0
+///   - Square 3x3  : tâm x1.0 | cận tâm x0.8 | rìm (góc chéo) x0.7
+///   - Square 2x2  : RNG riêng 0.85–1.0 x RNG chung → tổng 0.765–1.0
+///   - Cross / Line: x1.0 mọi ô
 /// </summary>
 public static class CombatCalculator
 {
@@ -84,75 +84,71 @@ public static class CombatCalculator
     // ─── Damage chính ───────────────────────────────────────────────────────
     /// <summary>
     /// Tính sát thương cho 1 ô đích.
-    /// attackerLuck dùng để tính CritRate.
-    /// aoeShape + cellDistanceFromCenter dùng để tính Falloff.
+    /// cellDistanceType:
+    ///   0 = tâm / single
+    ///   1 = cận tâm (trên / dưới / trái / phải trong 3x3)
+    ///   2 = rìm (4 góc chéo trong 3x3)
     /// </summary>
     public static DamageResult Calculate(
-        ThingData  attacker,
-        ThingData  defender,
-        MoveData   move,
-        int        attackerLevel,
-        int        attackerLuck,
-        AttackShape aoeShape            = AttackShape.Single,
-        int         cellDistanceType    = 0)   // 0=tâm/single, 1=cận tâm, 2=góc chéo
+        ThingData   attacker,
+        ThingData   defender,
+        MoveData    move,
+        int         attackerLevel,
+        int         attackerLuck,
+        AttackShape aoeShape         = AttackShape.Single,
+        int         cellDistanceType = 0)
     {
-        // 1. Stat tấn công / phòng thủ (Physical vs Special)
+        // 1. Stat tấn công / phòng thủ
         float atkStat = (move.category == MoveCategory.Physical)
-            ? attacker.attack
-            : attacker.spAtk;
+            ? attacker.attack : attacker.spAtk;
+        float defStat = Mathf.Max(1f, (move.category == MoveCategory.Physical)
+            ? defender.defense : defender.spDef);
 
-        float defStat = (move.category == MoveCategory.Physical)
-            ? defender.defense
-            : defender.spDef;
-
-        defStat = Mathf.Max(1f, defStat); // tránh chia 0
-
-        // 2. Base Damage — công thức GDD
-        // BaseDamage = floor(((2*Level/5 + 2) * Power * Atk/Def) / 10)
+        // 2. Base Damage
         float baseDmg = Mathf.FloorToInt(
-            ((2f * attackerLevel / 5f + 2f) * move.basePower * (atkStat / defStat)) / 10f
-        );
+            ((2f * attackerLevel / 5f + 2f) * move.basePower * (atkStat / defStat)) / 10f);
 
         // 3. STAB x1.5
-        bool  isStab       = (move.elementType == attacker.elementType)
-                           && attacker.elementType != ElementType.Neutral;
-        float stabMult     = isStab ? 1.5f : 1.0f;
+        bool  isStab   = move.elementType == attacker.elementType
+                      && attacker.elementType != ElementType.Neutral;
+        float stabMult = isStab ? 1.5f : 1.0f;
 
         // 4. Tương khắc hệ
-        float typeMult     = GetTypeMultiplier(move.elementType, defender.elementType);
-
-        // Miễn dịch → không cần tính tiếp
+        float typeMult = GetTypeMultiplier(move.elementType, defender.elementType);
         if (typeMult == 0f)
             return new DamageResult { damage = 0, typeMultiplier = 0f, isStab = isStab, isCritical = false };
 
         // 5. Chí mạng
-        float critRatePct  = CalculateCritRate(attackerLuck);
-        bool  isCrit       = Random.value < (critRatePct / 100f);
-        float critMult     = isCrit ? 1.5f : 1.0f;
+        bool  isCrit   = Random.value < (CalculateCritRate(attackerLuck) / 100f);
+        float critMult = isCrit ? 1.5f : 1.0f;
 
         // 6. RNG chung 0.9 – 1.0
-        float rng          = Random.Range(0.9f, 1.0f);
+        float rng = Random.Range(0.9f, 1.0f);
 
         // 7. AoE Falloff
-        float falloff      = GetFalloff(aoeShape, cellDistanceType, ref rng);
+        float falloff = GetFalloff(aoeShape, cellDistanceType, ref rng);
 
-        // 8. Final Damage
-        float final        = baseDmg * stabMult * typeMult * critMult * rng * falloff;
-        int   damage       = Mathf.Max(1, Mathf.FloorToInt(final));
+        // 8. Final
+        int damage = Mathf.Max(1, Mathf.FloorToInt(baseDmg * stabMult * typeMult * critMult * rng * falloff));
 
         return new DamageResult
         {
-            damage          = damage,
-            typeMultiplier  = typeMult,
-            isStab          = isStab,
-            isCritical      = isCrit
+            damage         = damage,
+            typeMultiplier = typeMult,
+            isStab         = isStab,
+            isCritical     = isCrit
         };
     }
 
     // ─── AoE Falloff ────────────────────────────────────────────────────────
     /// <summary>
-    /// Trả về hệ số falloff và chỉnh rng nếu là 2x2.
-    /// cellDistanceType: 0=tâm/single, 1=cận tâm (trên/dưới/trái/phải), 2=góc chéo.
+    /// Square 3x3:
+    ///   cellDistanceType 0 (tâm 1ô1)   → x1.0
+    ///   cellDistanceType 1 (cận tâm)  → x0.8  (4 ô trên/dưới/trái/phải)
+    ///   cellDistanceType 2 (rìm góc)  → x0.7  (4 ô góc chéo)
+    /// Square 2x2:
+    ///   Không có tâm — nhân thêm RNG riêng [0.85, 1.0] vào RNG chung
+    ///   → tổng RNG = [0.765, 1.0]
     /// </summary>
     private static float GetFalloff(AttackShape shape, int cellDistanceType, ref float rng)
     {
@@ -161,18 +157,16 @@ public static class CombatCalculator
             case AttackShape.Single:
             case AttackShape.Cross:
             case AttackShape.Line:
-                return 1.0f;                             // không falloff
+                return 1.0f;
 
             case AttackShape.Square3x3:
-                if (cellDistanceType == 0) return 1.0f;  // tâm chấn
-                if (cellDistanceType == 1) return 0.75f; // cận tâm
-                return 0.5f;                             // góc chéo
+                if (cellDistanceType == 0) return 1.0f;   // tâm
+                if (cellDistanceType == 1) return 0.8f;   // cận tâm
+                return 0.7f;                              // rìm góc chéo
 
             case AttackShape.Square2x2:
-                // RNG riêng 0.85–1.0 nhân thêm vào RNG chung → tổng 0.765–1.0
-                float aoeRng = Random.Range(0.85f, 1.0f);
-                rng *= aoeRng;
-                return 1.0f;                             // falloff tính qua RNG kép
+                rng *= Random.Range(0.85f, 1.0f);         // RNG kép → 0.765–1.0
+                return 1.0f;
 
             default:
                 return 1.0f;
