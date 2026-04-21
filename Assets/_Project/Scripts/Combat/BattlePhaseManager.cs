@@ -6,36 +6,33 @@ using UnityEngine;
 public enum BattlePhase
 {
     Idle,
-    CommandPhase,   // Người chơi chọn lệnh
-    ExecutionPhase, // Thực thi đồng thời
-    JudgePhase,     // Phán xét Speed, áp dụng sát thương
-    ResultPhase     // Kết thúc lượt, kiểm tra thắng thua
+    CommandPhase,
+    ExecutionPhase,
+    JudgePhase,
+    ResultPhase
 }
 
 public class BattlePhaseManager : MonoBehaviour
 {
     public static BattlePhaseManager Instance { get; private set; }
-
     public BattlePhase CurrentPhase { get; private set; } = BattlePhase.Idle;
 
-    // Lệnh đã thu thập từ CommandPhase
     private readonly Dictionary<BattleEntity, BattleCommand> _commands = new();
+
+    // ── Sprint 3: kéo BattleResultManager vào đây trong Inspector ──
+    [SerializeField] BattleResultManager resultManager;
 
     void Awake() => Instance = this;
 
-    void Start()
-    {
-        // Tự động bắt đầu sau khi BattleManager spawn xong
-        StartCoroutine(StartAfterSpawn());
-    }
+    void Start() => StartCoroutine(StartAfterSpawn());
 
     IEnumerator StartAfterSpawn()
     {
-        yield return null; // chờ 1 frame cho BattleManager.Start() chạy xong
+        yield return null;
         BeginCommandPhase();
     }
 
-    // ── Bắt đầu Command Phase ─────────────────────────────────────
+    // ── Command Phase ──────────────────────────────────────────────
     public void BeginCommandPhase()
     {
         CurrentPhase = BattlePhase.CommandPhase;
@@ -44,83 +41,104 @@ public class BattlePhaseManager : MonoBehaviour
         CommandPhaseController.Instance.BeginInput();
     }
 
-    // ── Nhận lệnh từ CommandPhaseController ──────────────────────
     public void SubmitCommand(BattleEntity entity, BattleCommand cmd)
     {
         _commands[entity] = cmd;
         Debug.Log($"[Command] {entity.name} → Move:{cmd.moveTarget} Attack:{cmd.attackTarget}");
 
-        // TODO Sprint 2: Khi có nhiều entity, check tất cả đã submit chưa
-        // Hiện tại: 1vs1 → đủ 2 lệnh thì proceed
         if (_commands.Count >= GetActiveEntityCount())
-            BeginExecutionPhase();
+            StartCoroutine(BeginExecutionPhase()); // ← Sprint 3: coroutine
     }
 
-    int GetActiveEntityCount()
-    {
-        // Tạm thời: 2 (1 player + 1 enemy)
-        return 2;
-    }
+    int GetActiveEntityCount() => 2;
 
-    // ── Execution Phase (Sprint 2) ────────────────────────────────
-    void BeginExecutionPhase()
+    // ── Execution Phase: chờ smooth move xong rồi mới Judge ───────
+    IEnumerator BeginExecutionPhase()
     {
         CurrentPhase = BattlePhase.ExecutionPhase;
         Debug.Log("[BattlePhase] === EXECUTION PHASE ===");
 
-        // Di chuyển tất cả entity đến vị trí đã chọn
+        var grid = BattleGridManager.Instance;
+        var moveCoroutines = new List<Coroutine>();
+
         foreach (var kvp in _commands)
         {
-            var grid = BattleGridManager.Instance;
-            if (!kvp.Value.moveTarget.Equals(kvp.Key.GridPos))
-                grid.MoveEntity(kvp.Key, kvp.Key.GridPos, kvp.Value.moveTarget);
+            BattleEntity entity = kvp.Key;
+            GridPos target = kvp.Value.moveTarget;
+
+            if (!target.Equals(entity.GridPos))
+            {
+                // Sprint 3: MoveEntitySmooth thay vì MoveEntity (snap)
+                var co = StartCoroutine(grid.MoveEntitySmooth(entity, target, null, 0.3f));
+                moveCoroutines.Add(co);
+            }
         }
+
+        foreach (var co in moveCoroutines)
+            yield return co; // chờ tất cả entity đến đích
 
         BeginJudgePhase();
     }
 
-    // ── Judge Phase (Sprint 2) ─────────────────────────────────────
+    // ── Judge Phase: tính damage + hiện popup + cập nhật HP bar ───
     void BeginJudgePhase()
     {
         CurrentPhase = BattlePhase.JudgePhase;
         Debug.Log("[BattlePhase] === JUDGE PHASE ===");
 
-        var orderedAttackers = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<BattleEntity, BattleCommand>>(_commands);
-        orderedAttackers.Sort((a, b) => b.Key.Speed.CompareTo(a.Key.Speed));
+        var ordered = new List<KeyValuePair<BattleEntity, BattleCommand>>(_commands);
+        ordered.Sort((a, b) => b.Key.Speed.CompareTo(a.Key.Speed));
 
-        foreach (var kvp in orderedAttackers)
+        foreach (var kvp in ordered)
         {
             BattleEntity attacker = kvp.Key;
             BattleCommand cmd = kvp.Value;
-
             if (attacker == null || !cmd.HasAttack) continue;
 
             MoveData move = attacker.GetMove();
             if (move == null) continue;
 
-            var aoeCells = BattleGridManager.Instance.GetAoECells(
+            var cells = BattleGridManager.Instance.GetAoECells(
                 cmd.attackTarget, move.shape, attacker.GridPos);
 
-            foreach (var cell in aoeCells)
+            foreach (var cell in cells)
             {
                 BattleEntity target = BattleGridManager.Instance.GetEntityAt(cell);
                 if (target == null || target.TeamId == attacker.TeamId) continue;
 
-                // ← đổi tên biến thành dmgResult để tránh conflict
-                var dmgResult = CombatCalculator.Calculate(attacker.Data, target.Data, move);
+                var r = CombatCalculator.Calculate(attacker.Data, target.Data, move);
 
-                string eff = dmgResult.typeMultiplier > 1f ? " HIỆU QUẢ!" :
-                              dmgResult.typeMultiplier < 1f ? " Không hiệu quả..." : "";
-                string crit = dmgResult.isCritical ? " CHÍ MẠNG!" : "";
-                string stab = dmgResult.isStab ? " [STAB]" : "";
+                string eff = r.typeMultiplier > 1f ? " HIỆU QUẢ!" :
+                              r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
+                string crit = r.isCritical ? " CHÍ MẠNG!" : "";
+                string stab = r.isStab ? " [STAB]" : "";
 
-                Debug.Log($"[Combat] {attacker.Data.thingName}{stab} → {target.Data.thingName}: " +
-                          $"{dmgResult.damage} dmg (x{dmgResult.typeMultiplier}){eff}{crit}");
+                Debug.Log($"[Combat] {attacker.Data.thingName}{stab} → " +
+                          $"{target.Data.thingName}: {r.damage} dmg " +
+                          $"(x{r.typeMultiplier}){eff}{crit}");
 
-                target.TakeDamage(dmgResult.damage);
+                // Sprint 3: truyền isCritical để popup hiện màu vàng khi chí mạng
+                target.TakeDamage(r.damage, r.isCritical);
             }
         }
 
-        BeginCommandPhase();
+        // Sprint 3: dừng 0.5s cho popup kịp bay lên rồi mới check kết thúc
+        StartCoroutine(CheckBattleEndThenLoop());
+    }
+
+    IEnumerator CheckBattleEndThenLoop()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        if (resultManager != null && resultManager.CheckBattleEnd())
+        {
+            CurrentPhase = BattlePhase.ResultPhase;
+            Debug.Log("[BattlePhase] === RESULT PHASE ===");
+            // BattleResultManager tự hiện Win/Lose panel và load Overworld
+        }
+        else
+        {
+            BeginCommandPhase();
+        }
     }
 }
