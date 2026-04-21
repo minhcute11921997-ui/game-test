@@ -233,9 +233,9 @@ public class BattlePhaseManager : MonoBehaviour
         {
             e.TickStatus();
 
-            // Angel synergy regen
+            // Angel synergy regen (% of MaxHP)
             if (e.SynergyRegenPercent > 0f)
-                e.HealHp(Mathf.Max(1, Mathf.RoundToInt(e.CurrentHp * e.SynergyRegenPercent / 100f)));
+                e.HealHp(Mathf.Max(1, Mathf.RoundToInt(e.Data.hp * e.SynergyRegenPercent / 100f)));
         }
 
         // Map end-of-turn effects (Sprint 8)

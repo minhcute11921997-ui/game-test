@@ -87,11 +87,11 @@ public class GachaManager : MonoBehaviour
         if (thing.learnedMoves == null)
             thing.learnedMoves = new List<MoveData>();
 
-        // Trang bị tối đa 4; phần còn lại vào kho (slot 5+)
+        // First 4 slots = equipped; anything beyond 4 = vault (stored but not equipped)
         if (thing.learnedMoves.Count < 4)
-            Debug.Log($"[Gacha] {thing.thingName} trang bị {move.moveName}");
+            Debug.Log($"[Gacha] {thing.thingName} trang bị {move.moveName} (slot {thing.learnedMoves.Count + 1}/4)");
         else
-            Debug.Log($"[Gacha] {thing.thingName} kho đầy — {move.moveName} vào kho chờ");
+            Debug.Log($"[Gacha] {thing.thingName} kho đầy — {move.moveName} vào kho chờ (slot {thing.learnedMoves.Count + 1})");
 
         thing.learnedMoves.Add(move);
     }

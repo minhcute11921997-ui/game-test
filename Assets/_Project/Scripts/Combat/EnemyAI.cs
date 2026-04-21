@@ -61,8 +61,8 @@ public static class EnemyAI
                 int c = enemy.GridPos.col + dc;
                 int r = enemy.GridPos.row + dr;
 
-                if (!cfg.IsWalkable(c, r))   continue;
-                if (cfg.GetTeam(c) != 1)      continue; // chỉ di chuyển trong vùng enemy
+                if (!cfg.IsWalkable(c, r))            continue;
+                if (cfg.GetTeam(c) != enemy.TeamId)   continue; // stay in own territory
 
                 var pos = new GridPos(c, r);
                 if (grid.IsOccupied(pos) && pos != enemy.GridPos) continue;

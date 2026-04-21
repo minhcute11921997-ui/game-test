@@ -36,7 +36,7 @@ public class ThingData : ScriptableObject
 
     [Header("Progression (Sprint 7)")]
     public int expYield = 50;
-    [System.NonSerialized] public int experience = 0; // runtime only — resets each play session
+    [System.NonSerialized] public int experience = 0; // runtime only — intentionally not persisted
 
     [Header("Kỹ năng đã học (Sprint 7)")]
     public List<MoveData> learnedMoves = new List<MoveData>(); // tối đa 4 trang bị + kho
