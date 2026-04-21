@@ -20,8 +20,10 @@ MonoBehaviour:
   hp: 30
   attack: 25
   defense: 15
-  spAtk: 15
+  spAtk: 50
   spDef: 15
   speed: 20
+  level: 10
+  luck: 50
   defaultMove: {fileID: 11400000, guid: 8fe279d9cc790f7448809df14749a65a, type: 2}
   moveRange: 1
