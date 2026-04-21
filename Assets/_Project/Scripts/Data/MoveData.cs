@@ -16,14 +16,26 @@ public enum AttackShape
     Line,       // Đường thẳng từ attacker đến target
 }
 
+/// <summary>Sprint 6: Chỉ số bị ảnh hưởng bởi chiêu Status.</summary>
+public enum StatEffectTarget { None = 0, Attack = 1, Defense = 2, SpAtk = 3, SpDef = 4, Speed = 5 }
+
+/// <summary>Sprint 7: Trạng thái đặc biệt gây damage theo lượt.</summary>
+public enum StatusEffect { None = 0, Burn = 1, Poison = 2 }
+
 [CreateAssetMenu(fileName = "NewMove", menuName = "Game/Move Data")]
 public class MoveData : ScriptableObject
 {
     public string moveName = "Tackle";
     public ElementType elementType = ElementType.Neutral;
     public MoveCategory category = MoveCategory.Physical;
-    public AttackShape shape = AttackShape.Single;   // ← MỚI
+    public AttackShape shape = AttackShape.Single;
     [Range(0, 200)] public int basePower = 40;
     [Range(0, 100)] public int accuracy = 100;
     public int pp = 20;
+
+    [Header("Status Effect (chỉ dùng khi category = Status)")]
+    public StatEffectTarget statTarget  = StatEffectTarget.None;
+    [Range(-6, 6)] public int stageChange = 0;
+    public bool affectSelf              = false; // true = buff self, false = debuff target
+    public StatusEffect inflictStatus   = StatusEffect.None;
 }

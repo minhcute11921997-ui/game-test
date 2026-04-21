@@ -84,6 +84,7 @@ public static class CombatCalculator
     // ─── Damage chính ───────────────────────────────────────────────────────
     /// <summary>
     /// Tính sát thương cho 1 ô đích.
+    /// atkStageMult / defStageMult: nhân thêm từ stage chỉ số (Sprint 6).
     /// cellDistanceType:
     ///   0 = tâm / single
     ///   1 = cận tâm (trên / dưới / trái / phải trong 3x3)
@@ -95,14 +96,16 @@ public static class CombatCalculator
         MoveData    move,
         int         attackerLevel,
         int         attackerLuck,
+        float       atkStageMult     = 1f,
+        float       defStageMult     = 1f,
         AttackShape aoeShape         = AttackShape.Single,
         int         cellDistanceType = 0)
     {
-        // 1. Stat tấn công / phòng thủ
-        float atkStat = (move.category == MoveCategory.Physical)
-            ? attacker.attack : attacker.spAtk;
-        float defStat = Mathf.Max(1f, (move.category == MoveCategory.Physical)
-            ? defender.defense : defender.spDef);
+        // 1. Stat tấn công / phòng thủ với stage multiplier
+        float atkStat = ((move.category == MoveCategory.Physical)
+            ? attacker.attack : attacker.spAtk) * atkStageMult;
+        float defStat = Mathf.Max(1f, ((move.category == MoveCategory.Physical)
+            ? defender.defense : defender.spDef) * defStageMult);
 
         // 2. Base Damage
         float baseDmg = Mathf.FloorToInt(

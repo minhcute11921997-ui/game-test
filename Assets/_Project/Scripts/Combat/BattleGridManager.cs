@@ -9,6 +9,15 @@ public class BattleGridManager : MonoBehaviour
     [Header("Cấu hình")]
     public BattleGridConfig config;
 
+    [Header("Sprint 8: Map Effect")]
+    public MapEffectType mapType = MapEffectType.PlainField;
+
+    /// <summary>
+    /// Các ô đặc biệt trên bản đồ (trigger hiệu ứng cuối lượt).
+    /// CrystalMeadow: đứng trên ô này → hồi 10% MaxHP.
+    /// </summary>
+    public List<GridPos> specialCells = new List<GridPos>();
+
     [Header("Tilemaps — kéo vào từ Hierarchy")]
     public Tilemap tilemapLeft;
     public Tilemap tilemapRight;
@@ -274,16 +283,37 @@ public class BattleGridManager : MonoBehaviour
         return result;
     }
 
-    /// <summary>Highlight AoE preview (màu riêng, không đè highlight di chuyển)</summary>
+    /// <summary>Sprint 8: Highlight AoE preview (màu riêng, không đè highlight di chuyển)</summary>
     public void ShowAoEPreview(List<GridPos> cells)
     {
-        // Dùng lại tilemapHighlight nhưng với tileHighlight — đủ dùng cho preview
-        // Sprint sau có thể tách tilemap riêng cho AoE
         tilemapHighlight.ClearAllTiles();
         foreach (var p in cells)
             tilemapHighlight.SetTile(new Vector3Int(p.col, p.row, 0), tileHighlight);
     }
 
-    
+    // ── Sprint 8: Map End-of-Turn Effects ─────────────────────────
+    /// <summary>
+    /// Gọi cuối lượt từ BattlePhaseManager.
+    /// CrystalMeadow: entity đứng trên specialCell → hồi 10% MaxHP.
+    /// </summary>
+    public void TriggerEndOfTurnEffects(IEnumerable<BattleEntity> entities)
+    {
+        if (mapType == MapEffectType.PlainField) return;
+        if (specialCells == null || specialCells.Count == 0) return;
+
+        if (mapType == MapEffectType.CrystalMeadow)
+        {
+            foreach (var e in entities)
+            {
+                if (e == null || e.CurrentHp <= 0) continue;
+                if (!specialCells.Contains(e.GridPos)) continue;
+
+                int healAmt = Mathf.Max(1, Mathf.RoundToInt(e.Data.hp * 0.1f));
+                e.HealHp(healAmt);
+                DamagePopup.CreateStatus(e.transform.position, $"+{healAmt}");
+                Debug.Log($"[MapEffect] CrystalMeadow hồi {healAmt} HP cho {e.Data.thingName}");
+            }
+        }
+    }
 
 }

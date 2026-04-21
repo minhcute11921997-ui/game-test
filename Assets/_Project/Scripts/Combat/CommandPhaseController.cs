@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class CommandPhaseController : MonoBehaviour
 {
@@ -10,21 +11,24 @@ public class CommandPhaseController : MonoBehaviour
 
     private BattleEntity _selectedEntity;
     private GridPos _pendingMove;
-    private List<GridPos> _validMoveCells = new();
-    private List<GridPos> _validAttackCells = new();
+    private List<GridPos> _validMoveCells   = new List<GridPos>();
+    private List<GridPos> _validAttackCells = new List<GridPos>();
 
-    private List<BattleEntity> _playerEntities = new();
+    private List<BattleEntity> _playerEntities = new List<BattleEntity>();
     private int _currentUnitIndex = 0;
 
     // Theo dõi ô chuột đang hover để cập nhật AoE preview
     private GridPos _lastHoverPos = new GridPos(-999, -999);
+
+    /// <summary>Sprint 8: label hiện mũi tên tương khắc khi hover. Kéo vào Inspector.</summary>
+    [SerializeField] TextMeshProUGUI typeArrowLabel;
 
     void Awake() => Instance = this;
 
     // ── Public API ────────────────────────────────────────────────
     public void BeginInput()
     {
-        _playerEntities = FindPlayerEntities();
+        _playerEntities   = FindPlayerEntities();
         _currentUnitIndex = 0;
         SelectUnit(_playerEntities.Count > 0 ? _playerEntities[0] : null);
     }
@@ -43,8 +47,9 @@ public class CommandPhaseController : MonoBehaviour
     {
         if (entity == null) return;
         _selectedEntity = entity;
-        _step = InputStep.SelectMove;
-        _lastHoverPos = new GridPos(-999, -999);
+        _step           = InputStep.SelectMove;
+        _lastHoverPos   = new GridPos(-999, -999);
+        SetTypeArrow("");
         ShowMoveHighlight(entity.GridPos);
         Debug.Log($"[Command] Chọn {entity.name} tại {entity.GridPos} — Chọn ô di chuyển");
     }
@@ -59,7 +64,7 @@ public class CommandPhaseController : MonoBehaviour
     List<GridPos> GetReachableCells(GridPos origin, int range, int teamId)
     {
         var result = new List<GridPos>();
-        var cfg = BattleGridManager.Instance.config;
+        var cfg    = BattleGridManager.Instance.config;
         for (int dc = -range; dc <= range; dc++)
             for (int dr = -range; dr <= range; dr++)
             {
@@ -78,18 +83,18 @@ public class CommandPhaseController : MonoBehaviour
     {
         _validAttackCells = GetAttackableCells(from, _selectedEntity.TeamId);
         BattleGridManager.Instance.ShowHighlight(_validAttackCells);
-        _lastHoverPos = new GridPos(-999, -999); // reset để force refresh hover
+        _lastHoverPos = new GridPos(-999, -999);
     }
 
     List<GridPos> GetAttackableCells(GridPos from, int teamId)
     {
-        var result = new List<GridPos>();
-        var cfg = BattleGridManager.Instance.config;
+        var result   = new List<GridPos>();
+        var cfg      = BattleGridManager.Instance.config;
         int colStart = teamId == 0 ? cfg.RightMinCol : 0;
-        int colEnd = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
+        int colEnd   = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
         for (int c = colStart; c <= colEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
-                result.Add(new GridPos(c, r)); // highlight tất cả ô địch có thể nhắm
+                result.Add(new GridPos(c, r));
         return result;
     }
 
@@ -100,7 +105,7 @@ public class CommandPhaseController : MonoBehaviour
 
         GridPos hoverPos = GetMouseGridPos();
 
-        // === HOVER: cập nhật AoE preview khi di chuột ===
+        // === HOVER: cập nhật AoE preview + type arrow khi di chuột ===
         if (_step == InputStep.SelectAttack && !hoverPos.Equals(_lastHoverPos))
         {
             _lastHoverPos = hoverPos;
@@ -111,30 +116,48 @@ public class CommandPhaseController : MonoBehaviour
 
         switch (_step)
         {
-            case InputStep.SelectMove: HandleMoveSelection(hoverPos); break;
+            case InputStep.SelectMove:   HandleMoveSelection(hoverPos);   break;
             case InputStep.SelectAttack: HandleAttackSelection(hoverPos); break;
         }
     }
 
-    // ── Hover AoE preview ─────────────────────────────────────────
+    // ── Hover AoE preview + type arrow ───────────────────────────
     void UpdateAoEPreview(GridPos hoverPos)
     {
-        MoveData move = _selectedEntity.GetMove();
+        MoveData move = _selectedEntity?.GetMove();
         if (move == null) return;
 
         var grid = BattleGridManager.Instance;
 
-        // Nếu chuột nằm trong vùng tấn công hợp lệ → hiện AoE shape
         if (_validAttackCells.Contains(hoverPos))
         {
             var aoeCells = grid.GetAoECells(hoverPos, move.shape, _pendingMove);
             grid.ShowAoEPreview(aoeCells);
+
+            // ── Sprint 8: mũi tên tương khắc ────────────────────
+            var entityAtCell = grid.GetEntityAt(hoverPos);
+            if (entityAtCell != null && entityAtCell.TeamId != _selectedEntity.TeamId)
+            {
+                float mult = CombatCalculator.GetTypeMultiplier(move.elementType, entityAtCell.Data.elementType);
+                if (mult >= 2f)            SetTypeArrow("↑", Color.green);
+                else if (mult <= 0f)       SetTypeArrow("✕", Color.gray);
+                else if (mult < 1f)        SetTypeArrow("↓", Color.red);
+                else                       SetTypeArrow("", Color.white);
+            }
+            else SetTypeArrow("");
         }
         else
         {
-            // Chuột ra ngoài vùng → hiện lại highlight vùng tấn công bình thường
             grid.ShowHighlight(_validAttackCells);
+            SetTypeArrow("");
         }
+    }
+
+    void SetTypeArrow(string text, Color? color = null)
+    {
+        if (typeArrowLabel == null) return;
+        typeArrowLabel.text  = text;
+        typeArrowLabel.color = color ?? Color.white;
     }
 
     // ── Click: chọn ô di chuyển ───────────────────────────────────
@@ -146,7 +169,7 @@ public class CommandPhaseController : MonoBehaviour
             return;
         }
         _pendingMove = clicked;
-        _step = InputStep.SelectAttack;
+        _step        = InputStep.SelectAttack;
         ShowAttackHighlight(_pendingMove);
         Debug.Log($"[Command] Di chuyển đến {_pendingMove} — Chọn ô tấn công");
     }
@@ -155,6 +178,7 @@ public class CommandPhaseController : MonoBehaviour
     void HandleAttackSelection(GridPos clicked)
     {
         BattleGridManager.Instance.ClearHighlight();
+        SetTypeArrow("");
 
         BattleCommand cmd;
         if (_validAttackCells.Contains(clicked))
@@ -172,22 +196,33 @@ public class CommandPhaseController : MonoBehaviour
 
         _currentUnitIndex++;
         if (_currentUnitIndex < _playerEntities.Count)
+        {
+            // Còn unit khác chưa nhập lệnh → tiếp tục
             SelectUnit(_playerEntities[_currentUnitIndex]);
-
-        SubmitEnemyCommand();
+        }
+        else
+        {
+            // Tất cả player đã chọn lệnh → AI quyết định cho toàn bộ enemy
+            SubmitEnemyCommands();
+        }
     }
 
-    // ── Enemy AI (placeholder) ────────────────────────────────────
-    void SubmitEnemyCommand()
+    // ── Sprint 5: Enemy AI thực sự ────────────────────────────────
+    void SubmitEnemyCommands()
     {
+        var enemies = new List<BattleEntity>();
+        var players = new List<BattleEntity>();
+
         foreach (var e in FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude))
         {
-            if (e.TeamId == 1)
-            {
-                var cmd = BattleCommand.MoveOnly(e.GridPos, e.GridPos);
-                BattlePhaseManager.Instance.SubmitCommand(e, cmd);
-                break;
-            }
+            if (e.TeamId == 1) enemies.Add(e);
+            else               players.Add(e);
+        }
+
+        foreach (var enemy in enemies)
+        {
+            var cmd = EnemyAI.DecideCommand(enemy, players, BattleGridManager.Instance);
+            BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
         }
     }
 
