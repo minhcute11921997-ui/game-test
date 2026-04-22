@@ -17,6 +17,7 @@ MonoBehaviour:
   battlePrefab: {fileID: 852538494185195702, guid: f34615c31d2da6f43b7dde22d6bb1fee, type: 3}
   spawnWeight: 50
   elementType: 5
+  aiPersonality: 2
   hp: 30
   attack: 25
   defense: 15

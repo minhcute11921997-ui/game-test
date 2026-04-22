@@ -17,11 +17,14 @@ MonoBehaviour:
   battlePrefab: {fileID: 852538494185195702, guid: f34615c31d2da6f43b7dde22d6bb1fee, type: 3}
   spawnWeight: 50
   elementType: 0
+  aiPersonality: 3
   hp: 20
   attack: 15
   defense: 15
   spAtk: 15
   spDef: 15
   speed: 10
+  level: 1
+  luck: 0
   defaultMove: {fileID: 11400000, guid: 7648ac39ba60b244fb56b45296885e40, type: 2}
   moveRange: 1

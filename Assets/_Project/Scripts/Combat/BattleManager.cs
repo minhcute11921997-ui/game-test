@@ -1,14 +1,9 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class BattleManager : MonoBehaviour
 {
     public GameObject fallbackPrefab;
-    public List<BattleEntity> GetPlayerEntities() =>
-    _allEntities.Where(e => e.Team == 0).ToList();
 
-    public List<BattleEntity> GetEnemyEntities() =>
-    _allEntities.Where(e => e.Team == 1).ToList();
     void Start()
     {
         ThingData player = RuntimeGameState.ActiveThing;
@@ -39,8 +34,8 @@ public class BattleManager : MonoBehaviour
             var hpBarGo = Instantiate(hpBarPrefab);
             var hpBar = hpBarGo.GetComponent<EntityHpBar>();
             hpBar.Init(entity.transform);
-            hpBar.SetHp(data.hp, data.hp);   // hiện đầy máu lúc spawn
-            entity.hpBar = hpBar;             // gắn vào entity để TakeDamage cập nhật
+            hpBar.SetHp(data.hp, data.hp);
+            entity.hpBar = hpBar;
         }
         else
         {

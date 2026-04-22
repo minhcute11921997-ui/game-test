@@ -59,7 +59,6 @@
     <Compile Include="Assets\_Project\Scripts\World\Encounters\EncounterProjectile.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
     <Compile Include="Assets\_Project\Scripts\SetStarterThing.cs" />
-    <Compile Include="Assets\_Project\Scripts\Combat\EnemyAI.cs" />
     <Compile Include="Assets\_Project\TestLoadBattle.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattlePhaseManager.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\GrassZoneManager.cs" />
