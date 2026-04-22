@@ -1,6 +1,6 @@
 # Tiến Độ Dự Án
 
----
+***
 
 ## ✅ Các Tính Năng Đã Hoàn Thiện
 
@@ -26,7 +26,7 @@
 - [x] `RuntimeGameState.Party` — danh sách Thing của người chơi
 - [x] `RuntimeGameState.ActiveThing` — helper lấy Thing đầu tiên trong party
 - [x] `SetStarterThing` — set Thing mặc định vào Party khi bắt đầu game
-- [x] Xóa `GlobalPlayerBridge` — không còn dùng nữa, tất cả tập trung về `RuntimeGameState`
+- [x] Xóa `GlobalPlayerBridge` — không còn dùng nữa, tất trung về `RuntimeGameState`
 - [x] Xóa `BattlePlayerLoader` + `BattleEnemyLoader` — không còn cần, `BattleManager` xử lý spawn
 
 ### Battle — Spawn
@@ -82,7 +82,7 @@
 - [x] **`CheckBattleEndThenLoop()`** — sau JudgePhase chờ 0.5s cho popup kịp hiện, rồi check kết thúc hoặc loop lượt mới
 
 ### Battle — GDD Combat System *(Sprint 4 — hoàn thành)*
-- [x] **HP Formula V2** — `MaxHP = floor(Base×8×Level/100) + Level + 150`; cho ra ~730–1210 khi base 60–120 lv100
+- [x] **HP Formula V2** — `MaxHP = floor(Base×8×Level/100) + Level + 150`
 - [x] **Damage Formula chuẩn GDD** — `BaseDmg = floor(((2×Level/5+2)×Power×Atk/Def)/10)`
 - [x] **STAB x1.5** — (cũ x1.2)
 - [x] **RNG 0.9–1.0** — (cũ ±5%)
@@ -93,9 +93,17 @@
 - [x] **AoE Falloff 2×2** — RNG kép: chung×(0.85–1.0) → tổng 0.765–1.0
 - [x] **`CombatCalculator` refactor** — thêm `CalculateMaxHp()`, `CalculateCritRate()`, `CalculateEvasionRate()`, `GetStageMultiplier()`, `GetFalloff()`
 - [x] **`BattlePhaseManager` cập nhật** — gọi `CombatCalculator.Calculate()` với signature mới + tính `cellDistanceType` cho AoE 3×3
-- [x] **`BattleResultManager` đơn giản hóa** — kết thúc battle → về Overworld sau 0.6s, không Win/Lose Panel (dành cho PvP sau)
+- [x] **`BattleResultManager` đơn giản hóa** — kết thúc battle → về Overworld sau 0.6s
 
----
+### Battle — Terrain / Weather *(Sprint 5 — đang làm)*
+- [x] **Bẫy Gai (ThornTrap)** — entity bị khoá di chuyển đúng 1 lượt sau khi bước vào
+  - Fix: dùng `_lockedNextTurn` flag thay vì `SetCanMove(false)` trực tiếp
+  - Fix: `TerrainManager.OnTurnEnd()` chỉ gọi `LockMovementNextTurn()` khi `entity.CanMove == true` (tránh khoá mãi)
+- [x] **Chiêu Cross (AttackShape.Cross)** — 4 hướng Đông/Tây/Bắc/Nam + `aoeRadius` tuỳ chỉnh số ô mỗi hướng
+  - `GetAoECells()` dùng vòng lặp `for i = 1 to aoeRadius` theo từng hướng
+  - `aoeRadius` là tham số của method, không phải `move.aoeRadius`
+
+***
 
 ## 🔧 Cấu Hình Kỹ Thuật Hiện Tại
 
@@ -110,7 +118,7 @@
 | Camera Size | ~4.8 (tự tính qua FitCamera) |
 | Camera Position | X=9, Y=4, Z=-10 |
 
----
+***
 
 ## 📁 Files Quan Trọng
 
@@ -119,21 +127,22 @@
 | `GridPos.cs` | `Scripts/Combat/` | Struct tọa độ ô lưới |
 | `BattleGridConfig.cs` | `Scripts/Combat/` | ScriptableObject config lưới |
 | `BattleGridManager.cs` | `Scripts/Combat/` | Manager xây & quản lý lưới, AoE cells, grid mờ |
-| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle, TakeDamage, GetMove, HP bar, Level property |
+| `BattleEntity.cs` | `Scripts/Combat/` | Component Thing trong battle — **đã có `LockMovementNextTurn()` và `_lockedNextTurn`** |
 | `BattleManager.cs` | `Scripts/Combat/` | Spawn 2 phe + HP bar từ RuntimeGameState |
 | `BattlePhaseManager.cs` | `Scripts/Combat/` | Quản lý vòng đời phase, smooth move, judge damage với GDD formula |
 | `BattleResultManager.cs` | `Scripts/Combat/` | Kiểm tra thắng/thua, về Overworld sau 0.6s |
 | `CommandPhaseController.cs` | `Scripts/Combat/` | Input người chơi + AoE hover preview |
 | `BattleCommand.cs` | `Scripts/Combat/` | Data lệnh mỗi lượt |
 | `CombatCalculator.cs` | `Scripts/Combat/` | GDD combat: HP V2, damage formula, STAB, RNG, AoE falloff, stage, crit, evasion |
+| `TerrainManager.cs` | `Scripts/Combat/` | Xử lý hiệu ứng ô địa hình cuối lượt |
 | `DamagePopup.cs` | `Scripts/UI/` | Floating damage number, fade out 0.8s |
 | `EntityHpBar.cs` | `Scripts/UI/` | HP bar World Space theo đầu entity |
-| `MoveData.cs` | `Scripts/Data/` | ScriptableObject chiêu thức (hệ, shape, power) |
+| `MoveData.cs` | `Scripts/Data/` | ScriptableObject chiêu thức (hệ, shape, power, aoeRadius) |
 | `ThingData.cs` | `Scripts/Data/` | ScriptableObject stats Thing (spAtk, spDef, elementType, level, luck) |
 | `RuntimeGameState.cs` | `Scripts/Core/` | Bridge data Overworld → Battle |
 | `SetStarterThing.cs` | `Scripts/` | Set Thing mặc định khi bắt đầu |
 
----
+***
 
 ## 📦 Assets/Resources/ (Prefabs load bằng code)
 
@@ -142,12 +151,12 @@
 | `DamagePopup.prefab` | World Space Canvas + TMP text, gắn script `DamagePopup` |
 | `HpBar.prefab` | World Space Canvas + Fill Image, gắn script `EntityHpBar` |
 
----
+***
 
-## 🔜 Việc Tiếp Theo (Sprint 5)
+## 🔜 Việc Tiếp Theo (Sprint 5 — còn lại)
 
 ### Ưu tiên cao
-- [ ] **Enemy AI thực sự** — địch tự chọn ô di chuyển gần nhất + tấn công Thing khắc hệ nếu có
+- [ ] **Enemy AI thực sự** — địch tự chọn ô di chuyển gần nhất + tấn công Thing khắc hệ nếu có, thêm thành 4 chiêu cho các things 
 - [ ] **Animation tấn công** — hit flash + knockback nhỏ khi Thing bị đánh
 
 ### Ưu tiên trung bình
