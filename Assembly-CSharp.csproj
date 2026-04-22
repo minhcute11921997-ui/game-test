@@ -56,8 +56,10 @@
     <Compile Include="Assets\_Project\Scripts\World\Encounters\ShadowRoaming.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\GridPos.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleEntity.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\WeatherManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingCollection.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\EncounterProjectile.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\TerrainManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
     <Compile Include="Assets\_Project\Scripts\SetStarterThing.cs" />
     <Compile Include="Assets\_Project\TestLoadBattle.cs" />

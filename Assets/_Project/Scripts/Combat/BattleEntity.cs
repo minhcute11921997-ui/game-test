@@ -7,27 +7,46 @@ public class BattleEntity : MonoBehaviour
     [HideInInspector] public int TeamId;
     [HideInInspector] public EntityHpBar hpBar;
 
-    public int Speed { get; private set; }
-    public int MoveRange { get; private set; }
-    public ThingData Data { get; private set; }  // ← MỚI: expose để CombatCalculator dùng
+    public int Speed      { get; private set; }
+    public int MoveRange  { get; private set; }
+    public ThingData Data { get; private set; }
     public int Level => Data != null ? Data.level : 1;
 
     private int _currentHp;
     public int CurrentHp => _currentHp;
     private int _maxHp;
+    public int MaxHp => _maxHp;
+
+    // ── Bẫy Gai ──────────────────────────────────────────────────
+    private bool _canMove = true;
+    private bool _lockedNextTurn = false;
+
+    public bool CanMove => _canMove;
+
+    // Đánh dấu khoá lượt tới (TerrainManager gọi cuối lượt)
+    public void LockMovementNextTurn() => _lockedNextTurn = true;
+
+    // ── Từ Trường ─────────────────────────────────────────────────
+    private int _moveCountThisCycle = 0;
+
+    // ── Đầu lượt: áp khoá từ lượt trước rồi reset ────────────────
+    public void OnTurnStart()
+    {
+        _canMove = !_lockedNextTurn; // khoá nếu bị đánh dấu
+        _lockedNextTurn = false;     // xoá đánh dấu sau khi đã áp
+    }
 
     public void Init(ThingData data, int teamId)
     {
-        Data = data;
+        Data   = data;
         TeamId = teamId;
         _currentHp = data.hp;
-        _maxHp = data.hp;
-        Speed = (int)data.speed;
-        MoveRange = data.moveRange;
+        _maxHp     = data.hp;
+        Speed      = (int)data.speed;
+        MoveRange  = data.moveRange;
         Debug.Log($"[BattleEntity] Spawn {data.thingName} | Team {teamId} | HP {_currentHp} | Spd {Speed}");
     }
 
-    /// <summary>Lấy move của entity (hiện tại dùng defaultMove từ ThingData)</summary>
     public MoveData GetMove() => Data != null ? Data.defaultMove : null;
 
     public void TakeDamage(int dmg, bool isCrit = false)
@@ -36,13 +55,29 @@ public class BattleEntity : MonoBehaviour
         float hpPercent = (float)_currentHp / _maxHp * 100f;
         Debug.Log($"[HP] {Data.thingName}: {_currentHp}/{_maxHp} ({hpPercent:F0}%)");
 
-        // Sprint 3: hiện damage popup
         DamagePopup.Create(transform.position, dmg, isCrit);
 
-        // Sprint 3: cập nhật HP bar
         if (hpBar != null) hpBar.SetHp(_currentHp, _maxHp);
 
         if (_currentHp <= 0) Die();
+    }
+
+    // ── Sau khi di chuyển: đếm Từ Trường ─────────────────────────
+    public void OnMoved()
+    {
+        if (WeatherManager.Instance.IsMagneticFieldActive(TeamId))
+        {
+            _moveCountThisCycle++;
+            if (_moveCountThisCycle >= 3)
+                _moveCountThisCycle = 0;
+        }
+    }
+
+    public bool IsForcedStillByMagnet()
+    {
+        if (!WeatherManager.Instance.IsMagneticFieldActive(TeamId))
+            return false;
+        return _moveCountThisCycle == 2;
     }
 
     void Die()

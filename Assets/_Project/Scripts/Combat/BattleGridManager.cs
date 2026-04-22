@@ -221,11 +221,10 @@ public class BattleGridManager : MonoBehaviour
         return result;
     }
 
-    public List<GridPos> GetAoECells(GridPos centerPos, AttackShape shape, GridPos attackerPos)
+    public List<GridPos> GetAoECells(GridPos centerPos, AttackShape shape, GridPos attackerPos, int aoeRadius = 1)
     {
         var result = new List<GridPos>();
         var cfg = config;
-
         switch (shape)
         {
             case AttackShape.Single:
@@ -233,11 +232,14 @@ public class BattleGridManager : MonoBehaviour
                 break;
 
             case AttackShape.Cross:
-                result.Add(centerPos);
-                result.Add(new GridPos(centerPos.col + 1, centerPos.row));
-                result.Add(new GridPos(centerPos.col - 1, centerPos.row));
-                result.Add(new GridPos(centerPos.col, centerPos.row + 1));
-                result.Add(new GridPos(centerPos.col, centerPos.row - 1));
+                result.Add(centerPos); // tâm
+                for (int i = 1; i <= aoeRadius; i++)  // mỗi hướng đi xa i ô
+                {
+                    result.Add(new GridPos(centerPos.col + i, centerPos.row)); // Đông
+                    result.Add(new GridPos(centerPos.col - i, centerPos.row)); // Tây
+                    result.Add(new GridPos(centerPos.col, centerPos.row + i)); // Bắc
+                    result.Add(new GridPos(centerPos.col, centerPos.row - i)); // Nam
+                }
                 break;
 
             case AttackShape.Square2x2:
@@ -284,6 +286,11 @@ public class BattleGridManager : MonoBehaviour
             tilemapHighlight.SetTile(new Vector3Int(p.col, p.row, 0), tileHighlight);
     }
 
-    
+public List<BattleEntity> GetAllEntities()
+{
+    return new List<BattleEntity>(_occupied.Values);
+}
+
+
 
 }
