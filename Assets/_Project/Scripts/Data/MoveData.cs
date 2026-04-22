@@ -14,11 +14,22 @@ public enum ElementType
     [InspectorName("Quang (Sáng)")] Light = 8,
     [InspectorName("Ám (Tối)")]   Dark    = 9,
 }
+
+public enum EnvironmentEffect
+{
+    [InspectorName("Không có")]          None,
+    [InspectorName("Mưa (Thủy +, Hỏa -)")] Rain,
+    [InspectorName("Nắng gắt (Hỏa +, Thủy -)")] HarshSun,
+    [InspectorName("Bão cát (Thổ +, chảy máu cuối lượt)")] Sandstorm,
+    [InspectorName("Sương mù (Độ chính xác -)")] Fog,
+    [InspectorName("Giông tố (Lôi +, Bay -)")] Thunderstorm,
+}
 public enum MoveCategory
 {
     [InspectorName("Vật Lý")]   Physical,
     [InspectorName("Đặc Biệt")] Special,
     [InspectorName("Trạng Thái")] Status,
+    [InspectorName("Môi Trường")] Environment,
 }
 
 public enum AttackShape
@@ -39,5 +50,8 @@ public class MoveData : ScriptableObject
     public AttackShape shape = AttackShape.Single;   // ← MỚI
     [Range(0, 200)] public int basePower = 40;
     [Range(0, 100)] public int accuracy = 100;
-    public int pp = 20;
+    public int pp = 10;
+    [Header("Môi Trường (chỉ dùng khi category = Environment)")]
+    public EnvironmentEffect envEffect = EnvironmentEffect.None;
+    [Range(1, 5)] public int envDuration = 3;
 }
