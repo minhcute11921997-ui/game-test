@@ -43,6 +43,7 @@
     <UnityVersion>6000.4.3f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Analyzer Include="C:\Users\Administrator\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.1\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="E:\unity\6000.4.3f1-x86_64\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="E:\unity\6000.4.3f1-x86_64\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="E:\unity\6000.4.3f1-x86_64\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
@@ -58,10 +59,12 @@
     <Compile Include="Assets\_Project\Scripts\World\Encounters\EncounterProjectile.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
     <Compile Include="Assets\_Project\Scripts\SetStarterThing.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\EnemyAI.cs" />
     <Compile Include="Assets\_Project\TestLoadBattle.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattlePhaseManager.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\GrassZoneManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerMovement.cs" />
+    <Compile Include="Assets\_Project\Scripts\Combat\AIPersonality.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CommandPhaseController.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CombatCalculator.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />

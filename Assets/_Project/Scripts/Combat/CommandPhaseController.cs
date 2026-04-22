@@ -179,18 +179,50 @@ public class CommandPhaseController : MonoBehaviour
 
     // ── Enemy AI (placeholder) ────────────────────────────────────
     void SubmitEnemyCommand()
-    {
-        foreach (var e in FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude))
-        {
-            if (e.TeamId == 1)
-            {
-                var cmd = BattleCommand.MoveOnly(e.GridPos, e.GridPos);
-                BattlePhaseManager.Instance.SubmitCommand(e, cmd);
-                break;
-            }
-        }
-    }
+{
+    // Lấy tất cả player entities (TeamId == 0)
+    var playerEntities = new List<BattleEntity>();
+    foreach (var e in FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude))
+        if (e.TeamId == 0) playerEntities.Add(e);
 
+    // Xử lý từng enemy (TeamId == 1) — không break như placeholder cũ
+    foreach (var enemy in FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude))
+    {
+        if (enemy.TeamId != 1) continue;
+
+        // 1. Tìm target: player HP thấp nhất
+        BattleEntity target = null;
+        foreach (var p in playerEntities)
+            if (target == null || p.CurrentHp < target.CurrentHp) target = p;
+
+        if (target == null)
+        {
+            BattlePhaseManager.Instance.SubmitCommand(enemy, BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos));
+            continue;
+        }
+
+        // 2. Tìm ô di chuyển gần target nhất (trong vùng TeamId==1)
+        var moveCells = GetReachableCells(enemy.GridPos, enemy.MoveRange, enemy.TeamId);
+        GridPos bestMove = enemy.GridPos;
+        int bestDist = int.MaxValue;
+        foreach (var cell in moveCells)
+        {
+            int dist = Mathf.Abs(cell.col - target.GridPos.col) + Mathf.Abs(cell.row - target.GridPos.row);
+            if (dist < bestDist) { bestDist = dist; bestMove = cell; }
+        }
+
+        // 3. Tìm ô tấn công: lấy ô của target nếu hợp lệ, ngược lại bỏ qua
+        var attackCells = GetAttackableCells(bestMove, enemy.TeamId);
+        GridPos attackTarget = target.GridPos;
+
+        BattleCommand cmd = attackCells.Contains(attackTarget)
+            ? BattleCommand.MoveAndAttack(bestMove, attackTarget)
+            : BattleCommand.MoveOnly(enemy.GridPos, bestMove);
+
+        BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
+        Debug.Log($"[EnemyAI] {enemy.name} → di chuyển {bestMove}, tấn công {attackTarget}");
+    }
+}
     // ── Helper: lấy GridPos từ vị trí chuột ─────────────────────
     GridPos GetMouseGridPos()
     {

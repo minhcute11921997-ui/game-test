@@ -1,9 +1,14 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BattleManager : MonoBehaviour
 {
     public GameObject fallbackPrefab;
+    public List<BattleEntity> GetPlayerEntities() =>
+    _allEntities.Where(e => e.Team == 0).ToList();
 
+    public List<BattleEntity> GetEnemyEntities() =>
+    _allEntities.Where(e => e.Team == 1).ToList();
     void Start()
     {
         ThingData player = RuntimeGameState.ActiveThing;

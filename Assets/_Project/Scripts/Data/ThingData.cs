@@ -2,6 +2,7 @@ using UnityEngine;
 
 
 [CreateAssetMenu(fileName = "NewThing", menuName = "Game/Thing Data")]
+
 public class ThingData : ScriptableObject
 {
     public string thingName;
@@ -15,6 +16,9 @@ public class ThingData : ScriptableObject
     public ElementType elementType = ElementType.Neutral;
 
     [Header("Chỉ số chiến đấu (Stats)")]
+
+    [Header("AI")]
+public AIPersonality aiPersonality = AIPersonality.Aggressive;
     public int hp = 100;
     public int attack = 20;
     public int defense = 15;
