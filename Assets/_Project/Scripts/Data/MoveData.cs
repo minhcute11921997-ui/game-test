@@ -3,17 +3,31 @@ using UnityEngine;
 
 public enum ElementType
 {
-    Neutral = 0, Fire = 1, Wood = 2, Water = 3, Earth = 4, Thunder = 5, Wind = 6, Ice = 7, Light = 8, Dark = 9
+    [InspectorName("Trung Lập")]   Neutral = 0,
+    [InspectorName("Hỏa (Lửa)")]  Fire    = 1,
+    [InspectorName("Mộc (Cây)")]  Wood    = 2,
+    [InspectorName("Thủy (Nước)")] Water  = 3,
+    [InspectorName("Thổ (Đất)")]  Earth   = 4,
+    [InspectorName("Lôi (Sấm)")]  Thunder = 5,
+    [InspectorName("Phong (Gió)")] Wind   = 6,
+    [InspectorName("Băng (Đá)")]  Ice     = 7,
+    [InspectorName("Quang (Sáng)")] Light = 8,
+    [InspectorName("Ám (Tối)")]   Dark    = 9,
 }
-public enum MoveCategory { Physical, Special, Status }
+public enum MoveCategory
+{
+    [InspectorName("Vật Lý")]   Physical,
+    [InspectorName("Đặc Biệt")] Special,
+    [InspectorName("Trạng Thái")] Status,
+}
 
 public enum AttackShape
 {
-    Single,     // 1x1 — ô đúng vào chỗ click
-    Cross,      // Hình chữ thập: trên/dưới/trái/phải + tâm
-    Square2x2,  // 2x2 xung quanh tâm
-    Square3x3,  // 3x3 xung quanh tâm
-    Line,       // Đường thẳng từ attacker đến target
+    [InspectorName("Đơn (1 ô)")]       Single,
+    [InspectorName("Chữ Thập")]        Cross,
+    [InspectorName("Vuông 2×2")]       Square2x2,
+    [InspectorName("Vuông 3×3")]       Square3x3,
+    [InspectorName("Đường Thẳng")]     Line,
 }
 
 [CreateAssetMenu(fileName = "NewMove", menuName = "Game/Move Data")]
