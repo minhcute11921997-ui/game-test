@@ -39,10 +39,10 @@ public static class CombatCalculator
     // ─── Kết quả trả về ─────────────────────────────────────────────────────
     public struct DamageResult
     {
-        public int   damage;          // Sát thương cuối (đã nhân Falloff)
+        public int damage;          // Sát thương cuối (đã nhân Falloff)
         public float typeMultiplier;  // 0.0 / 0.5 / 1.0 / 2.0
-        public bool  isStab;
-        public bool  isCritical;
+        public bool isStab;
+        public bool isCritical;
     }
 
     // ─── HP Formula (V2) ────────────────────────────────────────────────────
@@ -90,13 +90,13 @@ public static class CombatCalculator
     ///   2 = rìm (4 góc chéo trong 3x3)
     /// </summary>
     public static DamageResult Calculate(
-        ThingData   attacker,
-        ThingData   defender,
-        MoveData    move,
-        int         attackerLevel,
-        int         attackerLuck,
-        AttackShape aoeShape         = AttackShape.Single,
-        int         cellDistanceType = 0)
+        ThingData attacker,
+        ThingData defender,
+        MoveData move,
+        int attackerLevel,
+        int attackerLuck,
+        AttackShape aoeShape = AttackShape.Single,
+        int cellDistanceType = 0)
     {
         // 1. Stat tấn công / phòng thủ
         float atkStat = (move.category == MoveCategory.Physical)
@@ -109,7 +109,7 @@ public static class CombatCalculator
             ((2f * attackerLevel / 5f + 2f) * move.basePower * (atkStat / defStat)) / 10f);
 
         // 3. STAB x1.5
-        bool  isStab   = move.elementType == attacker.elementType
+        bool isStab = move.elementType == attacker.elementType
                       && attacker.elementType != ElementType.Neutral;
         float stabMult = isStab ? 1.2f : 1.0f;
 
@@ -119,7 +119,7 @@ public static class CombatCalculator
             return new DamageResult { damage = 0, typeMultiplier = 0f, isStab = isStab, isCritical = false };
 
         // 5. Chí mạng
-        bool  isCrit   = Random.value < (CalculateCritRate(attackerLuck) / 100f);
+        bool isCrit = Random.value < (CalculateCritRate(attackerLuck) / 100f);
         float critMult = isCrit ? 1.5f : 1.0f;
 
         // 6. RNG chung 0.9 – 1.0
@@ -133,10 +133,10 @@ public static class CombatCalculator
 
         return new DamageResult
         {
-            damage         = damage,
+            damage = damage,
             typeMultiplier = typeMult,
-            isStab         = isStab,
-            isCritical     = isCrit
+            isStab = isStab,
+            isCritical = isCrit
         };
     }
 
