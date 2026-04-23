@@ -121,7 +121,7 @@ private readonly HashSet<BattleEntity> _enteredThisTurn = new();
             case TerrainEffectType.BurnMark:
     if (!_enteredThisTurn.Contains(entity)) // ← chỉ damage nếu KHÔNG vừa bước vào
     {
-        int dotDmg = Mathf.Max(1, Mathf.FloorToInt(entity.MaxHp * 0.05f));
+        int dotDmg = Mathf.Max(1, Mathf.FloorToInt(entity.MaxHp * 0.10f));
         float typeMult = CombatCalculator.GetTypeMultiplier(ElementType.Fire, entity.Data.elementType);
         entity.TakeDamage(Mathf.Max(1, Mathf.FloorToInt(dotDmg * typeMult)));
         Debug.Log($"[Terrain] {entity.name} nhận DoT từ Vết Cháy");
