@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\_Project\Scripts\Combat\BattleGridconfig.cs" />
-    <Compile Include="Assets\_Project\Scripts\Data\AIPersonality.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerInteraction.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\RuntimeGameState.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\ShadowRoaming.cs" />

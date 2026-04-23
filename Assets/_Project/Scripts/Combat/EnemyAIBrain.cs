@@ -5,7 +5,9 @@ public static class EnemyAIBrain
 {
     // ── Entry point duy nhất ────────────────────────────────────────
     public static BattleCommand Decide(BattleEntity enemy, List<BattleEntity> players)
-{
+{   
+    
+    
     if (players.Count == 0)
         return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
 
@@ -20,9 +22,15 @@ public static class EnemyAIBrain
 
     enemy.SetChosenMove(chosenMove);
 
+    Debug.Log($"[AI] {enemy.Data.thingName} | Diff:{enemy.Data.aiDifficulty} | Arch:{enemy.Data.archetype}");
+    Debug.Log($"[AI] PickMove → {chosenMove?.moveName ?? "BỎ LƯỢT"}");
+    Debug.Log($"[AI] MoveTarget:{moveTarget} | AttackTarget:{attackTarget}");
+
     return (chosenMove != null && attackTarget.col >= 0)
         ? BattleCommand.MoveAndAttack(moveTarget, attackTarget)
         : BattleCommand.MoveOnly(enemy.GridPos, moveTarget);
+
+        
 }
 
     // ════════════════════════════════════════════════════════════════
@@ -32,7 +40,7 @@ public static class EnemyAIBrain
                              AIDifficulty diff, ThingArchetype archetype)
     {
         var moves = enemy.Data.moves;
-        if (moves == null || moves.Count == 0) return enemy.Data.defaultMove;
+if (moves.Count == 0) return null;
 
         switch (archetype)
         {
