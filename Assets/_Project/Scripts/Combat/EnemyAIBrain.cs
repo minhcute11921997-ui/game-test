@@ -373,7 +373,7 @@ public static class EnemyAIBrain
         }
         return inRange.Count > 0
             ? inRange[Random.Range(0, inRange.Count)]
-            : attackable.Count > 0 ? attackable[Random.Range(0, attackable.Count)] : new GridPos(-1, -1);
+            : attackable.Count > 0 ? attackable[Random.Range(0, attackable.Count)] : players[0].GridPos;
     }
 
     static BattleEntity NearestPlayer(BattleEntity enemy, List<BattleEntity> players)
