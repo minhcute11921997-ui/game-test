@@ -5,29 +5,25 @@ public static class EnemyAIBrain
 {
     // ── Entry point duy nhất ────────────────────────────────────────
     public static BattleCommand Decide(BattleEntity enemy, List<BattleEntity> players)
-    {
-        if (players.Count == 0)
-            return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
+{
+    if (players.Count == 0)
+        return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
 
-        AIDifficulty   diff      = enemy.Data.aiDifficulty;
-        ThingArchetype archetype = enemy.Data.archetype;
+    AIDifficulty   diff      = enemy.Data.aiDifficulty;
+    ThingArchetype archetype = enemy.Data.archetype;
 
-        // 1. Chọn chiêu (Archetype quyết định)
-        MoveData chosenMove = PickMove(enemy, players, diff, archetype);
+    MoveData chosenMove  = PickMove(enemy, players, diff, archetype);
+    GridPos  moveTarget  = PickMoveTarget(enemy, players, diff, archetype);
+    GridPos  attackTarget = chosenMove != null
+        ? PickAttackTarget(enemy, players, diff, archetype, moveTarget, chosenMove)
+        : new GridPos(-1, -1); // null move = bỏ lượt tấn công
 
-        // 2. Chọn moveTarget (Difficulty quyết định, Defender/Setup có override)
-        GridPos moveTarget = PickMoveTarget(enemy, players, diff, archetype);
+    enemy.SetChosenMove(chosenMove);
 
-        // 3. Chọn attackTarget (Difficulty quyết định, Setup có override với skill buff)
-        GridPos attackTarget = PickAttackTarget(enemy, players, diff, archetype, moveTarget, chosenMove);
-
-        // 4. Override chiêu đã chọn vào enemy (lưu tạm để BattlePhaseManager dùng)
-        enemy.SetChosenMove(chosenMove);
-
-        return attackTarget.col >= 0
-            ? BattleCommand.MoveAndAttack(moveTarget, attackTarget)
-            : BattleCommand.MoveOnly(enemy.GridPos, moveTarget);
-    }
+    return (chosenMove != null && attackTarget.col >= 0)
+        ? BattleCommand.MoveAndAttack(moveTarget, attackTarget)
+        : BattleCommand.MoveOnly(enemy.GridPos, moveTarget);
+}
 
     // ════════════════════════════════════════════════════════════════
     // CHỌN CHIÊU — theo Archetype trước, Difficulty filter sau
@@ -47,13 +43,12 @@ public static class EnemyAIBrain
                 return moves[Random.Range(0, moves.Count)];
 
             case ThingArchetype.Defender:
-                // Xen chiêu buff Def/SpDef sau mỗi 2 lượt damage liên tiếp
-                if (enemy.TurnCount % 3 == 2)
-                {
-                    var buffMove = FindStatusMove(moves, "def");
-                    if (buffMove != null) return buffMove;
-                }
-                return PickMoveByDifficulty(enemy, players, moves, diff);
+    if (enemy.TurnCount % 3 == 0 && enemy.TurnCount > 0) // ← đổi từ % 3 == 2
+    {
+        var buffMove = FindStatusMove(moves, "def");
+        if (buffMove != null) return buffMove;
+    }
+    return PickMoveByDifficulty(enemy, players, moves, diff);
 
             case ThingArchetype.Setup:
                 // 2 lượt đầu: luôn dùng buff/debuff
@@ -275,24 +270,27 @@ public static class EnemyAIBrain
     // ════════════════════════════════════════════════════════════════
 
     static List<GridPos> GetReachable(BattleEntity enemy)
-    {
-        var result = new List<GridPos>();
-        var cfg = BattleGridManager.Instance.config;
-        GridPos origin = enemy.GridPos;
-        int range = enemy.MoveRange;
-        for (int dc = -range; dc <= range; dc++)
-            for (int dr = -range; dr <= range; dr++)
-            {
-                int c = origin.col + dc, r = origin.row + dr;
-                if (!cfg.IsWalkable(c, r)) continue;
-                if (cfg.GetTeam(c) != enemy.TeamId) continue;
-                var pos = new GridPos(c, r);
-                if (BattleGridManager.Instance.IsOccupied(pos) && pos != origin) continue;
-                result.Add(pos);
-            }
-        if (result.Count == 0) result.Add(origin);
-        return result;
-    }
+{
+    var result = new List<GridPos>();
+    var cfg    = BattleGridManager.Instance.config;
+    GridPos origin = enemy.GridPos;
+    int range = enemy.MoveRange;
+
+    for (int dc = -range; dc <= range; dc++)
+        for (int dr = -range; dr <= range; dr++)
+        {
+            if (Mathf.Abs(dc) + Mathf.Abs(dr) > range) continue; // ← THÊM
+            int c = origin.col + dc, r = origin.row + dr;
+            if (!cfg.IsWalkable(c, r)) continue;
+            if (cfg.GetTeam(c) != enemy.TeamId) continue;
+            var pos = new GridPos(c, r);
+            if (BattleGridManager.Instance.IsOccupied(pos) && pos != origin) continue;
+            result.Add(pos);
+        }
+
+    if (result.Count == 0) result.Add(origin);
+    return result;
+}
 
     static List<GridPos> GetAttackable(GridPos from, int teamId)
     {
@@ -319,19 +317,18 @@ public static class EnemyAIBrain
     }
 
     static HashSet<GridPos> GetAllPlayerAoECells(List<BattleEntity> players)
+{
+    var result = new HashSet<GridPos>();
+    foreach (var p in players)
     {
-        var result = new HashSet<GridPos>();
-        // ULTRA biết trước AoE player → đọc từ command đã submit (cần BattlePhaseManager expose)
-        // Tạm dùng: tính AoE dựa trên chiêu defaultMove của player
-        foreach (var p in players)
-        {
-            MoveData move = p.Data.defaultMove;
-            if (move == null) continue;
-            var aoe = BattleGridManager.Instance.GetAoECells(p.GridPos, move.shape, p.GridPos, move.aoeRadius);
-            foreach (var cell in aoe) result.Add(cell);
-        }
-        return result;
+        MoveData move = p.GetMove(); // ← đổi từ p.Data.defaultMove
+        if (move == null) continue;
+        var aoe = BattleGridManager.Instance.GetAoECells(
+            p.GridPos, move.shape, p.GridPos, move.aoeRadius);
+        foreach (var cell in aoe) result.Add(cell);
     }
+    return result;
+}
 
     static BattleEntity FindFinishTarget(BattleEntity enemy, List<BattleEntity> players, MoveData move)
     {
