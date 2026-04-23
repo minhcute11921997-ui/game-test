@@ -18,7 +18,11 @@ public class CommandPhaseController : MonoBehaviour
 
     private GridPos _lastHoverPos = new GridPos(-999, -999);
 
-    void Awake() => Instance = this;
+    void Awake()
+{
+    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+    Instance = this;
+}
 
     // ── Public API ────────────────────────────────────────────────
     public void BeginInput()
@@ -170,19 +174,20 @@ public class CommandPhaseController : MonoBehaviour
     }
 
     // ── Enemy AI ──────────────────────────────────────────────────
-    void SubmitEnemyCommands()
-    {
-        var players = new List<BattleEntity>();
-        foreach (var e in FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude))
-            if (e.TeamId == 0) players.Add(e);
+   void SubmitEnemyCommands()
+{
+    var all = FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude);
+    var players = new List<BattleEntity>();
+    var enemies = new List<BattleEntity>();
+    foreach (var e in all)
+        (e.TeamId == 0 ? players : enemies).Add(e);
 
-        foreach (var enemy in FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude))
-        {
-            if (enemy.TeamId != 1) continue;
-            var cmd = EnemyAIBrain.Decide(enemy, players);
-            BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
-        }
+    foreach (var enemy in enemies)
+    {
+        var cmd = EnemyAIBrain.Decide(enemy, players);
+        BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
     }
+}
 
     // ── Helper ────────────────────────────────────────────────────
     GridPos GetMouseGridPos()

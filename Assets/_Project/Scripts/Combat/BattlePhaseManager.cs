@@ -14,7 +14,11 @@ public class BattlePhaseManager : MonoBehaviour
 
     [SerializeField] BattleResultManager resultManager;
 
-    void Awake() => Instance = this;
+    void Awake()
+{
+    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+    Instance = this;
+}
     void Start() => StartCoroutine(StartAfterSpawn());
 
     IEnumerator StartAfterSpawn()
@@ -49,7 +53,7 @@ public class BattlePhaseManager : MonoBehaviour
     }
 
     int GetActiveEntityCount()
-        => FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude).Length;
+         => _commands.Count;
 
     // ── Execution Phase ────────────────────────────────────────────
     IEnumerator BeginExecutionPhase()
@@ -230,21 +234,35 @@ public class BattlePhaseManager : MonoBehaviour
 
     // ── Cuối JudgePhase ───────────────────────────────────────────
     IEnumerator EndJudgePhase()
+{
+    yield return new WaitForSeconds(0.5f);
+
+    // ── Dọn dẹp entity đã chết trong JudgePhase ──────────────────
+    var deadEntities = new List<BattleEntity>();
+    foreach (var entity in BattleGridManager.Instance.GetAllEntities())
     {
-        yield return new WaitForSeconds(0.5f);
-
-        var allEntities = BattleGridManager.Instance.GetAllEntities();
-        TerrainManager.Instance.OnTurnEnd(allEntities);
-        WeatherManager.Instance.OnTurnEnd();
-
-        if (resultManager != null && resultManager.CheckBattleEnd())
-        {
-            CurrentPhase = BattlePhase.ResultPhase;
-            Debug.Log("[BattlePhase] === RESULT PHASE ===");
-        }
-        else
-        {
-            BeginCommandPhase();
-        }
+        if (entity.IsDead) deadEntities.Add(entity);
     }
+    foreach (var dead in deadEntities)
+        Destroy(dead.gameObject);
+
+    // Chờ 1 frame để Destroy thực sự có hiệu lực trước khi check result
+    yield return null;
+
+    // ── Hiệu ứng cuối lượt ───────────────────────────────────────
+    var allAlive = BattleGridManager.Instance.GetAllEntities();
+    TerrainManager.Instance.OnTurnEnd(allAlive);
+    WeatherManager.Instance.OnTurnEnd();
+
+    // ── Kiểm tra kết thúc trận ───────────────────────────────────
+    if (resultManager != null && resultManager.CheckBattleEnd())
+    {
+        CurrentPhase = BattlePhase.ResultPhase;
+        Debug.Log("[BattlePhase] === RESULT PHASE ===");
+    }
+    else
+    {
+        BeginCommandPhase();
+    }
+}
 }

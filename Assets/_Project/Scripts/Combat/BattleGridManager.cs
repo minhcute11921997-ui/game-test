@@ -30,6 +30,7 @@ public class BattleGridManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         if (tileGrid == null) tileGrid = CreateGridTile();
 

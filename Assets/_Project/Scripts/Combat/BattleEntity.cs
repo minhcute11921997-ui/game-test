@@ -113,10 +113,13 @@ public class BattleEntity : MonoBehaviour
     }
 
     // ── Chết ──────────────────────────────────────────────────────
-    void Die()
-    {
-        Debug.Log($"[Battle] {Data.thingName} bị hạ!");
-        BattleGridManager.Instance.RemoveEntity(GridPos);
-        Destroy(gameObject);
-    }
+    private bool _isDead = false;
+public bool IsDead => _isDead;    
+void Die()
+{
+    _isDead = true;
+    Debug.Log($"[Battle] {Data.thingName} bị hạ!");
+    BattleGridManager.Instance.RemoveEntity(GridPos);
+    // Không Destroy ngay — để EndJudgePhase() dọn dẹp sau
+}
 }

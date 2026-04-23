@@ -33,7 +33,7 @@ public class PlayerActions : MonoBehaviour
     {
         // 1. Đổi chế độ
         if (Input.GetKeyDown(KeyCode.Q)) currentMode = HuntingMode.Ball;
-        if (Input.GetKeyDown(KeyCode.E)) currentMode = HuntingMode.Gun;
+        if (Input.GetKeyDown(KeyCode.R)) currentMode = HuntingMode.Gun;
 
         // 2. Cập nhật vị trí hồng tâm theo chuột
         UpdateReticlePosition();

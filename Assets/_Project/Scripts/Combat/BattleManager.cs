@@ -3,7 +3,7 @@ using UnityEngine;
 public class BattleManager : MonoBehaviour
 {
     public GameObject fallbackPrefab;
-
+    [SerializeField] private GameObject hpBarPrefab; 
     void Start()
     {
         ThingData player = RuntimeGameState.ActiveThing;
@@ -28,7 +28,8 @@ public class BattleManager : MonoBehaviour
         grid.PlaceEntity(entity, new GridPos(col, row));
 
         // ── Sprint 3: spawn HP bar ──────────────────────────────
-        var hpBarPrefab = Resources.Load<GameObject>("HpBar");
+        
+
         if (hpBarPrefab != null)
         {
             var hpBarGo = Instantiate(hpBarPrefab);

@@ -52,8 +52,10 @@ public class GrassZoneManager : MonoBehaviour
             }
 
             yield return new WaitForSeconds(1f);
+            
         }
     }
+    void OnDestroy() => StopAllCoroutines();
 
     void SpawnThing()
     {

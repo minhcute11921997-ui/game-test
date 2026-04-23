@@ -7,7 +7,7 @@ using UnityEngine;
 /// Damage:  BaseDamage = floor(((2*Level/5 + 2) * Power * Atk/Def) / 10)
 ///          FinalDamage = BaseDamage * STAB * Weakness * Critical * RNG * Falloff
 ///
-/// STAB:     x1.5 nếu move cùng hệ với attacker (trừ Neutral)
+/// STAB:     x1.2 nếu move cùng hệ với attacker (trừ Neutral)
 /// Weakness: x2.0 / x1.0 / x0.5 / x0.0 (miễn dịch)
 /// Critical: 5% + Luck/10, nhân x1.5 khi trúng
 /// RNG:      0.9 – 1.0 (chung cho mọi chiêu)

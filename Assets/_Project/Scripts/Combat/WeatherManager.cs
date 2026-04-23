@@ -15,7 +15,11 @@ public class WeatherManager : MonoBehaviour
     // Mỗi phạm vi lưu 1 state (Both / TeamLeft / TeamRight)
     private readonly Dictionary<WeatherTarget, WeatherState> _states = new();
 
-    void Awake() => Instance = this;
+    void Awake()
+{
+    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+    Instance = this;
+}
 
     // ─── Áp thời tiết mới ───────────────────────────────────────────────────
     public void ApplyWeather(MoveData move)

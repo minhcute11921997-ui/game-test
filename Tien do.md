@@ -168,7 +168,7 @@
 
 ### Ưu tiên cao
 
-- [ ] Thêm ui chọn chiêu cho thing bên player
+- [ ] Thêm ui chọn chiêu cho thing bên player, add logic speed để cho thing nhanh hơn thì ra chiêu trước
 - [ ] **Animation tấn công** — hit flash + knockback nhỏ khi Thing bị đánh
 
 ### Ưu tiên trung bình
