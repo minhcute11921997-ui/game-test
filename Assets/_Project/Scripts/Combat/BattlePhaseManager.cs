@@ -53,7 +53,7 @@ public class BattlePhaseManager : MonoBehaviour
     }
 
     int GetActiveEntityCount()
-         => _commands.Count;
+    => BattleGridManager.Instance.GetAllEntities().Count;
 
     // ── Execution Phase ────────────────────────────────────────────
     IEnumerator BeginExecutionPhase()

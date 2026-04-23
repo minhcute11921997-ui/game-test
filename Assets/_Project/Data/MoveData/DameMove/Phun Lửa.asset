@@ -16,7 +16,7 @@ MonoBehaviour:
   elementType: 1
   category: 1
   shape: 1
-  aoeRadius: 5
+  aoeRadius: 2
   basePower: 10
   accuracy: 100
   pp: 10

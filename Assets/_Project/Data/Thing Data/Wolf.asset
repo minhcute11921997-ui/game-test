@@ -17,7 +17,7 @@ MonoBehaviour:
   battlePrefab: {fileID: 852538494185195702, guid: f34615c31d2da6f43b7dde22d6bb1fee, type: 3}
   spawnWeight: 50
   elementType: 6
-  aiDifficulty: 1
+  aiDifficulty: 3
   archetype: 0
   defaultMove: {fileID: 11400000, guid: 7648ac39ba60b244fb56b45296885e40, type: 2}
   moves:
@@ -32,4 +32,4 @@ MonoBehaviour:
   speed: 40
   level: 1
   luck: 0
-  moveRange: 2
+  moveRange: 1

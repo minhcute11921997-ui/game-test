@@ -61,6 +61,7 @@ public class BattleEntity : MonoBehaviour
     {
         _canMove        = !_lockedNextTurn;
         _lockedNextTurn = false;
+        _moveCountThisCycle = 0;
     }
 
     // ── Khoá di chuyển (TerrainManager gọi) ──────────────────────
@@ -120,6 +121,7 @@ void Die()
     _isDead = true;
     Debug.Log($"[Battle] {Data.thingName} bị hạ!");
     BattleGridManager.Instance.RemoveEntity(GridPos);
+    hpBar?.gameObject.SetActive(false);
     // Không Destroy ngay — để EndJudgePhase() dọn dẹp sau
 }
 }
