@@ -3,14 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BattlePhase
-{
-    Idle,
-    CommandPhase,
-    ExecutionPhase,
-    JudgePhase,
-    ResultPhase
-}
+public enum BattlePhase { Idle, CommandPhase, ExecutionPhase, JudgePhase, ResultPhase }
 
 public class BattlePhaseManager : MonoBehaviour
 {
@@ -22,7 +15,6 @@ public class BattlePhaseManager : MonoBehaviour
     [SerializeField] BattleResultManager resultManager;
 
     void Awake() => Instance = this;
-
     void Start() => StartCoroutine(StartAfterSpawn());
 
     IEnumerator StartAfterSpawn()
@@ -38,9 +30,11 @@ public class BattlePhaseManager : MonoBehaviour
         _commands.Clear();
         Debug.Log("[BattlePhase] === COMMAND PHASE ===");
 
-        // Reset trạng thái đầu lượt cho mọi entity
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
+        {
             entity.OnTurnStart();
+            entity.IncrementTurnCount(); // ← THÊM: Setup archetype đếm lượt
+        }
 
         CommandPhaseController.Instance.BeginInput();
     }
@@ -54,58 +48,58 @@ public class BattlePhaseManager : MonoBehaviour
             StartCoroutine(BeginExecutionPhase());
     }
 
-    int GetActiveEntityCount() => 2;
+    int GetActiveEntityCount()
+        => FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude).Length;
 
     // ── Execution Phase ────────────────────────────────────────────
     IEnumerator BeginExecutionPhase()
-{
-    CurrentPhase = BattlePhase.ExecutionPhase;
-    Debug.Log("[BattlePhase] === EXECUTION PHASE ===");
-
-    var grid = BattleGridManager.Instance;
-    var moveCoroutines = new List<Coroutine>();
-
-    // Dùng list entity để tránh lỗi CS1612 khi sửa moveTarget
-    var entities = new List<BattleEntity>(_commands.Keys);
-
-    foreach (var entity in entities)
     {
-        var cmd = _commands[entity];
-        GridPos targetPos = cmd.moveTarget;
+        CurrentPhase = BattlePhase.ExecutionPhase;
+        Debug.Log("[BattlePhase] === EXECUTION PHASE ===");
 
-        // Từ Trường
-        if (entity.IsForcedStillByMagnet())
+        var grid = BattleGridManager.Instance;
+        var moveCoroutines = new List<Coroutine>();
+        var entities = new List<BattleEntity>(_commands.Keys);
+
+        foreach (var entity in entities)
         {
-            Debug.Log($"[Weather] {entity.name} bị Từ Trường khoá");
-            targetPos = entity.GridPos;
+            var cmd = _commands[entity];
+            GridPos targetPos = cmd.moveTarget;
+
+            // Từ Trường
+            if (entity.IsForcedStillByMagnet())
+            {
+                Debug.Log($"[Weather] {entity.name} bị Từ Trường khoá");
+                targetPos = entity.GridPos;
+            }
+
+            // Bẫy Gai
+            if (!entity.CanMove)
+            {
+                Debug.Log($"[Terrain] {entity.name} bị Bẫy Gai khoá");
+                targetPos = entity.GridPos;
+            }
+
+            if (!targetPos.Equals(entity.GridPos))
+            {
+                entity.TrackMovement(targetPos); // ← THÊM: cập nhật LastMoveDir trước khi move
+                var co = StartCoroutine(grid.MoveEntitySmooth(entity, targetPos, null, 0.3f));
+                moveCoroutines.Add(co);
+            }
         }
 
-        // Bẫy Gai
-        if (!entity.CanMove)
+        foreach (var co in moveCoroutines)
+            yield return co;
+
+        // Trigger terrain + OnMoved
+        foreach (var entity in entities)
         {
-            Debug.Log($"[Terrain] {entity.name} bị Bẫy Gai khoá");
-            targetPos = entity.GridPos;
+            entity.OnMoved();
+            TerrainManager.Instance.OnEntityEnterCell(entity, entity.GridPos);
         }
 
-        if (!targetPos.Equals(entity.GridPos))
-        {
-            var co = StartCoroutine(grid.MoveEntitySmooth(entity, targetPos, null, 0.3f));
-            moveCoroutines.Add(co);
-        }
+        BeginJudgePhase();
     }
-
-    foreach (var co in moveCoroutines)
-        yield return co;
-
-    // Trigger terrain + OnMoved
-    foreach (var entity in entities)
-    {
-        entity.OnMoved();
-        TerrainManager.Instance.OnEntityEnterCell(entity, entity.GridPos);
-    }
-
-    BeginJudgePhase();
-}
 
     // ── Judge Phase ────────────────────────────────────────────────
     void BeginJudgePhase()
@@ -125,20 +119,24 @@ public class BattlePhaseManager : MonoBehaviour
             MoveData move = attacker.GetMove();
             if (move == null) continue;
 
-            // ── Chiêu Môi Trường: xử lý riêng, không tính damage thường
+            // ── Chiêu Môi Trường
             if (move.category == MoveCategory.Environment)
             {
                 HandleEnvironmentMove(attacker, cmd, move);
                 continue;
             }
 
-            // ── Bão Tuyết: thu nhỏ AoE trước khi tính
+            // ── Chiêu Status (buff/debuff): đếm buff cho AI enemy
+            if (move.category == MoveCategory.Status && attacker.TeamId == 1)
+                attacker.IncrementBuffCount(); // ← THÊM: ULTRA archetype dùng
+
+            // ── Bão Tuyết: thu nhỏ AoE
             AttackShape effectiveShape  = move.shape;
             int         effectiveRadius = move.aoeRadius;
             ApplyBlizzardEffect(attacker, ref effectiveShape, ref effectiveRadius);
 
             var cells = BattleGridManager.Instance.GetAoECells(
-    cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
+                cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
 
             foreach (var cell in cells)
             {
@@ -183,9 +181,8 @@ public class BattlePhaseManager : MonoBehaviour
         }
         else if (move.envCategory == EnvironmentCategory.Terrain)
         {
-            // Lấy các ô theo terrainShape từ attackTarget
             var cells = BattleGridManager.Instance.GetAoECells(
-    cmd.attackTarget, move.terrainShape, attacker.GridPos, 1);
+                cmd.attackTarget, move.terrainShape, attacker.GridPos, 1);
 
             foreach (var cell in cells)
                 TerrainManager.Instance.PlaceTerrain(cell, move);
@@ -207,20 +204,16 @@ public class BattlePhaseManager : MonoBehaviour
                 radius = Mathf.Max(1, radius - 1);
                 Debug.Log("[Weather] Bão Tuyết: Square3x3 → Square2x2");
                 break;
-
             case AttackShape.Square2x2:
                 shape  = AttackShape.Single;
                 radius = 1;
                 Debug.Log("[Weather] Bão Tuyết: Square2x2 → Single");
                 break;
-
             case AttackShape.Cross:
-    radius = Mathf.Max(0, radius - 1);
-    if (radius == 0) shape = AttackShape.Single;
-    Debug.Log($"[Weather] Bão Tuyết: Cross radius → {radius}");
-    break;
-
-            // Single và Line: giữ nguyên
+                radius = Mathf.Max(0, radius - 1);
+                if (radius == 0) shape = AttackShape.Single;
+                Debug.Log($"[Weather] Bão Tuyết: Cross radius → {radius}");
+                break;
         }
     }
 
@@ -228,27 +221,22 @@ public class BattlePhaseManager : MonoBehaviour
     int CalcDistType(AttackShape shape, GridPos cell, GridPos center)
     {
         if (shape != AttackShape.Square3x3) return 0;
-
         int dc = Mathf.Abs(cell.col - center.col);
         int dr = Mathf.Abs(cell.row - center.row);
-        if (dc == 0 && dr == 0) return 0;   // tâm
-        if (dc + dr == 1)       return 1;   // cận tâm
-        return 2;                            // rìm góc
+        if (dc == 0 && dr == 0) return 0;
+        if (dc + dr == 1)       return 1;
+        return 2;
     }
 
-    // ── Cuối JudgePhase: terrain + weather giảm lượt ──────────────
+    // ── Cuối JudgePhase ───────────────────────────────────────────
     IEnumerator EndJudgePhase()
     {
         yield return new WaitForSeconds(0.5f);
 
-        // Terrain: hiệu ứng cuối lượt (Bẫy Gai) + giảm lượt tồn tại
         var allEntities = BattleGridManager.Instance.GetAllEntities();
         TerrainManager.Instance.OnTurnEnd(allEntities);
-
-        // Weather: giảm lượt tồn tại
         WeatherManager.Instance.OnTurnEnd();
 
-        // Kiểm tra kết thúc battle
         if (resultManager != null && resultManager.CheckBattleEnd())
         {
             CurrentPhase = BattlePhase.ResultPhase;

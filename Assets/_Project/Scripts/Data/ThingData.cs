@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "NewThing", menuName = "Game/Thing Data")]
 
@@ -16,8 +16,11 @@ public float spawnWeight = 50f;
 [Header("Hệ Nguyên Tố")]
 public ElementType elementType = ElementType.Neutral;
 
-[Header("Tính Cách AI")]
+[Header("AI Chiến Đấu")]
 public AIPersonality aiPersonality = AIPersonality.Aggressive;
+public AIDifficulty  aiDifficulty  = AIDifficulty.Medium;      
+public ThingArchetype archetype    = ThingArchetype.Attacker;  
+public List<MoveData> moves = new();  
 
 [Header("Chỉ Số Chiến Đấu")]
 public int hp = 100;
@@ -30,7 +33,7 @@ public int level = 1;
 public int luck = 0;
 
 [Header("Kỹ Năng Mặc Định")]
-public MoveData defaultMove;
+    public MoveData defaultMove; 
 
 [Header("Di Chuyển")]
 public int moveRange = 1;
