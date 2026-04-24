@@ -15,10 +15,10 @@ public class BattlePhaseManager : MonoBehaviour
     [SerializeField] BattleResultManager resultManager;
 
     void Awake()
-{
-    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-    Instance = this;
-}
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
     void Start() => StartCoroutine(StartAfterSpawn());
 
     IEnumerator StartAfterSpawn()
@@ -116,8 +116,8 @@ public class BattlePhaseManager : MonoBehaviour
 
         foreach (var kvp in ordered)
         {
-            BattleEntity  attacker = kvp.Key;
-            BattleCommand cmd      = kvp.Value;
+            BattleEntity attacker = kvp.Key;
+            BattleCommand cmd = kvp.Value;
             if (attacker == null || !cmd.HasAttack) continue;
 
             MoveData move = attacker.GetMove();
@@ -135,8 +135,8 @@ public class BattlePhaseManager : MonoBehaviour
                 attacker.IncrementBuffCount(); // ← THÊM: ULTRA archetype dùng
 
             // ── Bão Tuyết: thu nhỏ AoE
-            AttackShape effectiveShape  = move.shape;
-            int         effectiveRadius = move.aoeRadius;
+            AttackShape effectiveShape = move.shape;
+            int effectiveRadius = move.aoeRadius;
             ApplyBlizzardEffect(attacker, ref effectiveShape, ref effectiveRadius);
 
             var cells = BattleGridManager.Instance.GetAoECells(
@@ -153,16 +153,16 @@ public class BattlePhaseManager : MonoBehaviour
                     attacker.Data,
                     target.Data,
                     move,
-                    attackerLevel:    attacker.Level,
-                    attackerLuck:     attacker.Data.luck,
-                    aoeShape:         effectiveShape,
+                    attackerLevel: attacker.Level,
+                    attackerLuck: attacker.Data.luck,
+                    aoeShape: effectiveShape,
                     cellDistanceType: distType
                 );
 
-                string eff  = r.typeMultiplier > 1f ? " HIỆU QUẢ!" :
+                string eff = r.typeMultiplier > 1f ? " HIỆU QUẢ!" :
                               r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
                 string crit = r.isCritical ? " CHÍ MẠNG!" : "";
-                string stab = r.isStab     ? " [STAB]"    : "";
+                string stab = r.isStab ? " [STAB]" : "";
 
                 Debug.Log($"[Combat] {attacker.Data.thingName}{stab} → " +
                           $"{target.Data.thingName}: {r.damage} dmg " +
@@ -204,12 +204,12 @@ public class BattlePhaseManager : MonoBehaviour
         switch (shape)
         {
             case AttackShape.Square3x3:
-                shape  = AttackShape.Square2x2;
+                shape = AttackShape.Square2x2;
                 radius = Mathf.Max(1, radius - 1);
                 Debug.Log("[Weather] Bão Tuyết: Square3x3 → Square2x2");
                 break;
             case AttackShape.Square2x2:
-                shape  = AttackShape.Single;
+                shape = AttackShape.Single;
                 radius = 1;
                 Debug.Log("[Weather] Bão Tuyết: Square2x2 → Single");
                 break;
@@ -228,41 +228,41 @@ public class BattlePhaseManager : MonoBehaviour
         int dc = Mathf.Abs(cell.col - center.col);
         int dr = Mathf.Abs(cell.row - center.row);
         if (dc == 0 && dr == 0) return 0;
-        if (dc + dr == 1)       return 1;
+        if (dc + dr == 1) return 1;
         return 2;
     }
 
     // ── Cuối JudgePhase ───────────────────────────────────────────
     IEnumerator EndJudgePhase()
-{
-    yield return new WaitForSeconds(0.5f);
-
-    // ── Dọn dẹp entity đã chết trong JudgePhase ──────────────────
-    var deadEntities = new List<BattleEntity>();
-    foreach (var entity in BattleGridManager.Instance.GetAllEntities())
     {
-        if (entity.IsDead) deadEntities.Add(entity);
-    }
-    foreach (var dead in deadEntities)
-        Destroy(dead.gameObject);
+        yield return new WaitForSeconds(0.5f);
 
-    // Chờ 1 frame để Destroy thực sự có hiệu lực trước khi check result
-    yield return null;
+        // ── Dọn dẹp entity đã chết trong JudgePhase ──────────────────
+        var deadEntities = new List<BattleEntity>();
+        foreach (var entity in BattleGridManager.Instance.GetAllEntities())
+        {
+            if (entity.IsDead) deadEntities.Add(entity);
+        }
+        foreach (var dead in deadEntities)
+            Destroy(dead.gameObject);
 
-    // ── Hiệu ứng cuối lượt ───────────────────────────────────────
-    var allAlive = BattleGridManager.Instance.GetAllEntities();
-    TerrainManager.Instance.OnTurnEnd(allAlive);
-    WeatherManager.Instance.OnTurnEnd();
+        // Chờ 1 frame để Destroy thực sự có hiệu lực trước khi check result
+        yield return null;
 
-    // ── Kiểm tra kết thúc trận ───────────────────────────────────
-    if (resultManager != null && resultManager.CheckBattleEnd())
-    {
-        CurrentPhase = BattlePhase.ResultPhase;
-        Debug.Log("[BattlePhase] === RESULT PHASE ===");
+        // ── Hiệu ứng cuối lượt ───────────────────────────────────────
+        var allAlive = BattleGridManager.Instance.GetAllEntities();
+        TerrainManager.Instance.OnTurnEnd(allAlive);
+        WeatherManager.Instance.OnTurnEnd();
+
+        // ── Kiểm tra kết thúc trận ───────────────────────────────────
+        if (resultManager != null && resultManager.CheckBattleEnd())
+        {
+            CurrentPhase = BattlePhase.ResultPhase;
+            Debug.Log("[BattlePhase] === RESULT PHASE ===");
+        }
+        else
+        {
+            BeginCommandPhase();
+        }
     }
-    else
-    {
-        BeginCommandPhase();
-    }
-}
 }

@@ -43,7 +43,7 @@
     <UnityVersion>6000.4.3f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Users\Administrator\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.1\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\Administrator\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.2\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="E:\unity\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="E:\unity\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="E:\unity\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
@@ -70,11 +70,13 @@
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />
     <Compile Include="Assets\_Project\Scripts\UI\EntityHpBar.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleManager.cs" />
+    <Compile Include="Assets\_Project\Scripts\UI\MoveButtonUI.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleResultManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleGridManager.cs" />
     <Compile Include="Assets\_Project\Scripts\UI\DamagePopup.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\EnemyAIBrain.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\AIDifficulty.cs" />
+    <Compile Include="Assets\_Project\Scripts\UI\MoveSelectionUI.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleInputHandler.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleCommand.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\MoveData.cs" />
