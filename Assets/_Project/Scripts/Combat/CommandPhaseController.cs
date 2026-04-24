@@ -5,7 +5,6 @@ public class CommandPhaseController : MonoBehaviour
 {
     public static CommandPhaseController Instance { get; private set; }
 
-    // ← THÊM SelectSkill vào enum
     private enum InputStep { SelectMove, SelectSkill, SelectAttack }
     private InputStep _step = InputStep.SelectMove;
 
@@ -13,10 +12,8 @@ public class CommandPhaseController : MonoBehaviour
     private GridPos _pendingMove;
     private List<GridPos> _validMoveCells = new();
     private List<GridPos> _validAttackCells = new();
-
     private List<BattleEntity> _playerEntities = new();
     private int _currentUnitIndex = 0;
-
     private GridPos _lastHoverPos = new GridPos(-999, -999);
 
     void Awake()
@@ -25,6 +22,7 @@ public class CommandPhaseController : MonoBehaviour
         Instance = this;
     }
 
+    // ── Public API ────────────────────────────────────────────────
     public void BeginInput()
     {
         _playerEntities = FindPlayerEntities();
@@ -47,7 +45,7 @@ public class CommandPhaseController : MonoBehaviour
         _step = InputStep.SelectMove;
         _lastHoverPos = new GridPos(-999, -999);
         ShowMoveHighlight(entity.GridPos);
-        Debug.Log($"[Command] Chọn {entity.name} tại {entity.GridPos} — Chọn ô di chuyển");
+        Debug.Log($"[Command] Chọn {entity.name} — Chọn ô di chuyển");
     }
 
     // ── Highlight di chuyển ───────────────────────────────────────
@@ -64,7 +62,8 @@ public class CommandPhaseController : MonoBehaviour
         for (int dc = -range; dc <= range; dc++)
             for (int dr = -range; dr <= range; dr++)
             {
-                if (Mathf.Abs(dc) + Mathf.Abs(dr) > range) continue;
+                // ✅ FIX BUG 2: Chebyshev distance — cho phép di chuyển chéo
+                if (Mathf.Max(Mathf.Abs(dc), Mathf.Abs(dr)) > range) continue;
                 int c = origin.col + dc, r = origin.row + dr;
                 if (!cfg.IsWalkable(c, r)) continue;
                 if (cfg.GetTeam(c) != teamId) continue;
@@ -75,7 +74,7 @@ public class CommandPhaseController : MonoBehaviour
         return result;
     }
 
-    // ── Highlight tấn công ───────────────────────────────────────
+    // ── Highlight tấn công ────────────────────────────────────────
     void ShowAttackHighlight(GridPos from)
     {
         _validAttackCells = GetAttackableCells(from, _selectedEntity.TeamId);
@@ -87,20 +86,24 @@ public class CommandPhaseController : MonoBehaviour
     {
         var result = new List<GridPos>();
         var cfg = BattleGridManager.Instance.config;
+        // ✅ FIX BUG 3: chỉ lấy ô bên phía địch (không bao gồm gap)
         int colStart = teamId == 0 ? cfg.RightMinCol : 0;
         int colEnd = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
         for (int c = colStart; c <= colEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
+            {
+                if (!cfg.IsWalkable(c, r)) continue; // bỏ qua ô gap
                 result.Add(new GridPos(c, r));
+            }
         return result;
     }
 
-    // ── Update ───────────────────────────────────────────────────
+    // ── Update ────────────────────────────────────────────────────
     void Update()
     {
         if (BattlePhaseManager.Instance.CurrentPhase != BattlePhase.CommandPhase) return;
 
-        // ← THÊM: khi đang chờ chọn chiêu, không xử lý click chuột
+        // ✅ FIX BUG 1: khi đang chờ chọn chiêu, block mọi input chuột
         if (_step == InputStep.SelectSkill) return;
 
         GridPos hoverPos = GetMouseGridPos();
@@ -124,17 +127,11 @@ public class CommandPhaseController : MonoBehaviour
     {
         MoveData move = _selectedEntity.GetMove();
         if (move == null) return;
-
         var grid = BattleGridManager.Instance;
         if (_validAttackCells.Contains(hoverPos))
-        {
-            var aoeCells = grid.GetAoECells(hoverPos, move.shape, _pendingMove);
-            grid.ShowAoEPreview(aoeCells);
-        }
+            grid.ShowAoEPreview(grid.GetAoECells(hoverPos, move.shape, _pendingMove));
         else
-        {
             grid.ShowHighlight(_validAttackCells);
-        }
     }
 
     // ── Bước 1: Chọn ô di chuyển ─────────────────────────────────
@@ -147,14 +144,10 @@ public class CommandPhaseController : MonoBehaviour
         }
 
         _pendingMove = clicked;
-
-        // ← THÊM: chuyển sang bước chọn chiêu, xoá highlight
         _step = InputStep.SelectSkill;
         BattleGridManager.Instance.ClearHighlight();
 
         var moves = _selectedEntity.Data.moves;
-
-        // Nếu không có moves list, dùng defaultMove và bỏ qua bước chọn
         if (moves == null || moves.Count == 0)
         {
             _selectedEntity.SetChosenMove(_selectedEntity.Data.defaultMove);
@@ -162,25 +155,22 @@ public class CommandPhaseController : MonoBehaviour
             return;
         }
 
-        // Mở UI chọn chiêu
+        // ✅ FIX BUG 1: mở UI chọn chiêu
         MoveSelectionUI.Instance.Show(moves, OnMoveChosen);
-        Debug.Log($"[Command] Di chuyển đến {_pendingMove} — Đang chọn chiêu...");
+        Debug.Log($"[Command] Đến {_pendingMove} — Đang chọn chiêu...");
     }
 
-    // ← THÊM: callback khi chọn xong chiêu
     void OnMoveChosen(MoveData move)
     {
         _selectedEntity.SetChosenMove(move);
         GoToAttackStep();
-        Debug.Log($"[Command] Chiêu đã chọn: {move.moveName}");
+        Debug.Log($"[Command] Chiêu: {move.moveName}");
     }
 
-    // ← THÊM: chuyển sang bước chọn ô tấn công
     void GoToAttackStep()
     {
         _step = InputStep.SelectAttack;
         ShowAttackHighlight(_pendingMove);
-        Debug.Log($"[Command] → Chọn ô tấn công");
     }
 
     // ── Bước 3: Chọn ô tấn công ──────────────────────────────────
@@ -197,7 +187,7 @@ public class CommandPhaseController : MonoBehaviour
         else
         {
             cmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
-            Debug.Log($"[Command] Bỏ qua tấn công, chỉ di chuyển");
+            Debug.Log($"[Command] Chỉ di chuyển");
         }
 
         BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, cmd);
@@ -217,20 +207,16 @@ public class CommandPhaseController : MonoBehaviour
         var enemies = new List<BattleEntity>();
         foreach (var e in all)
             (e.TeamId == 0 ? players : enemies).Add(e);
-
         foreach (var enemy in enemies)
-        {
-            var cmd = EnemyAIBrain.Decide(enemy, players);
-            BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
-        }
+            BattlePhaseManager.Instance.SubmitCommand(enemy, EnemyAIBrain.Decide(enemy, players));
     }
 
     GridPos GetMouseGridPos()
     {
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = Mathf.Abs(Camera.main.transform.position.z);
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-        worldPos.z = 0;
-        return BattleGridManager.Instance.WorldToGrid(worldPos);
+        Vector3 mp = Input.mousePosition;
+        mp.z = Mathf.Abs(Camera.main.transform.position.z);
+        Vector3 wp = Camera.main.ScreenToWorldPoint(mp);
+        wp.z = 0;
+        return BattleGridManager.Instance.WorldToGrid(wp);
     }
 }
