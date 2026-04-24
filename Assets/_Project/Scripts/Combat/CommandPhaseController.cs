@@ -153,7 +153,7 @@ public class CommandPhaseController : MonoBehaviour
             GoToAttackStep(); // không có chiêu nào → bỏ qua
             return;
         }
-        MoveSelectionUI.Instance.Show(moves, OnMoveChosen);
+
 
         // ✅ FIX BUG 1: mở UI chọn chiêu
         MoveSelectionUI.Instance.Show(moves, OnMoveChosen);

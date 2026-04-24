@@ -40,7 +40,7 @@ public class BattleGridManager : MonoBehaviour
     TileBase CreateGridTile()
     {
         // Tạo texture 16x16 với border 1px màu trắng mờ
-        int size = 16;
+        int size = 32;
         var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Point;
 
@@ -149,7 +149,7 @@ public class BattleGridManager : MonoBehaviour
         for (int dc = -moveRange; dc <= moveRange; dc++)
             for (int dr = -moveRange; dr <= moveRange; dr++)
             {
-                if (Mathf.Abs(dc) + Mathf.Abs(dr) > moveRange) continue;
+                if (Mathf.Max(Mathf.Abs(dc), Mathf.Abs(dr)) > moveRange) continue;
                 int c = origin.col + dc;
                 int r = origin.row + dr;
                 if (!config.IsWalkable(c, r)) continue;
@@ -287,10 +287,10 @@ public class BattleGridManager : MonoBehaviour
             tilemapHighlight.SetTile(new Vector3Int(p.col, p.row, 0), tileHighlight);
     }
 
-public List<BattleEntity> GetAllEntities()
-{
-    return new List<BattleEntity>(_occupied.Values);
-}
+    public List<BattleEntity> GetAllEntities()
+    {
+        return new List<BattleEntity>(_occupied.Values);
+    }
 
 
 
