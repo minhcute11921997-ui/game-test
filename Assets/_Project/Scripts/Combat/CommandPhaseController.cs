@@ -147,13 +147,13 @@ public class CommandPhaseController : MonoBehaviour
         _step = InputStep.SelectSkill;
         BattleGridManager.Instance.ClearHighlight();
 
-        var moves = _selectedEntity.Data.moves;
+        var moves = _selectedEntity.Data.AllMoves;
         if (moves == null || moves.Count == 0)
         {
-            _selectedEntity.SetChosenMove(_selectedEntity.Data.defaultMove);
-            GoToAttackStep();
+            GoToAttackStep(); // không có chiêu nào → bỏ qua
             return;
         }
+        MoveSelectionUI.Instance.Show(moves, OnMoveChosen);
 
         // ✅ FIX BUG 1: mở UI chọn chiêu
         MoveSelectionUI.Instance.Show(moves, OnMoveChosen);
