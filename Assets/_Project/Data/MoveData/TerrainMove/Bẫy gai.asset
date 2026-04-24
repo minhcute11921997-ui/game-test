@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2703e1b7663cf3540b77db9bfc54a91b, type: 3}
   m_Name: "B\u1EABy gai"
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  moveName: Tackle
+  moveName: "B\u1EABy gai"
   elementType: 2
   category: 3
   shape: 0
