@@ -5,7 +5,8 @@ public class CommandPhaseController : MonoBehaviour
 {
     public static CommandPhaseController Instance { get; private set; }
 
-    private enum InputStep { SelectMove, SelectAttack }
+    // ← THÊM SelectSkill vào enum
+    private enum InputStep { SelectMove, SelectSkill, SelectAttack }
     private InputStep _step = InputStep.SelectMove;
 
     private BattleEntity _selectedEntity;
@@ -19,12 +20,11 @@ public class CommandPhaseController : MonoBehaviour
     private GridPos _lastHoverPos = new GridPos(-999, -999);
 
     void Awake()
-{
-    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-    Instance = this;
-}
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
-    // ── Public API ────────────────────────────────────────────────
     public void BeginInput()
     {
         _playerEntities = FindPlayerEntities();
@@ -75,7 +75,7 @@ public class CommandPhaseController : MonoBehaviour
         return result;
     }
 
-    // ── Highlight tấn công ────────────────────────────────────────
+    // ── Highlight tấn công ───────────────────────────────────────
     void ShowAttackHighlight(GridPos from)
     {
         _validAttackCells = GetAttackableCells(from, _selectedEntity.TeamId);
@@ -88,17 +88,20 @@ public class CommandPhaseController : MonoBehaviour
         var result = new List<GridPos>();
         var cfg = BattleGridManager.Instance.config;
         int colStart = teamId == 0 ? cfg.RightMinCol : 0;
-        int colEnd   = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
+        int colEnd = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
         for (int c = colStart; c <= colEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
                 result.Add(new GridPos(c, r));
         return result;
     }
 
-    // ── Update ────────────────────────────────────────────────────
+    // ── Update ───────────────────────────────────────────────────
     void Update()
     {
         if (BattlePhaseManager.Instance.CurrentPhase != BattlePhase.CommandPhase) return;
+
+        // ← THÊM: khi đang chờ chọn chiêu, không xử lý click chuột
+        if (_step == InputStep.SelectSkill) return;
 
         GridPos hoverPos = GetMouseGridPos();
 
@@ -112,7 +115,7 @@ public class CommandPhaseController : MonoBehaviour
 
         switch (_step)
         {
-            case InputStep.SelectMove:   HandleMoveSelection(hoverPos);   break;
+            case InputStep.SelectMove: HandleMoveSelection(hoverPos); break;
             case InputStep.SelectAttack: HandleAttackSelection(hoverPos); break;
         }
     }
@@ -134,19 +137,53 @@ public class CommandPhaseController : MonoBehaviour
         }
     }
 
+    // ── Bước 1: Chọn ô di chuyển ─────────────────────────────────
     void HandleMoveSelection(GridPos clicked)
     {
         if (!_validMoveCells.Contains(clicked))
         {
-            Debug.Log($"[Command] Ô {clicked} không hợp lệ để di chuyển");
+            Debug.Log($"[Command] Ô {clicked} không hợp lệ");
             return;
         }
+
         _pendingMove = clicked;
-        _step = InputStep.SelectAttack;
-        ShowAttackHighlight(_pendingMove);
-        Debug.Log($"[Command] Di chuyển đến {_pendingMove} — Chọn ô tấn công");
+
+        // ← THÊM: chuyển sang bước chọn chiêu, xoá highlight
+        _step = InputStep.SelectSkill;
+        BattleGridManager.Instance.ClearHighlight();
+
+        var moves = _selectedEntity.Data.moves;
+
+        // Nếu không có moves list, dùng defaultMove và bỏ qua bước chọn
+        if (moves == null || moves.Count == 0)
+        {
+            _selectedEntity.SetChosenMove(_selectedEntity.Data.defaultMove);
+            GoToAttackStep();
+            return;
+        }
+
+        // Mở UI chọn chiêu
+        MoveSelectionUI.Instance.Show(moves, OnMoveChosen);
+        Debug.Log($"[Command] Di chuyển đến {_pendingMove} — Đang chọn chiêu...");
     }
 
+    // ← THÊM: callback khi chọn xong chiêu
+    void OnMoveChosen(MoveData move)
+    {
+        _selectedEntity.SetChosenMove(move);
+        GoToAttackStep();
+        Debug.Log($"[Command] Chiêu đã chọn: {move.moveName}");
+    }
+
+    // ← THÊM: chuyển sang bước chọn ô tấn công
+    void GoToAttackStep()
+    {
+        _step = InputStep.SelectAttack;
+        ShowAttackHighlight(_pendingMove);
+        Debug.Log($"[Command] → Chọn ô tấn công");
+    }
+
+    // ── Bước 3: Chọn ô tấn công ──────────────────────────────────
     void HandleAttackSelection(GridPos clicked)
     {
         BattleGridManager.Instance.ClearHighlight();
@@ -165,7 +202,6 @@ public class CommandPhaseController : MonoBehaviour
 
         BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, cmd);
 
-        // ✅ Sửa bug: chỉ tăng 1 lần (bản cũ tăng 2 lần)
         _currentUnitIndex++;
         if (_currentUnitIndex < _playerEntities.Count)
             SelectUnit(_playerEntities[_currentUnitIndex]);
@@ -173,23 +209,22 @@ public class CommandPhaseController : MonoBehaviour
             SubmitEnemyCommands();
     }
 
-    // ── Enemy AI ──────────────────────────────────────────────────
-   void SubmitEnemyCommands()
-{
-    var all = FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude);
-    var players = new List<BattleEntity>();
-    var enemies = new List<BattleEntity>();
-    foreach (var e in all)
-        (e.TeamId == 0 ? players : enemies).Add(e);
-
-    foreach (var enemy in enemies)
+    // ── Enemy AI ─────────────────────────────────────────────────
+    void SubmitEnemyCommands()
     {
-        var cmd = EnemyAIBrain.Decide(enemy, players);
-        BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
-    }
-}
+        var all = FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude);
+        var players = new List<BattleEntity>();
+        var enemies = new List<BattleEntity>();
+        foreach (var e in all)
+            (e.TeamId == 0 ? players : enemies).Add(e);
 
-    // ── Helper ────────────────────────────────────────────────────
+        foreach (var enemy in enemies)
+        {
+            var cmd = EnemyAIBrain.Decide(enemy, players);
+            BattlePhaseManager.Instance.SubmitCommand(enemy, cmd);
+        }
+    }
+
     GridPos GetMouseGridPos()
     {
         Vector3 mousePos = Input.mousePosition;
