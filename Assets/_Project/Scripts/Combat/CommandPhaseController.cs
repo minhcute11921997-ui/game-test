@@ -104,7 +104,7 @@ public class CommandPhaseController : MonoBehaviour
         if (BattlePhaseManager.Instance.CurrentPhase != BattlePhase.CommandPhase) return;
 
         // ✅ FIX BUG 1: khi đang chờ chọn chiêu, block mọi input chuột
-        if (_step == InputStep.SelectSkill) return;
+
 
         GridPos hoverPos = GetMouseGridPos();
 
@@ -113,6 +113,8 @@ public class CommandPhaseController : MonoBehaviour
             _lastHoverPos = hoverPos;
             UpdateAoEPreview(hoverPos);
         }
+
+        if (_step == InputStep.SelectSkill) return; // GIỮ NGUYÊN — nhưng đặt SAU hover update
 
         if (!Input.GetMouseButtonDown(0)) return;
 
