@@ -41,7 +41,6 @@ public class BattleEntity : MonoBehaviour
     public void SetChosenMove(MoveData move) => _chosenMove = move;
 
     // ── Từ Trường ─────────────────────────────────────────────────
-    // ── Từ Trường ─────────────────────────────────────────────────
     private int _moveCountThisCycle = 0;
 
     // ─────────────────────────────────────────────────────────────
