@@ -21,7 +21,7 @@ public class CommandPhaseController : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
-
+    void OnDestroy() { if (Instance == this) Instance = null; }
     // ── Public API ────────────────────────────────────────────────
     public void BeginInput()
     {
@@ -216,10 +216,12 @@ public class CommandPhaseController : MonoBehaviour
         Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chọn chiêu: {move.moveName} (Môi trường: {move.category == MoveCategory.Environment})");
 
         // Nếu là chiêu Môi Trường → bỏ qua bước chọn ô tấn công
-        if (move.category == MoveCategory.Environment)
+        if (move.category == MoveCategory.Environment && move.envCategory == EnvironmentCategory.Weather)
         {
-            var envCmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
+            // 🛠 FIX: Gửi lệnh MoveAndAttack (Tấn công vào ô đang đứng) để BattlePhase không bỏ qua chiêu này!
+            var envCmd = BattleCommand.MoveAndAttack(_pendingMove, _pendingMove);
             BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, envCmd);
+
             _currentUnitIndex++;
             if (_currentUnitIndex < _playerEntities.Count)
                 SelectUnit(_playerEntities[_currentUnitIndex]);

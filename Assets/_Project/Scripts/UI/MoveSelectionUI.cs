@@ -18,7 +18,7 @@ public class MoveSelectionUI : MonoBehaviour
         Instance = this;
 
     }
-
+    void OnDestroy() { if (Instance == this) Instance = null; }
     void Start()
     {
         Hide(); // Gọi ở Start thay vì Awake — lúc này script đã init xong

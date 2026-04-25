@@ -19,6 +19,7 @@ public class BattlePhaseManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
+    void OnDestroy() { if (Instance == this) Instance = null; }
     void Start() => StartCoroutine(StartAfterSpawn());
 
     IEnumerator StartAfterSpawn()
@@ -32,7 +33,6 @@ public class BattlePhaseManager : MonoBehaviour
     {
         CurrentPhase = BattlePhase.CommandPhase;
         _commands.Clear();
-        Debug.Log("[BattlePhase] === COMMAND PHASE ===");
 
         bool pBlizzard = WeatherManager.Instance.IsBlizzardActive(0);
         bool pMagnet = WeatherManager.Instance.IsMagneticFieldActive(0);
@@ -75,7 +75,6 @@ public class BattlePhaseManager : MonoBehaviour
     IEnumerator BeginExecutionPhase()
     {
         CurrentPhase = BattlePhase.ExecutionPhase;
-        Debug.Log("[BattlePhase] === EXECUTION PHASE ===");
 
         var grid = BattleGridManager.Instance;
         var moveCoroutines = new List<Coroutine>();

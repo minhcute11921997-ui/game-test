@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class TerrainCell
 {
-    public GridPos      pos;
+    public GridPos pos;
     public TerrainEffectType effectType;
-    public int          turnsLeft;
-    public int          maxCount;       // giới hạn ô của chiêu này
-    public ElementType  element;
+    public int turnsLeft;
+    public int maxCount;       // giới hạn ô của chiêu này
+    public ElementType element;
 }
 
 public class TerrainManager : MonoBehaviour
@@ -22,16 +22,16 @@ public class TerrainManager : MonoBehaviour
     private readonly Dictionary<TerrainEffectType, List<GridPos>> _byType = new();
 
     void Awake()
-{
-    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-    Instance = this;
-}
-
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+    void OnDestroy() { if (Instance == this) Instance = null; }
     // ─── Đặt terrain ────────────────────────────────────────────────────────
     public void PlaceTerrain(GridPos pos, MoveData move)
     {
         var effectType = move.terrainEffect;
-        int maxCount   = move.terrainMaxCount;
+        int maxCount = move.terrainMaxCount;
 
         // Khởi danh sách nếu chưa có
         if (!_byType.ContainsKey(effectType))
@@ -51,11 +51,11 @@ public class TerrainManager : MonoBehaviour
         // Đặt terrain mới
         var cell = new TerrainCell
         {
-            pos        = pos,
+            pos = pos,
             effectType = effectType,
-            turnsLeft  = move.envDuration,
-            maxCount   = maxCount,
-            element    = move.elementType,
+            turnsLeft = move.envDuration,
+            maxCount = maxCount,
+            element = move.elementType,
         };
         _cells[pos] = cell;
         _byType[effectType].Add(pos);
@@ -96,54 +96,54 @@ public class TerrainManager : MonoBehaviour
                 break;
         }
     }
-private readonly HashSet<BattleEntity> _enteredThisTurn = new();
+    private readonly HashSet<BattleEntity> _enteredThisTurn = new();
     // ─── Gọi cuối mỗi lượt ──────────────────────────────────────────────────
     public void OnTurnEnd(List<BattleEntity> allEntities)
-{
-    // 1. Xử lý hiệu ứng cuối lượt
-    foreach (var entity in allEntities)
     {
-        if (entity == null) continue; // guard phòng thủ
-
-        var cell = GetCell(entity.GridPos);
-        if (cell == null) continue;
-
-        switch (cell.effectType)
+        // 1. Xử lý hiệu ứng cuối lượt
+        foreach (var entity in allEntities)
         {
-            case TerrainEffectType.ThornTrap:
-                if (entity.CanMove)
-                {
-                    entity.LockMovementNextTurn();
-                    Debug.Log($"[Terrain] {entity.name} bị Bẫy Gai, mất di chuyển lượt tới");
-                }
-                break;
+            if (entity == null) continue; // guard phòng thủ
 
-            case TerrainEffectType.BurnMark:
-    if (!_enteredThisTurn.Contains(entity)) // ← chỉ damage nếu KHÔNG vừa bước vào
-    {
-        int dotDmg = Mathf.Max(1, Mathf.FloorToInt(entity.MaxHp * 0.10f));
-        float typeMult = CombatCalculator.GetTypeMultiplier(ElementType.Fire, entity.Data.elementType);
-        entity.TakeDamage(Mathf.Max(1, Mathf.FloorToInt(dotDmg * typeMult)));
-        Debug.Log($"[Terrain] {entity.name} nhận DoT từ Vết Cháy");
-    }
-    break;
+            var cell = GetCell(entity.GridPos);
+            if (cell == null) continue;
+
+            switch (cell.effectType)
+            {
+                case TerrainEffectType.ThornTrap:
+                    if (entity.CanMove)
+                    {
+                        entity.LockMovementNextTurn();
+                        Debug.Log($"[Terrain] {entity.name} bị Bẫy Gai, mất di chuyển lượt tới");
+                    }
+                    break;
+
+                case TerrainEffectType.BurnMark:
+                    if (!_enteredThisTurn.Contains(entity)) // ← chỉ damage nếu KHÔNG vừa bước vào
+                    {
+                        int dotDmg = Mathf.Max(1, Mathf.FloorToInt(entity.MaxHp * 0.10f));
+                        float typeMult = CombatCalculator.GetTypeMultiplier(ElementType.Fire, entity.Data.elementType);
+                        entity.TakeDamage(Mathf.Max(1, Mathf.FloorToInt(dotDmg * typeMult)));
+                        Debug.Log($"[Terrain] {entity.name} nhận DoT từ Vết Cháy");
+                    }
+                    break;
+            }
+        }
+        _enteredThisTurn.Clear();
+        // 2. Giảm lượt tồn tại và xoá ô hết hạn
+        var expired = new List<GridPos>();
+        foreach (var kvp in _cells)
+        {
+            kvp.Value.turnsLeft--;
+            if (kvp.Value.turnsLeft <= 0)
+                expired.Add(kvp.Key);
+        }
+        foreach (var pos in expired)
+        {
+            Debug.Log($"[Terrain] Ô {pos} hết hạn, xoá");
+            RemoveTerrain(pos);
         }
     }
-    _enteredThisTurn.Clear();
-    // 2. Giảm lượt tồn tại và xoá ô hết hạn
-    var expired = new List<GridPos>();
-    foreach (var kvp in _cells)
-    {
-        kvp.Value.turnsLeft--;
-        if (kvp.Value.turnsLeft <= 0)
-            expired.Add(kvp.Key);
-    }
-    foreach (var pos in expired)
-    {
-        Debug.Log($"[Terrain] Ô {pos} hết hạn, xoá");
-        RemoveTerrain(pos);
-    }
-}
 
     public void ClearAll() { _cells.Clear(); _byType.Clear(); }
 }

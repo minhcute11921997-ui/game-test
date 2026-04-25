@@ -37,6 +37,7 @@ public class BattleGridManager : MonoBehaviour
         BuildGrid();
         FitCamera();
     }
+    void OnDestroy() { if (Instance == this) Instance = null; }
     TileBase CreateGridTile()
     {
         // Tạo texture 16x16 với border 1px màu trắng mờ
