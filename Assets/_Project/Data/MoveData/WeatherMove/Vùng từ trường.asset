@@ -15,16 +15,16 @@ MonoBehaviour:
   moveName: "V\xF9ng t\u1EEB tr\u01B0\u1EDDng"
   elementType: 5
   category: 3
-  statusSubType: 0
+  statusSubType: 1
   shape: 0
   aoeRadius: 1
   basePower: 40
   accuracy: 100
   pp: 20
-  envCategory: 0
-  envDuration: 8
   weatherType: 2
   weatherTarget: 2
+  weatherDuration: 5
   terrainEffect: 0
   terrainShape: 0
   terrainMaxCount: 1
+  terrainDuration: 3

@@ -3,11 +3,8 @@ using UnityEngine;
 
 public static class EnemyAIBrain
 {
-    // ── Entry point duy nhất ────────────────────────────────────────
     public static BattleCommand Decide(BattleEntity enemy, List<BattleEntity> players)
     {
-
-
         if (players.Count == 0)
             return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
 
@@ -18,7 +15,7 @@ public static class EnemyAIBrain
         GridPos moveTarget = PickMoveTarget(enemy, players, diff, archetype);
         GridPos attackTarget = chosenMove != null
             ? PickAttackTarget(enemy, players, diff, archetype, moveTarget, chosenMove)
-            : new GridPos(-1, -1); // null move = bỏ lượt tấn công
+            : new GridPos(-1, -1);
 
         enemy.SetChosenMove(chosenMove);
 
@@ -29,12 +26,10 @@ public static class EnemyAIBrain
         return (chosenMove != null && attackTarget.col >= 0)
             ? BattleCommand.MoveAndAttack(moveTarget, attackTarget)
             : BattleCommand.MoveOnly(enemy.GridPos, moveTarget);
-
-
     }
 
     // ════════════════════════════════════════════════════════════════
-    // CHỌN CHIÊU — theo Archetype trước, Difficulty filter sau
+    // CHỌN CHIÊU
     // ════════════════════════════════════════════════════════════════
     static MoveData PickMove(BattleEntity enemy, List<BattleEntity> players,
                              AIDifficulty diff, ThingArchetype archetype)
@@ -45,13 +40,11 @@ public static class EnemyAIBrain
         switch (archetype)
         {
             case ThingArchetype.Attacker:
-                // 85% chiêu damage cao nhất, 15% random
-                if (Random.value < 0.85f)
-                    return HighestDamageMove(moves);
+                if (Random.value < 0.85f) return HighestDamageMove(moves);
                 return moves[Random.Range(0, moves.Count)];
 
             case ThingArchetype.Defender:
-                if (enemy.TurnCount % 3 == 0 && enemy.TurnCount > 0) // ← đổi từ % 3 == 2
+                if (enemy.TurnCount % 3 == 0 && enemy.TurnCount > 0)
                 {
                     var buffMove = FindStatusMove(moves, "def");
                     if (buffMove != null) return buffMove;
@@ -59,7 +52,6 @@ public static class EnemyAIBrain
                 return PickMoveByDifficulty(enemy, players, moves, diff);
 
             case ThingArchetype.Setup:
-                // 2 lượt đầu: luôn dùng buff/debuff
                 if (enemy.TurnCount < 2)
                 {
                     var statusMove = FindStatusMove(moves, "any");
@@ -78,8 +70,7 @@ public static class EnemyAIBrain
         switch (diff)
         {
             case AIDifficulty.Easy:
-                // Luôn chiêu power thấp nhất, 15% bỏ lượt
-                if (Random.value < 0.15f) return null; // null = bỏ lượt
+                if (Random.value < 0.15f) return null;
                 return LowestPowerMove(moves);
 
             case AIDifficulty.Medium:
@@ -87,7 +78,6 @@ public static class EnemyAIBrain
 
             case AIDifficulty.Hard:
             case AIDifficulty.Ultra:
-                // Ưu tiên khắc hệ, không có thì power cao nhất
                 var typeMove = FindSuperEffectiveMove(moves, players);
                 return typeMove ?? HighestDamageMove(moves);
 
@@ -97,48 +87,32 @@ public static class EnemyAIBrain
     }
 
     // ════════════════════════════════════════════════════════════════
-    // CHỌN MOVE TARGET — theo Difficulty + Archetype Defender override
+    // CHỌN MOVE TARGET
     // ════════════════════════════════════════════════════════════════
     static GridPos PickMoveTarget(BattleEntity enemy, List<BattleEntity> players,
                                    AIDifficulty diff, ThingArchetype archetype)
     {
         var reachable = GetReachable(enemy);
-
-        // Defender: ở MỌI difficulty đều né terrain + né AoE player
         bool avoidAoE = (archetype == ThingArchetype.Defender);
 
-        // Lọc terrain bất lợi (mọi difficulty)
         var safe = FilterOutHarmfulTerrain(reachable, enemy.TeamId);
-        if (safe.Count == 0) safe = reachable; // fallback nếu toàn terrain
+        if (safe.Count == 0) safe = reachable;
 
         switch (diff)
         {
-            case AIDifficulty.Easy:
-                return PickEasyMove(enemy, safe);
-
-            case AIDifficulty.Medium:
-                return safe[Random.Range(0, safe.Count)];
-
-            case AIDifficulty.Hard:
-                return PickHardMove(enemy, players, safe, avoidAoE);
-
-            case AIDifficulty.Ultra:
-                return PickUltraMove(enemy, players, safe);
-
-            default:
-                return safe.Count > 0 ? safe[0] : enemy.GridPos;
+            case AIDifficulty.Easy: return PickEasyMove(enemy, safe);
+            case AIDifficulty.Medium: return safe[Random.Range(0, safe.Count)];
+            case AIDifficulty.Hard: return PickHardMove(enemy, players, safe, avoidAoE);
+            case AIDifficulty.Ultra: return PickUltraMove(enemy, players, safe);
+            default: return safe.Count > 0 ? safe[0] : enemy.GridPos;
         }
     }
 
-    // EASY: chọn 1 hướng cố định đầu battle, 80% giữ, 20% đổi
     static GridPos PickEasyMove(BattleEntity enemy, List<GridPos> reachable)
     {
-        // Dùng TurnCount 0 để init hướng
-        // Thực tế nên lưu fixedDir vào enemy, đây là approximation
         if (Random.value < 0.2f || reachable.Count == 1)
             return reachable[Random.Range(0, reachable.Count)];
 
-        // Ưu tiên ô cùng hướng col với vị trí hiện tại (giữ hướng)
         GridPos cur = enemy.GridPos;
         var sameRow = reachable.FindAll(p => p.row == cur.row);
         return sameRow.Count > 0
@@ -146,77 +120,55 @@ public static class EnemyAIBrain
             : reachable[Random.Range(0, reachable.Count)];
     }
 
-    // HARD: tính hướng từ enemy → predicted player pos
     static GridPos PickHardMove(BattleEntity enemy, List<BattleEntity> players,
                                  List<GridPos> reachable, bool avoidAoEForDefender)
     {
         BattleEntity target = NearestPlayer(enemy, players);
-        // Predicted pos của player = currentPos + lastMoveDir
         GridPos predicted = new GridPos(
             target.GridPos.col + target.LastMoveDir.col,
-            target.GridPos.row + target.LastMoveDir.row
-        );
+            target.GridPos.row + target.LastMoveDir.row);
 
-        // 35% đi về hướng predicted, 65% random trong reachable
         if (Random.value < 0.35f)
-        {
-            var toward = ClosestTo(reachable, predicted);
-            return toward;
-        }
+            return ClosestTo(reachable, predicted);
         return reachable[Random.Range(0, reachable.Count)];
     }
 
-    // ULTRA: biết trước AoE player lượt này → 85% tránh, 15% vào
     static GridPos PickUltraMove(BattleEntity enemy, List<BattleEntity> players,
                                   List<GridPos> reachable)
     {
-        // Tính AoE thật của player (dùng command đã submit)
         var playerAoECells = GetAllPlayerAoECells(players);
-
         var outsideAoE = reachable.FindAll(p => !playerAoECells.Contains(p));
         var insideAoE = reachable.FindAll(p => playerAoECells.Contains(p));
 
-        if (Random.value < 0.85f)
+        if (Random.value < 0.85f && outsideAoE.Count > 0)
         {
-            // Tránh AoE: chọn ô tốt nhất ngoài AoE (gần nhất với player)
-            if (outsideAoE.Count > 0)
-            {
-                BattleEntity target = NearestPlayer(enemy, players);
-                return ClosestTo(outsideAoE, target.GridPos);
-            }
+            BattleEntity target = NearestPlayer(enemy, players);
+            return ClosestTo(outsideAoE, target.GridPos);
         }
 
-        // 15% vào AoE: chọn ô có lợi nhất trong vùng bị trúng
-        if (insideAoE.Count > 0)
-            return insideAoE[Random.Range(0, insideAoE.Count)];
-
+        if (insideAoE.Count > 0) return insideAoE[Random.Range(0, insideAoE.Count)];
         return reachable.Count > 0 ? reachable[0] : enemy.GridPos;
     }
 
     // ════════════════════════════════════════════════════════════════
-    // CHỌN ATTACK TARGET — Difficulty + Setup override
+    // CHỌN ATTACK TARGET
     // ════════════════════════════════════════════════════════════════
     static GridPos PickAttackTarget(BattleEntity enemy, List<BattleEntity> players,
                                      AIDifficulty diff, ThingArchetype archetype,
                                      GridPos fromPos, MoveData chosenMove)
     {
-        // 2vs2: nếu có player HP ngưỡng sắp chết VÀ chiêu khắc hệ → kết liễu ngay
         BattleEntity finishTarget = FindFinishTarget(enemy, players, chosenMove);
         if (finishTarget != null) return finishTarget.GridPos;
 
-        // Setup: chiêu buff/debuff có target logic riêng
         if (archetype == ThingArchetype.Setup && chosenMove != null
             && chosenMove.category == MoveCategory.Status)
-        {
             return PickSetupTarget(enemy, players, chosenMove);
-        }
 
         var attackable = GetAttackable(fromPos, enemy.TeamId);
 
         switch (diff)
         {
             case AIDifficulty.Easy:
-                // 70% bắn ô hiện tại player, 30% random trong MoveRange player
                 if (Random.value < 0.70f)
                 {
                     BattleEntity t = LowestHpPlayer(players);
@@ -225,7 +177,6 @@ public static class EnemyAIBrain
                 return RandomPlayerAreaCell(players, attackable);
 
             case AIDifficulty.Medium:
-                // 50% ô hiện tại, 50% random
                 if (Random.value < 0.50f)
                 {
                     BattleEntity t = LowestHpPlayer(players);
@@ -234,26 +185,20 @@ public static class EnemyAIBrain
                 return RandomPlayerAreaCell(players, attackable);
 
             case AIDifficulty.Hard:
-                // Predicted position
                 BattleEntity hardTarget = LowestHpPlayer(players);
                 GridPos predicted = new GridPos(
                     hardTarget.GridPos.col + hardTarget.LastMoveDir.col,
-                    hardTarget.GridPos.row + hardTarget.LastMoveDir.row
-                );
-                // AoE: tìm tâm cover nhiều ô MoveRange player nhất
+                    hardTarget.GridPos.row + hardTarget.LastMoveDir.row);
                 if (chosenMove != null && chosenMove.shape != AttackShape.Single)
                     return BestAoECenter(fromPos, players, chosenMove, attackable);
                 return attackable.Contains(predicted) ? predicted : hardTarget.GridPos;
 
             case AIDifficulty.Ultra:
-                // 85% bắn ô player sẽ đến, 15% bắn ô hiện tại
                 BattleEntity ultraTarget = LowestHpPlayer(players);
                 GridPos willMove = new GridPos(
                     ultraTarget.GridPos.col + ultraTarget.LastMoveDir.col,
-                    ultraTarget.GridPos.row + ultraTarget.LastMoveDir.row
-                );
-                if (Random.value < 0.85f && attackable.Contains(willMove))
-                    return willMove;
+                    ultraTarget.GridPos.row + ultraTarget.LastMoveDir.row);
+                if (Random.value < 0.85f && attackable.Contains(willMove)) return willMove;
                 return ultraTarget.GridPos;
 
             default:
@@ -261,22 +206,17 @@ public static class EnemyAIBrain
         }
     }
 
-    // Setup target: chiêu buff/debuff nhắm đúng mục tiêu
     static GridPos PickSetupTarget(BattleEntity enemy, List<BattleEntity> players, MoveData move)
     {
-        // Debuff → nhắm player stat cao nhất tương ứng
-        // Đơn giản hóa: nhắm player HP cao nhất (target cứng nhất)
         BattleEntity strongest = null;
         foreach (var p in players)
             if (strongest == null || p.CurrentHp > strongest.CurrentHp) strongest = p;
-
         return strongest?.GridPos ?? players[0].GridPos;
     }
 
     // ════════════════════════════════════════════════════════════════
-    // HELPER FUNCTIONS
+    // HELPERS
     // ════════════════════════════════════════════════════════════════
-
     static List<GridPos> GetReachable(BattleEntity enemy)
     {
         if (enemy.IsImmobilized()) return new List<GridPos> { enemy.GridPos };
@@ -288,7 +228,7 @@ public static class EnemyAIBrain
         for (int dc = -range; dc <= range; dc++)
             for (int dr = -range; dr <= range; dr++)
             {
-                if (Mathf.Abs(dc) + Mathf.Abs(dr) > range) continue; // ← THÊM
+                if (Mathf.Abs(dc) + Mathf.Abs(dr) > range) continue;
                 int c = origin.col + dc, r = origin.row + dr;
                 if (!cfg.IsWalkable(c, r)) continue;
                 if (cfg.GetTeam(c) != enemy.TeamId) continue;
@@ -332,10 +272,9 @@ public static class EnemyAIBrain
         {
             MoveData move = p.GetMove();
             if (move == null) continue;
-
-            // ✅ AI tính đúng vùng AoE sau khi bị bão tuyết tác động
-            WeatherManager.Instance.GetEffectiveAoE(p.TeamId, move.shape, move.aoeRadius, out AttackShape effShape, out int effRadius);
-
+            WeatherManager.Instance.GetEffectiveAoE(
+                p.TeamId, move.shape, move.aoeRadius,
+                out AttackShape effShape, out int effRadius);
             var aoe = BattleGridManager.Instance.GetAoECells(p.GridPos, effShape, p.GridPos, effRadius);
             foreach (var cell in aoe) result.Add(cell);
         }
@@ -345,7 +284,7 @@ public static class EnemyAIBrain
     static BattleEntity FindFinishTarget(BattleEntity enemy, List<BattleEntity> players, MoveData move)
     {
         if (move == null) return null;
-        float hpThreshold = 0.25f; // dưới 25% HP = "sắp chết"
+        float hpThreshold = 0.25f;
         foreach (var p in players)
         {
             bool lowHp = (float)p.CurrentHp / p.MaxHp <= hpThreshold;
@@ -355,7 +294,8 @@ public static class EnemyAIBrain
         return null;
     }
 
-    static GridPos BestAoECenter(GridPos from, List<BattleEntity> players, MoveData move, List<GridPos> attackable)
+    static GridPos BestAoECenter(GridPos from, List<BattleEntity> players,
+                                  MoveData move, List<GridPos> attackable)
     {
         GridPos best = players[0].GridPos;
         int bestCount = 0;
@@ -390,8 +330,7 @@ public static class EnemyAIBrain
 
     static BattleEntity NearestPlayer(BattleEntity enemy, List<BattleEntity> players)
     {
-        BattleEntity nearest = null;
-        int best = int.MaxValue;
+        BattleEntity nearest = null; int best = int.MaxValue;
         foreach (var p in players)
         {
             int d = Mathf.Abs(p.GridPos.col - enemy.GridPos.col)
@@ -411,8 +350,7 @@ public static class EnemyAIBrain
 
     static GridPos ClosestTo(List<GridPos> cells, GridPos target)
     {
-        GridPos best = cells[0];
-        int bestDist = int.MaxValue;
+        GridPos best = cells[0]; int bestDist = int.MaxValue;
         foreach (var c in cells)
         {
             int d = Mathf.Abs(c.col - target.col) + Mathf.Abs(c.row - target.row);
@@ -425,7 +363,10 @@ public static class EnemyAIBrain
     {
         MoveData best = null;
         foreach (var m in moves)
-            if (m.category != MoveCategory.Status && m.category != MoveCategory.Environment)
+            // ← đổi: bỏ qua cả Weather lẫn Terrain, không chỉ Environment
+            if (m.category != MoveCategory.Status
+             && m.category != MoveCategory.Weather
+             && m.category != MoveCategory.Terrain)
                 if (best == null || m.basePower > best.basePower) best = m;
         return best ?? moves[0];
     }
@@ -434,7 +375,9 @@ public static class EnemyAIBrain
     {
         MoveData best = null;
         foreach (var m in moves)
-            if (m.category != MoveCategory.Status && m.category != MoveCategory.Environment)
+            if (m.category != MoveCategory.Status
+             && m.category != MoveCategory.Weather
+             && m.category != MoveCategory.Terrain)
                 if (best == null || m.basePower < best.basePower) best = m;
         return best ?? moves[0];
     }
@@ -448,11 +391,12 @@ public static class EnemyAIBrain
 
     static MoveData FindSuperEffectiveMove(List<MoveData> moves, List<BattleEntity> players)
     {
-        MoveData best = null;
-        float bestMult = 1f;
+        MoveData best = null; float bestMult = 1f;
         foreach (var m in moves)
         {
-            if (m.category == MoveCategory.Status || m.category == MoveCategory.Environment) continue;
+            if (m.category == MoveCategory.Status
+             || m.category == MoveCategory.Weather
+             || m.category == MoveCategory.Terrain) continue;
             foreach (var p in players)
             {
                 float mult = CombatCalculator.GetTypeMultiplier(m.elementType, p.Data.elementType);

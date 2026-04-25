@@ -14,16 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "B\u1EABy gai"
   elementType: 2
-  category: 3
+  category: 4
+  statusSubType: 0
   shape: 0
   aoeRadius: 1
   basePower: 40
   accuracy: 100
   pp: 20
-  envCategory: 1
-  envDuration: 5
   weatherType: 0
   weatherTarget: 0
+  weatherDuration: 5
   terrainEffect: 1
   terrainShape: 0
   terrainMaxCount: 5
+  terrainDuration: 3
