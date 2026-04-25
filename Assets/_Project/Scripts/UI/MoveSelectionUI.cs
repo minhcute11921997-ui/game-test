@@ -25,7 +25,7 @@ public class MoveSelectionUI : MonoBehaviour
     }
     public void Show(List<MoveData> moves, System.Action<MoveData> onChosen)
     {
-        Debug.Log($"[MoveUI] Show() số chiêu: {moves?.Count ?? 0}, panel: {(panel == null ? "NULL" : panel.name)}");
+        // Debug.Log($"[MoveUI] Show() số chiêu: {moves?.Count ?? 0}, panel: {(panel == null ? "NULL" : panel.name)}");
         _onMoveChosen = onChosen;
 
         for (int i = panel.transform.childCount - 1; i >= 0; i--)
@@ -36,13 +36,13 @@ public class MoveSelectionUI : MonoBehaviour
             if (move == null) { Debug.LogWarning("[MoveUI] move là NULL, bỏ qua"); continue; }
             try
             {
-                Debug.Log($"[MoveUI] Tạo nút: {move.moveName}");
+                // Debug.Log($"[MoveUI] Tạo nút: {move.moveName}");
                 var btn = Instantiate(moveButtonPrefab, panel.transform);
-                Debug.Log($"[MoveUI] Instantiate xong, lấy MoveButtonUI...");
+                // Debug.Log($"[MoveUI] Instantiate xong, lấy MoveButtonUI...");
                 var mbui = btn.GetComponent<MoveButtonUI>();
                 if (mbui == null) { Debug.LogError("[MoveUI] MoveButtonPrefab KHÔNG có component MoveButtonUI!"); continue; }
                 mbui.Setup(move, OnButtonClicked);
-                Debug.Log($"[MoveUI] Setup xong: {move.moveName}");
+                // Debug.Log($"[MoveUI] Setup xong: {move.moveName}");
             }
             catch (System.Exception e)
             {
@@ -51,7 +51,7 @@ public class MoveSelectionUI : MonoBehaviour
         }
 
         panel.SetActive(true);
-        Debug.Log($"[MoveUI] panel.activeSelf = {panel.activeSelf}, childCount = {panel.transform.childCount}");
+        // Debug.Log($"[MoveUI] panel.activeSelf = {panel.activeSelf}, childCount = {panel.transform.childCount}");
     }
 
     public void Hide()

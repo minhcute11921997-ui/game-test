@@ -34,6 +34,18 @@ public class BattlePhaseManager : MonoBehaviour
         _commands.Clear();
         Debug.Log("[BattlePhase] === COMMAND PHASE ===");
 
+        bool pBlizzard = WeatherManager.Instance.IsBlizzardActive(0);
+        bool pMagnet = WeatherManager.Instance.IsMagneticFieldActive(0);
+        bool eBlizzard = WeatherManager.Instance.IsBlizzardActive(1);
+        bool eMagnet = WeatherManager.Instance.IsMagneticFieldActive(1);
+
+        string pEnv = $"{(pBlizzard ? "[Bão Tuyết] " : "")}{(pMagnet ? "[Từ Trường]" : "")}";
+        string eEnv = $"{(eBlizzard ? "[Bão Tuyết] " : "")}{(eMagnet ? "[Từ Trường]" : "")}";
+
+        Debug.Log($"[Sân Player] Thời tiết: {(string.IsNullOrEmpty(pEnv) ? "Bình thường" : pEnv)}");
+        Debug.Log($"[Sân Enemy]  Thời tiết: {(string.IsNullOrEmpty(eEnv) ? "Bình thường" : eEnv)}");
+        Debug.Log("<color=cyan>════════════════════════════════════════</color>");
+
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
         {
             entity.OnTurnStart();
