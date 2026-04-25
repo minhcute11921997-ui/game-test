@@ -82,6 +82,28 @@ public class CommandPhaseController : MonoBehaviour
         _lastHoverPos = new GridPos(-999, -999);
     }
 
+    void ShowAttackHighlightColored(GridPos from)
+    {
+        _validAttackCells = GetAttackableCells(from, _selectedEntity.TeamId);
+
+        MoveData move = _selectedEntity.GetMove();
+        // Màu highlight tương ứng category
+        Color hlColor = move?.category switch
+        {
+            MoveCategory.Physical => new Color(1f, 0.55f, 0.2f, 0.6f),
+            MoveCategory.Special => new Color(0.3f, 0.55f, 1f, 0.6f),
+            MoveCategory.Status when move.statusSubType == StatusSubType.Buff
+                                     => new Color(0.3f, 1f, 0.5f, 0.6f),
+            MoveCategory.Status when move.statusSubType == StatusSubType.Debuff
+                                     => new Color(0.8f, 0.3f, 1f, 0.6f),
+            MoveCategory.Status => new Color(1f, 0.5f, 0.8f, 0.6f),
+            _ => new Color(0.8f, 0.8f, 0.8f, 0.6f),
+        };
+
+        BattleGridManager.Instance.ShowHighlightColored(_validAttackCells, hlColor);
+        _lastHoverPos = new GridPos(-999, -999);
+    }
+
     List<GridPos> GetAttackableCells(GridPos from, int teamId)
     {
         var result = new List<GridPos>();
@@ -165,6 +187,21 @@ public class CommandPhaseController : MonoBehaviour
     void OnMoveChosen(MoveData move)
     {
         _selectedEntity.SetChosenMove(move);
+        MoveSelectionUI.Instance.Hide(); // ẩn UI trước khi hiện highlight
+
+        // Nếu là chiêu Môi Trường → bỏ qua bước chọn ô tấn công
+        if (move.category == MoveCategory.Environment)
+        {
+            var envCmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
+            BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, envCmd);
+            _currentUnitIndex++;
+            if (_currentUnitIndex < _playerEntities.Count)
+                SelectUnit(_playerEntities[_currentUnitIndex]);
+            else
+                SubmitEnemyCommands();
+            return;
+        }
+
         GoToAttackStep();
         Debug.Log($"[Command] Chiêu: {move.moveName}");
     }
@@ -172,7 +209,7 @@ public class CommandPhaseController : MonoBehaviour
     void GoToAttackStep()
     {
         _step = InputStep.SelectAttack;
-        ShowAttackHighlight(_pendingMove);
+        ShowAttackHighlightColored(_pendingMove);
     }
 
     // ── Bước 3: Chọn ô tấn công ──────────────────────────────────

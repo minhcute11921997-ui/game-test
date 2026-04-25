@@ -175,6 +175,19 @@ public class BattleGridManager : MonoBehaviour
         }
     }
 
+    public void ShowHighlightColored(IEnumerable<GridPos> cells, Color color)
+    {
+        tilemapHighlight.ClearAllTiles();
+        _highlightedCells.Clear();
+        foreach (var p in cells)
+        {
+            var pos = new Vector3Int(p.col, p.row, 0);
+            tilemapHighlight.SetTile(pos, tileHighlight);
+            tilemapHighlight.SetColor(pos, color);
+            _highlightedCells.Add(p);
+        }
+    }
+
     public void ClearHighlight()
     {
         tilemapHighlight.ClearAllTiles();
