@@ -77,7 +77,6 @@
     <Compile Include="Assets\_Project\Scripts\Combat\EnemyAIBrain.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\AIDifficulty.cs" />
     <Compile Include="Assets\_Project\Scripts\UI\MoveSelectionUI.cs" />
-    <Compile Include="Assets\_Project\Scripts\Combat\BattleInputHandler.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleCommand.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\MoveData.cs" />
   </ItemGroup>
