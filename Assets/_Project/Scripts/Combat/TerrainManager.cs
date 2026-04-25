@@ -187,4 +187,9 @@ public class TerrainManager : MonoBehaviour
             RemoveTerrain(pos);
         }
     }
+
+    public void OnTurnStart()
+    {
+        _enteredThisTurn.Clear();
+    }
 }

@@ -45,6 +45,7 @@ public class BattlePhaseManager : MonoBehaviour
             entity.IncrementTurnCount();
         }
 
+        TerrainManager.Instance.OnTurnStart();
         CommandPhaseController.Instance.BeginInput();
     }
 
@@ -190,7 +191,7 @@ public class BattlePhaseManager : MonoBehaviour
         else if (move.envCategory == EnvironmentCategory.Terrain)
         {
             var cells = BattleGridManager.Instance.GetAoECells(
-                cmd.attackTarget, move.terrainShape, attacker.GridPos, 1);
+                cmd.attackTarget, move.terrainShape, attacker.GridPos, move.aoeRadius);
 
             foreach (var cell in cells)
                 TerrainManager.Instance.PlaceTerrain(cell, move);
@@ -202,19 +203,17 @@ public class BattlePhaseManager : MonoBehaviour
 
     WeatherTarget ResolveWeatherTarget(BattleCommand cmd, MoveData move)
     {
+        // Nếu move đã khai báo Both → tôn trọng ngay, không cần đọc attackTarget
         if (move.weatherTarget == WeatherTarget.Both)
             return WeatherTarget.Both;
 
-        if (!cmd.HasAttack)
-            return move.weatherTarget;
+        // Nếu không có attackTarget rõ ràng → dùng weatherTarget của move
+        if (!cmd.HasAttack || cmd.attackTarget.Equals(cmd.moveTarget))
+            return move.weatherTarget;   // ← FIX: trả về đúng target của move
 
         var cfg = BattleGridManager.Instance.config;
-
-        if (cmd.attackTarget.col <= cfg.LeftMaxCol)
-            return WeatherTarget.TeamLeft;
-
-        if (cmd.attackTarget.col >= cfg.RightMinCol)
-            return WeatherTarget.TeamRight;
+        if (cmd.attackTarget.col <= cfg.LeftMaxCol) return WeatherTarget.TeamLeft;
+        if (cmd.attackTarget.col >= cfg.RightMinCol) return WeatherTarget.TeamRight;
 
         return move.weatherTarget;
     }
