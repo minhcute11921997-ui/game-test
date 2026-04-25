@@ -46,6 +46,10 @@ public class BattlePhaseManager : MonoBehaviour
         Debug.Log($"[Sân Enemy]  Thời tiết: {(string.IsNullOrEmpty(eEnv) ? "Bình thường" : eEnv)}");
         Debug.Log("<color=cyan>════════════════════════════════════════</color>");
 
+        var allAlive = BattleGridManager.Instance.GetAllEntities();
+        TerrainManager.Instance.OnTurnEnd(allAlive);
+        WeatherManager.Instance.OnTurnEnd();
+
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
         {
             entity.OnTurnStart();
@@ -236,9 +240,7 @@ public class BattlePhaseManager : MonoBehaviour
         yield return null;
 
         // ── Hiệu ứng cuối lượt ───────────────────────────────────────
-        var allAlive = BattleGridManager.Instance.GetAllEntities();
-        TerrainManager.Instance.OnTurnEnd(allAlive);
-        WeatherManager.Instance.OnTurnEnd();
+
 
         // ── Kiểm tra kết thúc trận ───────────────────────────────────
         if (resultManager != null && resultManager.CheckBattleEnd())
