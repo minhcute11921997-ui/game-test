@@ -161,15 +161,21 @@ public class CommandPhaseController : MonoBehaviour
 
     void UpdateAoEPreview(GridPos hoverPos)
     {
-
         MoveData move = _selectedEntity.GetMove();
         if (move == null) return;
-        // ✅ Lấy Shape và Radius thực tế (đã trừ hao bão tuyết)
-        WeatherManager.Instance.GetEffectiveAoE(_selectedEntity.TeamId, move.shape, move.aoeRadius, out AttackShape effShape, out int effRadius);
+
+        WeatherManager.Instance.GetEffectiveAoE(
+            _selectedEntity.TeamId,
+            move.shape,
+            move.aoeRadius,
+            out AttackShape effShape,
+            out int effRadius
+        );
 
         var grid = BattleGridManager.Instance;
+
         if (_validAttackCells.Contains(hoverPos))
-            grid.ShowAoEPreview(grid.GetAoECells(hoverPos, move.shape, _pendingMove, effRadius));
+            grid.ShowAoEPreview(grid.GetAoECells(hoverPos, effShape, _pendingMove, effRadius));
         else
             grid.ShowHighlight(_validAttackCells);
     }
