@@ -135,12 +135,10 @@ public class BattlePhaseManager : MonoBehaviour
                 attacker.IncrementBuffCount(); // ← THÊM: ULTRA archetype dùng
 
             // ── Bão Tuyết: thu nhỏ AoE
-            AttackShape effectiveShape = move.shape;
-            int effectiveRadius = move.aoeRadius;
-            ApplyBlizzardEffect(attacker, ref effectiveShape, ref effectiveRadius);
+            WeatherManager.Instance.GetEffectiveAoE(attacker.TeamId, move.shape, move.aoeRadius, out AttackShape effectiveShape, out int effectiveRadius);
 
             var cells = BattleGridManager.Instance.GetAoECells(
-                cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
+    cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
 
             foreach (var cell in cells)
             {
@@ -196,30 +194,6 @@ public class BattlePhaseManager : MonoBehaviour
         }
     }
 
-    // ── Bão Tuyết: thu nhỏ shape ──────────────────────────────────
-    void ApplyBlizzardEffect(BattleEntity attacker, ref AttackShape shape, ref int radius)
-    {
-        if (!WeatherManager.Instance.IsBlizzardActive(attacker.TeamId)) return;
-
-        switch (shape)
-        {
-            case AttackShape.Square3x3:
-                shape = AttackShape.Square2x2;
-                radius = Mathf.Max(1, radius - 1);
-                Debug.Log("[Weather] Bão Tuyết: Square3x3 → Square2x2");
-                break;
-            case AttackShape.Square2x2:
-                shape = AttackShape.Single;
-                radius = 1;
-                Debug.Log("[Weather] Bão Tuyết: Square2x2 → Single");
-                break;
-            case AttackShape.Cross:
-                radius = Mathf.Max(0, radius - 1);
-                if (radius == 0) shape = AttackShape.Single;
-                Debug.Log($"[Weather] Bão Tuyết: Cross radius → {radius}");
-                break;
-        }
-    }
 
     // ── Helper: tính cellDistanceType ─────────────────────────────
     int CalcDistType(AttackShape shape, GridPos cell, GridPos center)

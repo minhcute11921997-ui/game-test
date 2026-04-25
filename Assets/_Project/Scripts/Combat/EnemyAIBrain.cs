@@ -5,33 +5,33 @@ public static class EnemyAIBrain
 {
     // ── Entry point duy nhất ────────────────────────────────────────
     public static BattleCommand Decide(BattleEntity enemy, List<BattleEntity> players)
-{   
-    
-    
-    if (players.Count == 0)
-        return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
+    {
 
-    AIDifficulty   diff      = enemy.Data.aiDifficulty;
-    ThingArchetype archetype = enemy.Data.archetype;
 
-    MoveData chosenMove  = PickMove(enemy, players, diff, archetype);
-    GridPos  moveTarget  = PickMoveTarget(enemy, players, diff, archetype);
-    GridPos  attackTarget = chosenMove != null
-        ? PickAttackTarget(enemy, players, diff, archetype, moveTarget, chosenMove)
-        : new GridPos(-1, -1); // null move = bỏ lượt tấn công
+        if (players.Count == 0)
+            return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
 
-    enemy.SetChosenMove(chosenMove);
+        AIDifficulty diff = enemy.Data.aiDifficulty;
+        ThingArchetype archetype = enemy.Data.archetype;
 
-    Debug.Log($"[AI] {enemy.Data.thingName} | Diff:{enemy.Data.aiDifficulty} | Arch:{enemy.Data.archetype}");
-    Debug.Log($"[AI] PickMove → {chosenMove?.moveName ?? "BỎ LƯỢT"}");
-    Debug.Log($"[AI] MoveTarget:{moveTarget} | AttackTarget:{attackTarget}");
+        MoveData chosenMove = PickMove(enemy, players, diff, archetype);
+        GridPos moveTarget = PickMoveTarget(enemy, players, diff, archetype);
+        GridPos attackTarget = chosenMove != null
+            ? PickAttackTarget(enemy, players, diff, archetype, moveTarget, chosenMove)
+            : new GridPos(-1, -1); // null move = bỏ lượt tấn công
 
-    return (chosenMove != null && attackTarget.col >= 0)
-        ? BattleCommand.MoveAndAttack(moveTarget, attackTarget)
-        : BattleCommand.MoveOnly(enemy.GridPos, moveTarget);
+        enemy.SetChosenMove(chosenMove);
 
-        
-}
+        Debug.Log($"[AI] {enemy.Data.thingName} | Diff:{enemy.Data.aiDifficulty} | Arch:{enemy.Data.archetype}");
+        Debug.Log($"[AI] PickMove → {chosenMove?.moveName ?? "BỎ LƯỢT"}");
+        Debug.Log($"[AI] MoveTarget:{moveTarget} | AttackTarget:{attackTarget}");
+
+        return (chosenMove != null && attackTarget.col >= 0)
+            ? BattleCommand.MoveAndAttack(moveTarget, attackTarget)
+            : BattleCommand.MoveOnly(enemy.GridPos, moveTarget);
+
+
+    }
 
     // ════════════════════════════════════════════════════════════════
     // CHỌN CHIÊU — theo Archetype trước, Difficulty filter sau
@@ -40,7 +40,7 @@ public static class EnemyAIBrain
                              AIDifficulty diff, ThingArchetype archetype)
     {
         var moves = enemy.Data.moves;
-if (moves.Count == 0) return null;
+        if (moves.Count == 0) return null;
 
         switch (archetype)
         {
@@ -51,12 +51,12 @@ if (moves.Count == 0) return null;
                 return moves[Random.Range(0, moves.Count)];
 
             case ThingArchetype.Defender:
-    if (enemy.TurnCount % 3 == 0 && enemy.TurnCount > 0) // ← đổi từ % 3 == 2
-    {
-        var buffMove = FindStatusMove(moves, "def");
-        if (buffMove != null) return buffMove;
-    }
-    return PickMoveByDifficulty(enemy, players, moves, diff);
+                if (enemy.TurnCount % 3 == 0 && enemy.TurnCount > 0) // ← đổi từ % 3 == 2
+                {
+                    var buffMove = FindStatusMove(moves, "def");
+                    if (buffMove != null) return buffMove;
+                }
+                return PickMoveByDifficulty(enemy, players, moves, diff);
 
             case ThingArchetype.Setup:
                 // 2 lượt đầu: luôn dùng buff/debuff
@@ -174,7 +174,7 @@ if (moves.Count == 0) return null;
         var playerAoECells = GetAllPlayerAoECells(players);
 
         var outsideAoE = reachable.FindAll(p => !playerAoECells.Contains(p));
-        var insideAoE  = reachable.FindAll(p => playerAoECells.Contains(p));
+        var insideAoE = reachable.FindAll(p => playerAoECells.Contains(p));
 
         if (Random.value < 0.85f)
         {
@@ -278,34 +278,35 @@ if (moves.Count == 0) return null;
     // ════════════════════════════════════════════════════════════════
 
     static List<GridPos> GetReachable(BattleEntity enemy)
-{
-    var result = new List<GridPos>();
-    var cfg    = BattleGridManager.Instance.config;
-    GridPos origin = enemy.GridPos;
-    int range = enemy.MoveRange;
+    {
+        if (enemy.IsImmobilized()) return new List<GridPos> { enemy.GridPos };
+        var result = new List<GridPos>();
+        var cfg = BattleGridManager.Instance.config;
+        GridPos origin = enemy.GridPos;
+        int range = enemy.MoveRange;
 
-    for (int dc = -range; dc <= range; dc++)
-        for (int dr = -range; dr <= range; dr++)
-        {
-            if (Mathf.Abs(dc) + Mathf.Abs(dr) > range) continue; // ← THÊM
-            int c = origin.col + dc, r = origin.row + dr;
-            if (!cfg.IsWalkable(c, r)) continue;
-            if (cfg.GetTeam(c) != enemy.TeamId) continue;
-            var pos = new GridPos(c, r);
-            if (BattleGridManager.Instance.IsOccupied(pos) && pos != origin) continue;
-            result.Add(pos);
-        }
+        for (int dc = -range; dc <= range; dc++)
+            for (int dr = -range; dr <= range; dr++)
+            {
+                if (Mathf.Abs(dc) + Mathf.Abs(dr) > range) continue; // ← THÊM
+                int c = origin.col + dc, r = origin.row + dr;
+                if (!cfg.IsWalkable(c, r)) continue;
+                if (cfg.GetTeam(c) != enemy.TeamId) continue;
+                var pos = new GridPos(c, r);
+                if (BattleGridManager.Instance.IsOccupied(pos) && pos != origin) continue;
+                result.Add(pos);
+            }
 
-    if (result.Count == 0) result.Add(origin);
-    return result;
-}
+        if (result.Count == 0) result.Add(origin);
+        return result;
+    }
 
     static List<GridPos> GetAttackable(GridPos from, int teamId)
     {
         var result = new List<GridPos>();
         var cfg = BattleGridManager.Instance.config;
         int colStart = teamId == 0 ? cfg.RightMinCol : 0;
-        int colEnd   = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
+        int colEnd = teamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
         for (int c = colStart; c <= colEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
                 result.Add(new GridPos(c, r));
@@ -325,18 +326,21 @@ if (moves.Count == 0) return null;
     }
 
     static HashSet<GridPos> GetAllPlayerAoECells(List<BattleEntity> players)
-{
-    var result = new HashSet<GridPos>();
-    foreach (var p in players)
     {
-        MoveData move = p.GetMove(); // ← đổi từ p.Data.defaultMove
-        if (move == null) continue;
-        var aoe = BattleGridManager.Instance.GetAoECells(
-            p.GridPos, move.shape, p.GridPos, move.aoeRadius);
-        foreach (var cell in aoe) result.Add(cell);
+        var result = new HashSet<GridPos>();
+        foreach (var p in players)
+        {
+            MoveData move = p.GetMove();
+            if (move == null) continue;
+
+            // ✅ AI tính đúng vùng AoE sau khi bị bão tuyết tác động
+            WeatherManager.Instance.GetEffectiveAoE(p.TeamId, move.shape, move.aoeRadius, out AttackShape effShape, out int effRadius);
+
+            var aoe = BattleGridManager.Instance.GetAoECells(p.GridPos, effShape, p.GridPos, effRadius);
+            foreach (var cell in aoe) result.Add(cell);
+        }
+        return result;
     }
-    return result;
-}
 
     static BattleEntity FindFinishTarget(BattleEntity enemy, List<BattleEntity> players, MoveData move)
     {

@@ -6,15 +6,15 @@ public class BattleEntity : MonoBehaviour
     [HideInInspector] public int TeamId;
     [HideInInspector] public EntityHpBar hpBar;
 
-    public int Speed     { get; private set; }
+    public int Speed { get; private set; }
     public int MoveRange { get; private set; }
     public ThingData Data { get; private set; }
 
     // ── AI State Tracking ─────────────────────────────────────────
-    public GridPos LastGridPos  { get; private set; }
-    public GridPos LastMoveDir  { get; private set; }
-    public int     AIBuffCount  { get; private set; }
-    public int     TurnCount    { get; private set; }
+    public GridPos LastGridPos { get; private set; }
+    public GridPos LastMoveDir { get; private set; }
+    public int AIBuffCount { get; private set; }
+    public int TurnCount { get; private set; }
 
     public int Level => Data != null ? Data.level : 1;
 
@@ -29,9 +29,15 @@ public class BattleEntity : MonoBehaviour
     private bool _lockedNextTurn = false;
     public bool CanMove => _canMove;
 
+    public bool IsImmobilized()
+    {
+        // Bị trói nếu: dẫm bẫy gai (!CanMove) HOẶC vi phạm Từ Trường
+        return !_canMove || IsForcedStillByMagnet();
+    }
+
     // ── Chiêu AI chọn lượt này ───────────────────────────────────
     private MoveData _chosenMove;
-    public MoveData GetMove()=> _chosenMove ?? Data?.defaultMove;
+    public MoveData GetMove() => _chosenMove ?? Data?.defaultMove;
     public void SetChosenMove(MoveData move) => _chosenMove = move;
 
     // ── Từ Trường ─────────────────────────────────────────────────
@@ -40,18 +46,18 @@ public class BattleEntity : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
     public void Init(ThingData data, int teamId)
     {
-        Data      = data;
-        TeamId    = teamId;
+        Data = data;
+        TeamId = teamId;
         _currentHp = data.hp;
-        _maxHp     = data.hp;
-        Speed     = (int)data.speed;
+        _maxHp = data.hp;
+        Speed = (int)data.speed;
         MoveRange = data.moveRange;
 
         // Reset AI state
         LastMoveDir = new GridPos(0, 0);
         LastGridPos = new GridPos(0, 0);
         AIBuffCount = 0;
-        TurnCount   = 0;
+        TurnCount = 0;
 
         Debug.Log($"[BattleEntity] Spawn {data.thingName} | Team {teamId} | HP {_currentHp} | Spd {Speed}");
     }
@@ -59,7 +65,7 @@ public class BattleEntity : MonoBehaviour
     // ── Đầu lượt ─────────────────────────────────────────────────
     public void OnTurnStart()
     {
-        _canMove        = !_lockedNextTurn;
+        _canMove = !_lockedNextTurn;
         _lockedNextTurn = false;
         _moveCountThisCycle = 0;
     }
@@ -71,7 +77,7 @@ public class BattleEntity : MonoBehaviour
     public void TakeDamage(int dmg, bool isCrit = false)
     {
         _currentHp = Mathf.Max(0, _currentHp - dmg);
-        float pct  = (float)_currentHp / _maxHp * 100f;
+        float pct = (float)_currentHp / _maxHp * 100f;
         Debug.Log($"[HP] {Data.thingName}: {_currentHp}/{_maxHp} ({pct:F0}%)");
 
         DamagePopup.Create(transform.position, dmg, isCrit);
@@ -115,13 +121,13 @@ public class BattleEntity : MonoBehaviour
 
     // ── Chết ──────────────────────────────────────────────────────
     private bool _isDead = false;
-public bool IsDead => _isDead;    
-void Die()
-{
-    _isDead = true;
-    Debug.Log($"[Battle] {Data.thingName} bị hạ!");
-    BattleGridManager.Instance.RemoveEntity(GridPos);
-    hpBar?.gameObject.SetActive(false);
-    // Không Destroy ngay — để EndJudgePhase() dọn dẹp sau
-}
+    public bool IsDead => _isDead;
+    void Die()
+    {
+        _isDead = true;
+        Debug.Log($"[Battle] {Data.thingName} bị hạ!");
+        BattleGridManager.Instance.RemoveEntity(GridPos);
+        hpBar?.gameObject.SetActive(false);
+        // Không Destroy ngay — để EndJudgePhase() dọn dẹp sau
+    }
 }

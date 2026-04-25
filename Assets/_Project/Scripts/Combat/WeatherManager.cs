@@ -4,7 +4,7 @@ using UnityEngine;
 public class WeatherState
 {
     public WeatherType type;
-    public int         turnsLeft;
+    public int turnsLeft;
     public WeatherTarget target;
 }
 
@@ -16,10 +16,10 @@ public class WeatherManager : MonoBehaviour
     private readonly Dictionary<WeatherTarget, WeatherState> _states = new();
 
     void Awake()
-{
-    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-    Instance = this;
-}
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     // ─── Áp thời tiết mới ───────────────────────────────────────────────────
     public void ApplyWeather(MoveData move)
@@ -27,9 +27,9 @@ public class WeatherManager : MonoBehaviour
         // Đè lên target tương ứng
         _states[move.weatherTarget] = new WeatherState
         {
-            type      = move.weatherType,
+            type = move.weatherType,
             turnsLeft = move.envDuration,
-            target    = move.weatherTarget,
+            target = move.weatherTarget,
         };
         Debug.Log($"[Weather] {move.weatherType} áp vào {move.weatherTarget}, {move.envDuration} lượt");
     }
@@ -70,4 +70,29 @@ public class WeatherManager : MonoBehaviour
         => GetWeatherForTeam(team) == WeatherType.MagneticField;
 
     public void ClearAll() => _states.Clear();
+
+    public void GetEffectiveAoE(int teamId, AttackShape baseShape, int baseRadius, out AttackShape effShape, out int effRadius)
+    {
+        effShape = baseShape;
+        effRadius = baseRadius;
+
+        if (!IsBlizzardActive(teamId)) return;
+
+        switch (effShape)
+        {
+            case AttackShape.Square3x3:
+                effShape = AttackShape.Square2x2;
+                effRadius = Mathf.Max(1, effRadius - 1);
+                break;
+            case AttackShape.Square2x2:
+                effShape = AttackShape.Single;
+                effRadius = 1;
+                break;
+            case AttackShape.Cross:
+                effRadius = Mathf.Max(0, effRadius - 1);
+                if (effRadius == 0) effShape = AttackShape.Single;
+                break;
+        }
+    }
 }
+

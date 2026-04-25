@@ -51,8 +51,20 @@ public class CommandPhaseController : MonoBehaviour
     // ── Highlight di chuyển ───────────────────────────────────────
     void ShowMoveHighlight(GridPos origin)
     {
-        _validMoveCells = GetReachableCells(origin, _selectedEntity.MoveRange, _selectedEntity.TeamId);
-        BattleGridManager.Instance.ShowHighlight(_validMoveCells);
+        // Nếu đang bị trói -> Chỉ cho phép highlight đúng ô đang đứng
+        if (_selectedEntity.IsImmobilized())
+        {
+            _validMoveCells = new List<GridPos> { origin };
+
+            // Bonus: Có thể đổi màu highlight thành màu Đỏ/Vàng để cảnh báo người chơi
+            BattleGridManager.Instance.ShowHighlightColored(_validMoveCells, new Color(1f, 0.2f, 0.2f, 0.6f));
+            Debug.Log($"[Command] {_selectedEntity.name} đang bị trói bởi địa hình/thời tiết!");
+        }
+        else
+        {
+            _validMoveCells = GetReachableCells(origin, _selectedEntity.MoveRange, _selectedEntity.TeamId);
+            BattleGridManager.Instance.ShowHighlight(_validMoveCells);
+        }
     }
 
     List<GridPos> GetReachableCells(GridPos origin, int range, int teamId)
@@ -150,6 +162,8 @@ public class CommandPhaseController : MonoBehaviour
     void UpdateAoEPreview(GridPos hoverPos)
     {
         MoveData move = _selectedEntity.GetMove();
+        // ✅ Lấy Shape và Radius thực tế (đã trừ hao bão tuyết)
+        WeatherManager.Instance.GetEffectiveAoE(_selectedEntity.TeamId, move.shape, move.aoeRadius, out AttackShape effShape, out int effRadius);
         if (move == null) return;
         var grid = BattleGridManager.Instance;
         if (_validAttackCells.Contains(hoverPos))
@@ -171,6 +185,8 @@ public class CommandPhaseController : MonoBehaviour
         _step = InputStep.SelectSkill;
         BattleGridManager.Instance.ClearHighlight();
 
+        Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chuẩn bị di chuyển đến ô: {_pendingMove}");
+
         var moves = _selectedEntity.Data.AllMoves;
         if (moves == null || moves.Count == 0)
         {
@@ -188,6 +204,8 @@ public class CommandPhaseController : MonoBehaviour
     {
         _selectedEntity.SetChosenMove(move);
         MoveSelectionUI.Instance.Hide(); // ẩn UI trước khi hiện highlight
+
+        Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chọn chiêu: {move.moveName} (Môi trường: {move.category == MoveCategory.Environment})");
 
         // Nếu là chiêu Môi Trường → bỏ qua bước chọn ô tấn công
         if (move.category == MoveCategory.Environment)
@@ -221,12 +239,12 @@ public class CommandPhaseController : MonoBehaviour
         if (_validAttackCells.Contains(clicked))
         {
             cmd = BattleCommand.MoveAndAttack(_pendingMove, clicked);
-            Debug.Log($"[Command] Tấn công {clicked}");
+            Debug.Log($"<color=green>[Player Command] CHỐT LỆNH:</color> {_selectedEntity.Data.thingName} đi đến ô {_pendingMove} VÀ tấn công ô {clicked}");
         }
         else
         {
             cmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
-            Debug.Log($"[Command] Chỉ di chuyển");
+            Debug.Log($"<color=green>[Player Command] CHỐT LỆNH:</color> {_selectedEntity.Data.thingName} CHỈ đi đến ô {_pendingMove} (Bỏ qua tấn công)");
         }
 
         BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, cmd);
