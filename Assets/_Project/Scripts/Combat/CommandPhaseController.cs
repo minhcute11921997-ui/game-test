@@ -106,8 +106,8 @@ public class CommandPhaseController : MonoBehaviour
             MoveCategory.Status when move.statusSubType == StatusSubType.Debuff
                 => new Color(0.8f, 0.3f, 1f, 0.6f),
             MoveCategory.Status => new Color(1f, 0.5f, 0.8f, 0.6f),
-            MoveCategory.Environment when move.envCategory == EnvironmentCategory.Weather
-                => new Color(0.55f, 0.85f, 1f, 0.6f),
+            MoveCategory.Weather => new Color(0.55f, 0.85f, 1f, 0.6f),  // xanh trời
+            MoveCategory.Terrain => new Color(0.6f, 0.2f, 1f, 0.55f),   // tím
             _ => new Color(0.8f, 0.8f, 0.8f, 0.6f),
         };
 
@@ -121,19 +121,17 @@ public class CommandPhaseController : MonoBehaviour
         var cfg = BattleGridManager.Instance.config;
         var result = new List<GridPos>();
 
-        if (move != null && move.category == MoveCategory.Environment)
+        // Thời Tiết cả 2 sân → không cần chọn ô
+        if (move != null && move.category == MoveCategory.Weather)
         {
-            if (move.envCategory == EnvironmentCategory.Weather)
-            {
-                if (move.weatherTarget == WeatherTarget.Both)
-                    return result;
-
-                for (int c = 0; c < cfg.TotalCols; c++)
-                    for (int r = 0; r < cfg.boardRows; r++)
-                        if (cfg.IsWalkable(c, r))
-                            result.Add(new GridPos(c, r));
+            if (move.weatherTarget == WeatherTarget.Both)
                 return result;
-            }
+
+            for (int c = 0; c < cfg.TotalCols; c++)
+                for (int r = 0; r < cfg.boardRows; r++)
+                    if (cfg.IsWalkable(c, r))
+                        result.Add(new GridPos(c, r));
+            return result;
         }
 
         int colStart = _selectedEntity.TeamId == 0 ? cfg.RightMinCol : 0;
@@ -173,7 +171,6 @@ public class CommandPhaseController : MonoBehaviour
             case InputStep.SelectMove:
                 HandleMoveSelection(hoverPos);
                 break;
-
             case InputStep.SelectAttack:
                 HandleAttackSelection(hoverPos);
                 break;
@@ -196,7 +193,6 @@ public class CommandPhaseController : MonoBehaviour
             Debug.Log("<color=yellow>[Command] Lùi: Hủy chọn chiêu → Chọn lại ô di chuyển</color>");
             _step = InputStep.SelectMove;
             MoveSelectionUI.Instance.Hide();
-
             _pendingMove = new GridPos(-999, -999);
             ShowMoveHighlight(_selectedEntity.GridPos);
         }
@@ -223,7 +219,8 @@ public class CommandPhaseController : MonoBehaviour
 
         var grid = BattleGridManager.Instance;
 
-        if (move.category == MoveCategory.Environment && move.envCategory == EnvironmentCategory.Terrain)
+        // Preview Địa Hình
+        if (move.category == MoveCategory.Terrain)
         {
             if (_validAttackCells.Contains(hoverPos))
             {
@@ -277,17 +274,17 @@ public class CommandPhaseController : MonoBehaviour
         _selectedEntity.SetChosenMove(move);
         MoveSelectionUI.Instance.Hide();
 
-        Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chọn chiêu: {move.moveName} (Môi trường: {move.category == MoveCategory.Environment})");
+        Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chọn chiêu: {move.moveName} (Category: {move.category})");
 
-        if (move.category == MoveCategory.Environment && move.envCategory == EnvironmentCategory.Terrain)
+        // Địa Hình → vào bước chọn ô đặt
+        if (move.category == MoveCategory.Terrain)
         {
             GoToTerrainStep();
             return;
         }
 
-        if (move.category == MoveCategory.Environment &&
-            move.envCategory == EnvironmentCategory.Weather &&
-            move.weatherTarget == WeatherTarget.Both)
+        // Thời Tiết cả 2 sân → submit luôn không cần chọn ô
+        if (move.category == MoveCategory.Weather && move.weatherTarget == WeatherTarget.Both)
         {
             var envCmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
             BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, envCmd);
@@ -328,9 +325,7 @@ public class CommandPhaseController : MonoBehaviour
                     _validAttackCells.Add(new GridPos(c, r));
 
         BattleGridManager.Instance.ShowHighlightColored(
-            _validAttackCells,
-            new Color(0.6f, 0.2f, 1f, 0.55f)
-        );
+            _validAttackCells, new Color(0.6f, 0.2f, 1f, 0.55f));
         _lastHoverPos = new GridPos(-999, -999);
     }
 
@@ -347,7 +342,7 @@ public class CommandPhaseController : MonoBehaviour
         else
         {
             cmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
-            Debug.Log($"<color=green>[Player Command] CHỐT LỆNH:</color> {_selectedEntity.Data.thingName} CHỈ đi đến ô {_pendingMove} (Bỏ qua chọn mục tiêu)");
+            Debug.Log($"<color=green>[Player Command] CHỐT LỆNH:</color> {_selectedEntity.Data.thingName} CHỈ đi đến ô {_pendingMove}");
         }
 
         BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, cmd);

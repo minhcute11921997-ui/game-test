@@ -132,22 +132,27 @@ public class BattlePhaseManager : MonoBehaviour
             MoveData move = attacker.GetMove();
             if (move == null) continue;
 
-            if (move.category == MoveCategory.Environment)
+            // ── Thời Tiết ──────────────────────────────────────────
+            if (move.category == MoveCategory.Weather)
             {
-                HandleEnvironmentMove(attacker, cmd, move);
+                HandleWeatherMove(attacker, cmd, move);
                 continue;
             }
+
+            // ── Địa Hình ───────────────────────────────────────────
+            if (move.category == MoveCategory.Terrain)
+            {
+                HandleTerrainMove(attacker, cmd, move);
+                continue;
+            }
+
             if (!cmd.HasAttack) continue;
             if (move.category == MoveCategory.Status && attacker.TeamId == 1)
                 attacker.IncrementBuffCount();
 
             WeatherManager.Instance.GetEffectiveAoE(
-                attacker.TeamId,
-                move.shape,
-                move.aoeRadius,
-                out AttackShape effectiveShape,
-                out int effectiveRadius
-            );
+                attacker.TeamId, move.shape, move.aoeRadius,
+                out AttackShape effectiveShape, out int effectiveRadius);
 
             var cells = BattleGridManager.Instance.GetAoECells(
                 cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
@@ -160,23 +165,19 @@ public class BattlePhaseManager : MonoBehaviour
                 int distType = CalcDistType(effectiveShape, cell, cmd.attackTarget);
 
                 var r = CombatCalculator.Calculate(
-                    attacker.Data,
-                    target.Data,
-                    move,
+                    attacker.Data, target.Data, move,
                     attackerLevel: attacker.Level,
                     attackerLuck: attacker.Data.luck,
                     aoeShape: effectiveShape,
-                    cellDistanceType: distType
-                );
+                    cellDistanceType: distType);
 
                 string eff = r.typeMultiplier > 1f ? " HIỆU QUẢ!" :
-                             r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
+                              r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
                 string crit = r.isCritical ? " CHÍ MẠNG!" : "";
                 string stab = r.isStab ? " [STAB]" : "";
 
                 Debug.Log($"[Combat] {attacker.Data.thingName}{stab} → " +
-                          $"{target.Data.thingName}: {r.damage} dmg " +
-                          $"(x{r.typeMultiplier}){eff}{crit}");
+                          $"{target.Data.thingName}: {r.damage} dmg (x{r.typeMultiplier}){eff}{crit}");
 
                 target.TakeDamage(r.damage, r.isCritical);
             }
@@ -185,38 +186,34 @@ public class BattlePhaseManager : MonoBehaviour
         StartCoroutine(EndJudgePhase());
     }
 
-    // ── Xử lý chiêu Môi Trường ────────────────────────────────────
-    void HandleEnvironmentMove(BattleEntity attacker, BattleCommand cmd, MoveData move)
+    // ── Xử lý chiêu Thời Tiết ────────────────────────────────────
+    void HandleWeatherMove(BattleEntity attacker, BattleCommand cmd, MoveData move)
     {
-        if (move.envCategory == EnvironmentCategory.Weather)
-        {
-            WeatherTarget target = ResolveWeatherTarget(cmd, move);
-            WeatherManager.Instance.ApplyWeather(move, target);
-            Debug.Log($"[Env] {attacker.name} tung thời tiết: {move.weatherType} → {target}");
-        }
-        else if (move.envCategory == EnvironmentCategory.Terrain)
-        {
-            var cells = BattleGridManager.Instance.GetAoECells(
-                cmd.attackTarget, move.terrainShape, attacker.GridPos, move.aoeRadius);
+        WeatherTarget target = ResolveWeatherTarget(cmd, move);
+        WeatherManager.Instance.ApplyWeather(move, target);
+        Debug.Log($"[Weather] {attacker.name} tung thời tiết: {move.weatherType} → {target}");
+    }
 
-            foreach (var cell in cells)
-                TerrainManager.Instance.PlaceTerrain(cell, move);
+    // ── Xử lý chiêu Địa Hình ─────────────────────────────────────
+    void HandleTerrainMove(BattleEntity attacker, BattleCommand cmd, MoveData move)
+    {
+        var cells = BattleGridManager.Instance.GetAoECells(
+            cmd.attackTarget, move.terrainShape, attacker.GridPos, move.aoeRadius);
 
-            Debug.Log($"<color=magenta>[EnvMove ENTER]</color> {attacker.name} | " +
-          $"envCategory={move.envCategory} | " +
-          $"attackTarget={cmd.attackTarget} | HasAttack={cmd.HasAttack}");
-        }
+        foreach (var cell in cells)
+            TerrainManager.Instance.PlaceTerrain(cell, move);
+
+        Debug.Log($"<color=magenta>[Terrain]</color> {attacker.name} đặt {move.terrainEffect} | " +
+                  $"target={cmd.attackTarget} | {cells.Count} ô");
     }
 
     WeatherTarget ResolveWeatherTarget(BattleCommand cmd, MoveData move)
     {
-        // Nếu move đã khai báo Both → tôn trọng ngay, không cần đọc attackTarget
         if (move.weatherTarget == WeatherTarget.Both)
             return WeatherTarget.Both;
 
-        // Nếu không có attackTarget rõ ràng → dùng weatherTarget của move
         if (!cmd.HasAttack || cmd.attackTarget.Equals(cmd.moveTarget))
-            return move.weatherTarget;   // ← FIX: trả về đúng target của move
+            return move.weatherTarget;
 
         var cfg = BattleGridManager.Instance.config;
         if (cmd.attackTarget.col <= cfg.LeftMaxCol) return WeatherTarget.TeamLeft;
@@ -225,7 +222,6 @@ public class BattlePhaseManager : MonoBehaviour
         return move.weatherTarget;
     }
 
-    // ── Helper: tính cellDistanceType ─────────────────────────────
     int CalcDistType(AttackShape shape, GridPos cell, GridPos center)
     {
         if (shape != AttackShape.Square3x3) return 0;
@@ -243,9 +239,7 @@ public class BattlePhaseManager : MonoBehaviour
 
         var deadEntities = new List<BattleEntity>();
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
-        {
             if (entity.IsDead) deadEntities.Add(entity);
-        }
 
         foreach (var dead in deadEntities)
             Destroy(dead.gameObject);

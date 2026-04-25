@@ -19,8 +19,11 @@ public enum MoveCategory
     [InspectorName("Vật Lý")] Physical,
     [InspectorName("Đặc Biệt")] Special,
     [InspectorName("Trạng Thái")] Status,
-    [InspectorName("Môi Trường")] Environment,
+    [InspectorName("Thời Tiết")] Weather,   // ← tách ra
+    [InspectorName("Địa Hình")] Terrain,   // ← tách ra
 }
+
+// EnvironmentCategory đã bị XÓA — không dùng nữa
 
 public enum StatusSubType
 {
@@ -28,6 +31,7 @@ public enum StatusSubType
     [InspectorName("Debuff (Giảm chỉ số)")] Debuff,
     [InspectorName("Hồi Phục (Heal)")] Heal,
 }
+
 public enum AttackShape
 {
     [InspectorName("Đơn (1 ô)")] Single,
@@ -35,12 +39,6 @@ public enum AttackShape
     [InspectorName("Vuông 2×2")] Square2x2,
     [InspectorName("Vuông 3×3")] Square3x3,
     [InspectorName("Đường Thẳng")] Line,
-}
-
-public enum EnvironmentCategory
-{
-    [InspectorName("Thời Tiết")] Weather,
-    [InspectorName("Địa Hình")] Terrain,
 }
 
 public enum WeatherType
@@ -77,21 +75,19 @@ public class MoveData : ScriptableObject
 
     [Header("Chiêu Tấn Công")]
     public AttackShape shape = AttackShape.Single;
-    [Range(1, 5)] public int aoeRadius = 1; // bán kính AoE (dùng cho Cross, Square)
+    [Range(1, 5)] public int aoeRadius = 1;
     [Range(0, 200)] public int basePower = 40;
     [Range(0, 100)] public int accuracy = 100;
     public int pp = 20;
 
-    [Header("Môi Trường (chỉ dùng khi category = Environment)")]
-    public EnvironmentCategory envCategory = EnvironmentCategory.Weather;
-    public int envDuration = 5;             // số lượt tồn tại
-
-    [Header("Thời Tiết")]
+    [Header("Thời Tiết (chỉ dùng khi category = Weather)")]
     public WeatherType weatherType = WeatherType.None;
     public WeatherTarget weatherTarget = WeatherTarget.Both;
+    public int weatherDuration = 5;
 
-    [Header("Địa Hình")]
+    [Header("Địa Hình (chỉ dùng khi category = Terrain)")]
     public TerrainEffectType terrainEffect = TerrainEffectType.None;
-    public AttackShape terrainShape = AttackShape.Single; // vùng đặt terrain
-    public int terrainMaxCount = 1;         // giới hạn ô cùng lúc trên 2 sân
+    public AttackShape terrainShape = AttackShape.Single;
+    public int terrainMaxCount = 1;
+    public int terrainDuration = 3;
 }

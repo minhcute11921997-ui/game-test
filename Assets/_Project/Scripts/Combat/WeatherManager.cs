@@ -13,10 +13,7 @@ public class WeatherManager : MonoBehaviour
 {
     public static WeatherManager Instance;
 
-    // Mỗi phạm vi lưu 1 state (Both / TeamLeft / TeamRight)
     private readonly Dictionary<WeatherTarget, WeatherState> _states = new();
-
-    // Đếm thứ tự apply thực tế, để chiêu resolve sau thắng
     private int _applyOrderCounter = 0;
 
     void Awake()
@@ -36,12 +33,12 @@ public class WeatherManager : MonoBehaviour
         _states[target] = new WeatherState
         {
             type = move.weatherType,
-            turnsLeft = move.envDuration,
+            turnsLeft = move.weatherDuration,   // ← đổi từ envDuration
             target = target,
             appliedAt = ++_applyOrderCounter
         };
 
-        Debug.Log($"[Weather] {move.weatherType} áp vào {target}, {move.envDuration} lượt (order {_applyOrderCounter})");
+        Debug.Log($"[Weather] {move.weatherType} áp vào {target}, {move.weatherDuration} lượt (order {_applyOrderCounter})");
     }
 
     // ─── Lấy thời tiết đang ảnh hưởng team ───────────────────────
@@ -61,7 +58,7 @@ public class WeatherManager : MonoBehaviour
         return WeatherType.None;
     }
 
-    // ─── Giảm lượt cuối/đầu lượt ──────────────────────────────────
+    // ─── Giảm lượt cuối lượt ──────────────────────────────────────
     public void OnTurnEnd()
     {
         var keys = new List<WeatherTarget>(_states.Keys);
@@ -88,7 +85,8 @@ public class WeatherManager : MonoBehaviour
         _applyOrderCounter = 0;
     }
 
-    public void GetEffectiveAoE(int teamId, AttackShape baseShape, int baseRadius, out AttackShape effShape, out int effRadius)
+    public void GetEffectiveAoE(int teamId, AttackShape baseShape, int baseRadius,
+                                out AttackShape effShape, out int effRadius)
     {
         effShape = baseShape;
         effRadius = baseRadius;
