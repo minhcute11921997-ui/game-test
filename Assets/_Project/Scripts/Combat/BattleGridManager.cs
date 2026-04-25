@@ -15,6 +15,7 @@ public class BattleGridManager : MonoBehaviour
     public Tilemap tilemapGap;
     public Tilemap tilemapHighlight;
     public Tilemap tilemapGrid;
+    public Tilemap tilemapTerrain;
 
     [Header("Tiles — kéo vào từ Project")]
     public TileBase tileLeft;
@@ -22,6 +23,8 @@ public class BattleGridManager : MonoBehaviour
     public TileBase tileGap;
     public TileBase tileHighlight;
     public TileBase tileGrid;
+    public TileBase tileTerrainBurn;
+    public TileBase tileTerrainThorn;
 
 
 
@@ -33,6 +36,10 @@ public class BattleGridManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         if (tileGrid == null) tileGrid = CreateGridTile();
+        if (tileTerrainBurn == null)
+            tileTerrainBurn = CreateSolidColorTile(new Color(1f, 0.3f, 0f, 0.55f));
+        if (tileTerrainThorn == null)
+            tileTerrainThorn = CreateSolidColorTile(new Color(0.1f, 0.7f, 0.1f, 0.55f));
 
         BuildGrid();
         FitCamera();
@@ -306,6 +313,24 @@ public class BattleGridManager : MonoBehaviour
         return new List<BattleEntity>(_occupied.Values);
     }
 
+    public TileBase CreateSolidColorTile(Color color)
+    {
+        int size = 32;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        Color[] pixels = new Color[size * size];
+        for (int i = 0; i < pixels.Length; i++) pixels[i] = color;
+        tex.SetPixels(pixels);
+        tex.Apply();
+
+        var sprite = Sprite.Create(tex, new Rect(0, 0, size, size),
+            new Vector2(0.5f, 0.5f), size);
+
+        var tile = ScriptableObject.CreateInstance<Tile>();
+        tile.sprite = sprite;
+        tile.color = Color.white;
+        return tile;
+    }
 
 
 }

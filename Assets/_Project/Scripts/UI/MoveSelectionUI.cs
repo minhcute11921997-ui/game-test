@@ -64,4 +64,13 @@ public class MoveSelectionUI : MonoBehaviour
         Hide();
         _onMoveChosen?.Invoke(move);
     }
+
+    public void OnCancelButtonClicked()
+    {
+        // Gọi thẳng vào logic lùi bước của Controller
+        if (CommandPhaseController.Instance != null)
+        {
+            CommandPhaseController.Instance.StepBack();
+        }
+    }
 }

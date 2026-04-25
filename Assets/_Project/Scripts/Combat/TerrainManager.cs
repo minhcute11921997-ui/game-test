@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.Tilemaps;
 public class TerrainCell
 {
     public GridPos pos;
@@ -20,7 +20,48 @@ public class TerrainManager : MonoBehaviour
 
     // Lưu danh sách ô theo từng loại để dễ kiểm tra giới hạn
     private readonly Dictionary<TerrainEffectType, List<GridPos>> _byType = new();
+    private readonly HashSet<BattleEntity> _enteredThisTurn = new();
+    void RefreshTerrainVisual(GridPos pos, TerrainEffectType type)
+    {
+        var grid = BattleGridManager.Instance;
+        if (grid.tilemapTerrain == null) return;
 
+        TileBase tile = type switch
+        {
+            TerrainEffectType.BurnMark => grid.tileTerrainBurn,
+            TerrainEffectType.ThornTrap => grid.tileTerrainThorn,
+            _ => null
+        };
+        if (tile == null) return;
+
+        var cell = new Vector3Int(pos.col, pos.row, 0);
+        grid.tilemapTerrain.SetTile(cell, tile);
+
+        // Đặt màu có alpha để phân biệt với highlight
+        Color c = type switch
+        {
+            TerrainEffectType.BurnMark => new Color(1f, 0.3f, 0f, 0.55f),   // cam đỏ
+            TerrainEffectType.ThornTrap => new Color(0.1f, 0.7f, 0.1f, 0.55f), // xanh lá
+            _ => Color.white
+        };
+        grid.tilemapTerrain.SetColor(cell, c);
+    }
+
+    void ClearTerrainVisual(GridPos pos)
+    {
+        var grid = BattleGridManager.Instance;
+        if (grid.tilemapTerrain == null) return;
+        grid.tilemapTerrain.SetTile(new Vector3Int(pos.col, pos.row, 0), null);
+    }
+
+    // Thêm method ClearAllTerrain (gọi từ ClearAll):
+    public void ClearAll()
+    {
+        foreach (var pos in _cells.Keys)
+            ClearTerrainVisual(pos);
+        _cells.Clear();
+        _byType.Clear();
+    }
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -58,6 +99,7 @@ public class TerrainManager : MonoBehaviour
             element = move.elementType,
         };
         _cells[pos] = cell;
+        RefreshTerrainVisual(pos, cell.effectType);
         _byType[effectType].Add(pos);
 
         Debug.Log($"[Terrain] Đặt {effectType} tại {pos}, còn {move.envDuration} lượt");
@@ -69,6 +111,7 @@ public class TerrainManager : MonoBehaviour
         if (!_cells.TryGetValue(pos, out var cell)) return;
         _byType[cell.effectType].Remove(pos);
         _cells.Remove(pos);
+        ClearTerrainVisual(pos);
     }
 
     // ─── Lấy terrain tại ô ──────────────────────────────────────────────────
@@ -96,7 +139,7 @@ public class TerrainManager : MonoBehaviour
                 break;
         }
     }
-    private readonly HashSet<BattleEntity> _enteredThisTurn = new();
+
     // ─── Gọi cuối mỗi lượt ──────────────────────────────────────────────────
     public void OnTurnEnd(List<BattleEntity> allEntities)
     {
@@ -144,6 +187,4 @@ public class TerrainManager : MonoBehaviour
             RemoveTerrain(pos);
         }
     }
-
-    public void ClearAll() { _cells.Clear(); _byType.Clear(); }
 }

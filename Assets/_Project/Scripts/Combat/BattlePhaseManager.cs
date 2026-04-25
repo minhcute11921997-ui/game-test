@@ -1,4 +1,3 @@
-// Assets/_Project/Scripts/Combat/BattlePhaseManager.cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +18,12 @@ public class BattlePhaseManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
-    void OnDestroy() { if (Instance == this) Instance = null; }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     void Start() => StartCoroutine(StartAfterSpawn());
 
     IEnumerator StartAfterSpawn()
@@ -28,32 +32,17 @@ public class BattlePhaseManager : MonoBehaviour
         BeginCommandPhase();
     }
 
-    // ── Command Phase ──────────────────────────────────────────────
+    // ── Command Phase ─────────────────────────────────────────────
     public void BeginCommandPhase()
     {
         CurrentPhase = BattlePhase.CommandPhase;
         _commands.Clear();
-
-        bool pBlizzard = WeatherManager.Instance.IsBlizzardActive(0);
-        bool pMagnet = WeatherManager.Instance.IsMagneticFieldActive(0);
-        bool eBlizzard = WeatherManager.Instance.IsBlizzardActive(1);
-        bool eMagnet = WeatherManager.Instance.IsMagneticFieldActive(1);
-
-        string pEnv = $"{(pBlizzard ? "[Bão Tuyết] " : "")}{(pMagnet ? "[Từ Trường]" : "")}";
-        string eEnv = $"{(eBlizzard ? "[Bão Tuyết] " : "")}{(eMagnet ? "[Từ Trường]" : "")}";
-
-        Debug.Log($"[Sân Player] Thời tiết: {(string.IsNullOrEmpty(pEnv) ? "Bình thường" : pEnv)}");
-        Debug.Log($"[Sân Enemy]  Thời tiết: {(string.IsNullOrEmpty(eEnv) ? "Bình thường" : eEnv)}");
-        Debug.Log("<color=cyan>════════════════════════════════════════</color>");
-
-        var allAlive = BattleGridManager.Instance.GetAllEntities();
-        TerrainManager.Instance.OnTurnEnd(allAlive);
-        WeatherManager.Instance.OnTurnEnd();
+        Debug.Log("[BattlePhase] === COMMAND PHASE ===");
 
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
         {
             entity.OnTurnStart();
-            entity.IncrementTurnCount(); // ← THÊM: Setup archetype đếm lượt
+            entity.IncrementTurnCount();
         }
 
         CommandPhaseController.Instance.BeginInput();
@@ -69,12 +58,13 @@ public class BattlePhaseManager : MonoBehaviour
     }
 
     int GetActiveEntityCount()
-    => BattleGridManager.Instance.GetAllEntities().Count;
+        => BattleGridManager.Instance.GetAllEntities().Count;
 
-    // ── Execution Phase ────────────────────────────────────────────
+    // ── Execution Phase ───────────────────────────────────────────
     IEnumerator BeginExecutionPhase()
     {
         CurrentPhase = BattlePhase.ExecutionPhase;
+        Debug.Log("[BattlePhase] === EXECUTION PHASE ===");
 
         var grid = BattleGridManager.Instance;
         var moveCoroutines = new List<Coroutine>();
@@ -85,14 +75,12 @@ public class BattlePhaseManager : MonoBehaviour
             var cmd = _commands[entity];
             GridPos targetPos = cmd.moveTarget;
 
-            // Từ Trường
             if (entity.IsForcedStillByMagnet())
             {
                 Debug.Log($"[Weather] {entity.name} bị Từ Trường khoá");
                 targetPos = entity.GridPos;
             }
 
-            // Bẫy Gai
             if (!entity.CanMove)
             {
                 Debug.Log($"[Terrain] {entity.name} bị Bẫy Gai khoá");
@@ -101,7 +89,7 @@ public class BattlePhaseManager : MonoBehaviour
 
             if (!targetPos.Equals(entity.GridPos))
             {
-                entity.TrackMovement(targetPos); // ← THÊM: cập nhật LastMoveDir trước khi move
+                entity.TrackMovement(targetPos);
                 var co = StartCoroutine(grid.MoveEntitySmooth(entity, targetPos, null, 0.3f));
                 moveCoroutines.Add(co);
             }
@@ -110,7 +98,6 @@ public class BattlePhaseManager : MonoBehaviour
         foreach (var co in moveCoroutines)
             yield return co;
 
-        // Trigger terrain + OnMoved
         foreach (var entity in entities)
         {
             entity.OnMoved();
@@ -120,7 +107,7 @@ public class BattlePhaseManager : MonoBehaviour
         BeginJudgePhase();
     }
 
-    // ── Judge Phase ────────────────────────────────────────────────
+    // ── Judge Phase ───────────────────────────────────────────────
     void BeginJudgePhase()
     {
         CurrentPhase = BattlePhase.JudgePhase;
@@ -138,22 +125,25 @@ public class BattlePhaseManager : MonoBehaviour
             MoveData move = attacker.GetMove();
             if (move == null) continue;
 
-            // ── Chiêu Môi Trường
             if (move.category == MoveCategory.Environment)
             {
                 HandleEnvironmentMove(attacker, cmd, move);
                 continue;
             }
 
-            // ── Chiêu Status (buff/debuff): đếm buff cho AI enemy
             if (move.category == MoveCategory.Status && attacker.TeamId == 1)
-                attacker.IncrementBuffCount(); // ← THÊM: ULTRA archetype dùng
+                attacker.IncrementBuffCount();
 
-            // ── Bão Tuyết: thu nhỏ AoE
-            WeatherManager.Instance.GetEffectiveAoE(attacker.TeamId, move.shape, move.aoeRadius, out AttackShape effectiveShape, out int effectiveRadius);
+            WeatherManager.Instance.GetEffectiveAoE(
+                attacker.TeamId,
+                move.shape,
+                move.aoeRadius,
+                out AttackShape effectiveShape,
+                out int effectiveRadius
+            );
 
             var cells = BattleGridManager.Instance.GetAoECells(
-    cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
+                cmd.attackTarget, effectiveShape, attacker.GridPos, effectiveRadius);
 
             foreach (var cell in cells)
             {
@@ -173,7 +163,7 @@ public class BattlePhaseManager : MonoBehaviour
                 );
 
                 string eff = r.typeMultiplier > 1f ? " HIỆU QUẢ!" :
-                              r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
+                             r.typeMultiplier < 1f ? " Không hiệu quả..." : "";
                 string crit = r.isCritical ? " CHÍ MẠNG!" : "";
                 string stab = r.isStab ? " [STAB]" : "";
 
@@ -193,8 +183,9 @@ public class BattlePhaseManager : MonoBehaviour
     {
         if (move.envCategory == EnvironmentCategory.Weather)
         {
-            WeatherManager.Instance.ApplyWeather(move);
-            Debug.Log($"[Env] {attacker.name} tung thời tiết: {move.weatherType}");
+            WeatherTarget target = ResolveWeatherTarget(cmd, move);
+            WeatherManager.Instance.ApplyWeather(move, target);
+            Debug.Log($"[Env] {attacker.name} tung thời tiết: {move.weatherType} → {target}");
         }
         else if (move.envCategory == EnvironmentCategory.Terrain)
         {
@@ -209,6 +200,24 @@ public class BattlePhaseManager : MonoBehaviour
         }
     }
 
+    WeatherTarget ResolveWeatherTarget(BattleCommand cmd, MoveData move)
+    {
+        if (move.weatherTarget == WeatherTarget.Both)
+            return WeatherTarget.Both;
+
+        if (!cmd.HasAttack)
+            return move.weatherTarget;
+
+        var cfg = BattleGridManager.Instance.config;
+
+        if (cmd.attackTarget.col <= cfg.LeftMaxCol)
+            return WeatherTarget.TeamLeft;
+
+        if (cmd.attackTarget.col >= cfg.RightMinCol)
+            return WeatherTarget.TeamRight;
+
+        return move.weatherTarget;
+    }
 
     // ── Helper: tính cellDistanceType ─────────────────────────────
     int CalcDistType(AttackShape shape, GridPos cell, GridPos center)
@@ -226,22 +235,21 @@ public class BattlePhaseManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
 
-        // ── Dọn dẹp entity đã chết trong JudgePhase ──────────────────
         var deadEntities = new List<BattleEntity>();
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
         {
             if (entity.IsDead) deadEntities.Add(entity);
         }
+
         foreach (var dead in deadEntities)
             Destroy(dead.gameObject);
 
-        // Chờ 1 frame để Destroy thực sự có hiệu lực trước khi check result
         yield return null;
 
-        // ── Hiệu ứng cuối lượt ───────────────────────────────────────
+        var allAlive = BattleGridManager.Instance.GetAllEntities();
+        TerrainManager.Instance.OnTurnEnd(allAlive);
+        WeatherManager.Instance.OnTurnEnd();
 
-
-        // ── Kiểm tra kết thúc trận ───────────────────────────────────
         if (resultManager != null && resultManager.CheckBattleEnd())
         {
             CurrentPhase = BattlePhase.ResultPhase;

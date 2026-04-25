@@ -23,7 +23,7 @@ MonoBehaviour:
   moves:
   - {fileID: 11400000, guid: ca2320530ab0b0c42924642279457c3c, type: 2}
   - {fileID: 11400000, guid: 5c10444ea3fb9e44582483ab3a9498ff, type: 2}
-  - {fileID: 11400000, guid: 7648ac39ba60b244fb56b45296885e40, type: 2}
+  - {fileID: 11400000, guid: c16e78c61370d2e43bf1f4db6630df01, type: 2}
   hp: 30
   attack: 25
   defense: 15
