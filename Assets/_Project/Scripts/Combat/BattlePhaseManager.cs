@@ -119,6 +119,12 @@ public class BattlePhaseManager : MonoBehaviour
 
         foreach (var kvp in ordered)
         {
+            MoveData dbgMove = kvp.Key.GetMove();
+            Debug.Log($"<color=cyan>[JudgePhase DEBUG]</color> {kvp.Key.name} | " +
+                      $"HasAttack={kvp.Value.HasAttack} | " +
+                      $"Move={(dbgMove != null ? dbgMove.moveName : "NULL")} | " +
+                      $"Category={(dbgMove != null ? dbgMove.category.ToString() : "?")}");
+
             BattleEntity attacker = kvp.Key;
             BattleCommand cmd = kvp.Value;
             if (attacker == null || !cmd.HasAttack) continue;
@@ -131,7 +137,7 @@ public class BattlePhaseManager : MonoBehaviour
                 HandleEnvironmentMove(attacker, cmd, move);
                 continue;
             }
-
+            if (!cmd.HasAttack) continue;
             if (move.category == MoveCategory.Status && attacker.TeamId == 1)
                 attacker.IncrementBuffCount();
 
@@ -196,8 +202,9 @@ public class BattlePhaseManager : MonoBehaviour
             foreach (var cell in cells)
                 TerrainManager.Instance.PlaceTerrain(cell, move);
 
-            Debug.Log($"[Env] {attacker.name} đặt terrain: {move.terrainEffect} " +
-                      $"tại {cmd.attackTarget}, {cells.Count} ô");
+            Debug.Log($"<color=magenta>[EnvMove ENTER]</color> {attacker.name} | " +
+          $"envCategory={move.envCategory} | " +
+          $"attackTarget={cmd.attackTarget} | HasAttack={cmd.HasAttack}");
         }
     }
 

@@ -9,6 +9,7 @@ public class TerrainCell
     public int turnsLeft;
     public int maxCount;       // giới hạn ô của chiêu này
     public ElementType element;
+    public bool isNewThisTurn = true;
 }
 
 public class TerrainManager : MonoBehaviour
@@ -98,6 +99,7 @@ public class TerrainManager : MonoBehaviour
             maxCount = maxCount,
             element = move.elementType,
         };
+        cell.isNewThisTurn = true;
         _cells[pos] = cell;
         RefreshTerrainVisual(pos, cell.effectType);
         _byType[effectType].Add(pos);
@@ -135,7 +137,8 @@ public class TerrainManager : MonoBehaviour
                 float typeMult = CombatCalculator.GetTypeMultiplier(ElementType.Fire, entity.Data.elementType);
                 int finalDmg = Mathf.Max(1, Mathf.FloorToInt(dmg * typeMult));
                 entity.TakeDamage(finalDmg);
-                Debug.Log($"[Terrain] {entity.name} bước vào Vết Cháy, nhận {finalDmg} dame Hỏa");
+                Debug.Log($"<color=yellow>[TerrainEnter DEBUG]</color> {entity.name} bước vào {pos} | " +
+          $"HasTerrain={HasTerrain(pos)} | type={(GetCell(pos)?.effectType.ToString() ?? "NONE")}");
                 break;
         }
     }
@@ -143,6 +146,12 @@ public class TerrainManager : MonoBehaviour
     // ─── Gọi cuối mỗi lượt ──────────────────────────────────────────────────
     public void OnTurnEnd(List<BattleEntity> allEntities)
     {
+
+        Debug.Log($"<color=orange>[TerrainEnd]</color> Tổng ô terrain: {_cells.Count}");
+        foreach (var kvp in _cells)
+            Debug.Log($"  Ô {kvp.Key} | type={kvp.Value.effectType} | " +
+                      $"turnsLeft={kvp.Value.turnsLeft} | isNew={kvp.Value.isNewThisTurn}");
+
         // 1. Xử lý hiệu ứng cuối lượt
         foreach (var entity in allEntities)
         {
@@ -178,6 +187,12 @@ public class TerrainManager : MonoBehaviour
         foreach (var kvp in _cells)
         {
             kvp.Value.turnsLeft--;
+            // Bỏ qua đếm lượt nếu vừa đặt lượt này
+            if (kvp.Value.isNewThisTurn)
+            {
+                kvp.Value.isNewThisTurn = false; // reset flag
+                kvp.Value.turnsLeft++;           // hoàn lại 1 lượt
+            }
             if (kvp.Value.turnsLeft <= 0)
                 expired.Add(kvp.Key);
         }
