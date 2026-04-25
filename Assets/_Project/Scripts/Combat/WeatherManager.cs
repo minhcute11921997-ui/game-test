@@ -6,15 +6,15 @@ public class WeatherState
     public WeatherType type;
     public int turnsLeft;
     public WeatherTarget target;
-    public int appliedAt;
+    public bool isNewThisTurn;   // ← THÊM: đặt lượt này chưa bị giảm
 }
 
 public class WeatherManager : MonoBehaviour
 {
     public static WeatherManager Instance;
 
+    // Key = WeatherTarget: mỗi sân (Left/Right/Both) 1 slot → đúng cơ chế
     private readonly Dictionary<WeatherTarget, WeatherState> _states = new();
-    private int _applyOrderCounter = 0;
 
     void Awake()
     {
@@ -22,26 +22,22 @@ public class WeatherManager : MonoBehaviour
         Instance = this;
     }
 
-    void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
-    }
+    void OnDestroy() { if (Instance == this) Instance = null; }
 
-    // ─── Áp thời tiết mới ─────────────────────────────────────────
+    // ─── Áp thời tiết mới ────────────────────────────────────────
     public void ApplyWeather(MoveData move, WeatherTarget target)
     {
         _states[target] = new WeatherState
         {
             type = move.weatherType,
-            turnsLeft = move.weatherDuration,   // ← đổi từ envDuration
+            turnsLeft = move.weatherDuration,
             target = target,
-            appliedAt = ++_applyOrderCounter
+            isNewThisTurn = true,   // ← chưa giảm lượt này
         };
-
-        Debug.Log($"[Weather] {move.weatherType} áp vào {target}, {move.weatherDuration} lượt (order {_applyOrderCounter})");
+        Debug.Log($"[Weather] {move.weatherType} áp vào {target}, {move.weatherDuration} lượt");
     }
 
-    // ─── Lấy thời tiết đang ảnh hưởng team ───────────────────────
+    // ─── Lấy thời tiết đang ảnh hưởng team ──────────────────────
     public WeatherType GetWeatherForTeam(int team)
     {
         WeatherTarget teamKey = team == 0 ? WeatherTarget.TeamLeft : WeatherTarget.TeamRight;
@@ -49,8 +45,9 @@ public class WeatherManager : MonoBehaviour
         bool hasTeam = _states.TryGetValue(teamKey, out var specific) && specific.turnsLeft > 0;
         bool hasBoth = _states.TryGetValue(WeatherTarget.Both, out var both) && both.turnsLeft > 0;
 
+        // Ưu tiên cái được đặt SAU (ghi đè mới nhất)
         if (hasTeam && hasBoth)
-            return specific.appliedAt >= both.appliedAt ? specific.type : both.type;
+            return specific.turnsLeft >= both.turnsLeft ? specific.type : both.type;
 
         if (hasTeam) return specific.type;
         if (hasBoth) return both.type;
@@ -58,21 +55,36 @@ public class WeatherManager : MonoBehaviour
         return WeatherType.None;
     }
 
-    // ─── Giảm lượt cuối lượt ──────────────────────────────────────
+    // ─── Cuối lượt ───────────────────────────────────────────────
     public void OnTurnEnd()
     {
-        var keys = new List<WeatherTarget>(_states.Keys);
-        foreach (var key in keys)
+        var expired = new List<WeatherTarget>();
+        foreach (var kvp in _states)
         {
-            if (--_states[key].turnsLeft <= 0)
+            var s = kvp.Value;
+
+            if (s.isNewThisTurn)
             {
-                Debug.Log($"[Weather] {_states[key].type} hết hạn tại {key}");
-                _states.Remove(key);
+                // Đặt lượt này → bỏ qua, không giảm
+                s.isNewThisTurn = false;
+                Debug.Log($"[Weather] {s.type} ({kvp.Key}) vừa đặt → giữ nguyên {s.turnsLeft} lượt");
+                continue;
             }
+
+            s.turnsLeft--;
+            Debug.Log($"[Weather] {s.type} ({kvp.Key}) còn {s.turnsLeft} lượt");
+
+            if (s.turnsLeft <= 0)
+                expired.Add(kvp.Key);
+        }
+
+        foreach (var key in expired)
+        {
+            Debug.Log($"[Weather] {_states[key].type} hết hạn tại {key} → xoá");
+            _states.Remove(key);
         }
     }
 
-    // ─── Query hiệu ứng cụ thể ────────────────────────────────────
     public bool IsBlizzardActive(int team)
         => GetWeatherForTeam(team) == WeatherType.Blizzard;
 
@@ -82,7 +94,6 @@ public class WeatherManager : MonoBehaviour
     public void ClearAll()
     {
         _states.Clear();
-        _applyOrderCounter = 0;
     }
 
     public void GetEffectiveAoE(int teamId, AttackShape baseShape, int baseRadius,
@@ -99,12 +110,10 @@ public class WeatherManager : MonoBehaviour
                 effShape = AttackShape.Square2x2;
                 effRadius = Mathf.Max(1, effRadius - 1);
                 break;
-
             case AttackShape.Square2x2:
                 effShape = AttackShape.Single;
                 effRadius = 1;
                 break;
-
             case AttackShape.Cross:
                 effRadius = Mathf.Max(0, effRadius - 1);
                 if (effRadius == 0) effShape = AttackShape.Single;

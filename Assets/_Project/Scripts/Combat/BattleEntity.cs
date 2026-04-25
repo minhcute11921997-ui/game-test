@@ -67,7 +67,7 @@ public class BattleEntity : MonoBehaviour
     {
         _canMove = !_lockedNextTurn;
         _lockedNextTurn = false;
-        _moveCountThisCycle = 0;
+
     }
 
     // ── Khoá di chuyển (TerrainManager gọi) ──────────────────────
@@ -94,6 +94,10 @@ public class BattleEntity : MonoBehaviour
             _moveCountThisCycle++;
             if (_moveCountThisCycle >= 3)
                 _moveCountThisCycle = 0;
+        }
+        else
+        {
+            _moveCountThisCycle = 0;   // Từ Trường hết → reset
         }
     }
 

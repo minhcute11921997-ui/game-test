@@ -118,6 +118,8 @@ public class TerrainManager : MonoBehaviour
         => _cells.TryGetValue(pos, out var cell) ? cell : null;
 
     public bool HasTerrain(GridPos pos) => _cells.ContainsKey(pos);
+    public int CountByType(TerrainEffectType type)
+    => _byType.TryGetValue(type, out var list) ? list.Count : 0;
 
     // ─── Gọi khi entity bước vào ô ─────────────────────────────────────────
     public void OnEntityEnterCell(BattleEntity entity, GridPos pos)

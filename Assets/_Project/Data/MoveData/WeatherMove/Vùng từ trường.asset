@@ -23,7 +23,7 @@ MonoBehaviour:
   pp: 20
   weatherType: 2
   weatherTarget: 2
-  weatherDuration: 5
+  weatherDuration: 10
   terrainEffect: 0
   terrainShape: 0
   terrainMaxCount: 1

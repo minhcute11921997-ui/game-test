@@ -74,7 +74,15 @@ public static class EnemyAIBrain
                 return LowestPowerMove(moves);
 
             case AIDifficulty.Medium:
-                return moves[Random.Range(0, moves.Count)];
+                {
+                    var usable = moves.FindAll(m =>
+                        m.category == MoveCategory.Physical ||
+                        m.category == MoveCategory.Special ||
+                        m.category == MoveCategory.Status ||
+                        IsUsefulEnvironmentMove(enemy, m));
+                    if (usable.Count == 0) usable = moves;
+                    return usable[Random.Range(0, usable.Count)];
+                }
 
             case AIDifficulty.Hard:
             case AIDifficulty.Ultra:
@@ -368,7 +376,7 @@ public static class EnemyAIBrain
              && m.category != MoveCategory.Weather
              && m.category != MoveCategory.Terrain)
                 if (best == null || m.basePower > best.basePower) best = m;
-        return best ?? moves[0];
+        return best;
     }
 
     static MoveData LowestPowerMove(List<MoveData> moves)
@@ -379,7 +387,7 @@ public static class EnemyAIBrain
              && m.category != MoveCategory.Weather
              && m.category != MoveCategory.Terrain)
                 if (best == null || m.basePower < best.basePower) best = m;
-        return best ?? moves[0];
+        return best;
     }
 
     static MoveData FindStatusMove(List<MoveData> moves, string hint)
@@ -404,5 +412,23 @@ public static class EnemyAIBrain
             }
         }
         return best;
+    }
+
+    // Trả về true nếu chiêu Terrain/Weather còn có ích
+    static bool IsUsefulEnvironmentMove(BattleEntity enemy, MoveData move)
+    {
+        if (move.category == MoveCategory.Weather)
+        {
+            // Dùng đúng API: GetWeatherForTeam(teamId)
+            WeatherType current = WeatherManager.Instance.GetWeatherForTeam(enemy.TeamId);
+            return current != move.weatherType;
+        }
+
+        if (move.category == MoveCategory.Terrain)
+        {
+            int current = TerrainManager.Instance.CountByType(move.terrainEffect);
+            return current < move.terrainMaxCount;
+        }
+        return true;
     }
 }
