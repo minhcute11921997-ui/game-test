@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class CommandPhaseController : MonoBehaviour
 {
@@ -135,7 +136,7 @@ public class CommandPhaseController : MonoBehaviour
             return result;
 
         int cStart, cEnd;
-        switch (move.category)
+        switch (move.primaryScope)
         {
             case TargetScope.OwnSide:
                 cStart = _selectedEntity.TeamId == 0 ? 0 : cfg.RightMinCol;

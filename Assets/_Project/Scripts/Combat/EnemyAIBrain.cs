@@ -76,9 +76,9 @@ public static class EnemyAIBrain
             case AIDifficulty.Medium:
                 {
                     var usable = moves.FindAll(m =>
-                        m.category == MoveCategory.Physical ||
-                        m.category == MoveCategory.Special ||
-                        m.category == MoveCategory.Status ||
+                        m.GetDamage() != null ||
+                        m.effects.OfType<StatStageEffect>().Any() ||
+                        m.effects.OfType<HealEffect>().Any() ||
                         IsUsefulEnvironmentMove(enemy, m));
                     if (usable.Count == 0) usable = moves;
                     return usable[Random.Range(0, usable.Count)];
@@ -169,7 +169,7 @@ public static class EnemyAIBrain
         if (finishTarget != null) return finishTarget.GridPos;
 
         if (archetype == ThingArchetype.Setup && chosenMove != null
-            && chosenMove.category == MoveCategory.Status)
+    && chosenMove.GetDamage() == null && chosenMove.GetTerrain() == null && chosenMove.GetWeather() == null)
             return PickSetupTarget(enemy, players, chosenMove);
 
         var attackable = GetAttackable(fromPos, enemy.TeamId);
@@ -311,7 +311,10 @@ public static class EnemyAIBrain
         int bestCount = 0;
         foreach (var cell in attackable)
         {
-            var aoe = BattleGridManager.Instance.GetAoECells(cell, move.shape, from, move.aoeRadius);
+            var dmg = move.GetDamage();
+            AttackShape sh = dmg != null ? dmg.aoeShape : AttackShape.Single;
+            int rad = dmg != null ? dmg.aoeRadius : 1;
+            var aoe = BattleGridManager.Instance.GetAoECells(cell, sh, from, rad);
             int count = 0;
             foreach (var p in players)
                 if (aoe.Contains(p.GridPos)) count++;
@@ -398,8 +401,8 @@ public static class EnemyAIBrain
     static MoveData FindStatusMove(List<MoveData> moves, string hint)
     {
         foreach (var m in moves)
-            if (m.category == MoveCategory.Status) return m;
-        return null;
+            if (m.GetDamage() == null && m.GetTerrain() == null && m.GetWeather() == null)
+                return m;
     }
 
     static MoveData FindSuperEffectiveMove(List<MoveData> moves, List<BattleEntity> players)
@@ -407,9 +410,7 @@ public static class EnemyAIBrain
         MoveData best = null; float bestMult = 1f;
         foreach (var m in moves)
         {
-            if (m.category == MoveCategory.Status
-             || m.category == MoveCategory.Weather
-             || m.category == MoveCategory.Terrain) continue;
+            if (m.GetDamage() == null) continue;
             foreach (var p in players)
             {
                 float mult = CombatCalculator.GetTypeMultiplier(m.elementType, p.Data.elementType);
