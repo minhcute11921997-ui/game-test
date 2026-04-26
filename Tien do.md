@@ -1,6 +1,6 @@
 # Tiến Độ Dự Án
 
-> Cập nhật: đối chiếu trực tiếp từng dòng code tất cả 29 file `.cs` trong `Assets/_Project/Scripts` (Bao gồm cập nhật hệ thống MoveEffect mới).
+> Cập nhật: đối chiếu trực tiếp từng dòng code tất cả 29 file `.cs` trong `Assets/_Project/Scripts` + các sửa đổi trong session hiện tại.
 
 ---
 
@@ -41,9 +41,7 @@
 ## ✅ Data Layer
 
 - [x] **ThingData.cs** — ScriptableObject đầy đủ: `thingName`, `prefab`, `battlePrefab`, `spawnWeight`, `elementType`, `aiDifficulty`, `archetype`, `defaultMove`, `moves` (List), `AllMoves` property, `hp`, `attack`, `defense`, `spAtk`, `spDef`, `speed`, `level`, `luck`, `moveRange`
-- [x] **MoveData.cs** — ScriptableObject đầy đủ với tất cả enums. Đã refactor sử dụng hệ thống `List<MoveEffect> effects` linh hoạt theo thứ tự chuẩn: Buff/Debuff → Damage → Heal → Terrain → Weather.
-- [x] **MoveEffect.cs (Hệ thống mới)** — Abstract class và các kế thừa `DamageEffect`, `HealEffect`, `StatStageEffect`, `TerrainEffect`, `WeatherEffect`. Cung cấp hàm `Resolve()` để xử lý logic và tham số `triggerChance` (tỷ lệ kích hoạt hiệu ứng).
-- [x] **EffectResult.cs** — Class lưu trữ kết quả trả về từ `MoveEffect.Resolve()`, chứa loại kết quả, danh sách trúng đòn, lượng thay đổi và logMessage.
+- [x] **MoveData.cs** — ScriptableObject đầy đủ với tất cả enums: `ElementType` (10 hệ), `MoveCategory` (Physical/Special/Status/Weather/Terrain), `StatusSubType`, `AttackShape` (5 dạng), `WeatherType` (None/Blizzard/MagneticField), `TerrainEffectType` (None/ThornTrap/BurnMark); **thêm `Luck` vào enum `StatType`** để chiêu buff có thể tăng luck
 - [x] **AIDifficulty.cs** — Enum `AIDifficulty` (Easy/Medium/Hard/Ultra) + `ThingArchetype` (Attacker/Defender/Setup)
 - [ ] **ThingCollection.cs** — File tồn tại nhưng _thân class rỗng_, chưa implement
 - [ ] **SaveLoad scripts** — Thư mục `Scripts/SaveLoad/` tồn tại nhưng _không có file `.cs` nào_
@@ -76,7 +74,7 @@
 - [x] **PlaceEntity / MoveEntity** — Update cả `_occupied` dict và `transform.position` đồng thời
 - [x] **MoveEntitySmooth()** — Coroutine Lerp với `duration`; có callback `onArrived`
 - [x] **ShowHighlight / ShowHighlightColored / ShowAoEPreview / ClearHighlight** — Đầy đủ
-- [x] **GetAoECells()** — Hỗ trợ tất cả 5 AttackShape: Single, Cross (vòng lặp radius theo 4 hướng), Square2x2, Square3x3, Line
+- [x] **GetAoECells()** — Hỗ trợ tất cả 5 AttackShape: Single, Cross, Square2x2, Square3x3, Line
 
 ---
 
@@ -110,18 +108,18 @@
 ## ✅ Battle — Combat Calculation
 
 - [x] **HP Formula V2** — `MaxHP = floor(Base × 8 × Level / 100) + Level + 150`
-- [x] **Damage Formula** — Hỗ trợ nhận trực tiếp `DamageEffect`. `BaseDmg = floor(((2×Level/5 + 2) × Power × Atk/Def) / 10)`
-- [x] **STAB x1.2** — Áp dụng khi chiêu cùng hệ với attacker, bỏ qua Neutral _(lưu ý: code dùng 1.2f, không phải 1.5f như một số ghi chú trước)_
-- [x] **Bảng tương khắc 9 hệ** — `TypeChart[10,10]`, hệ số **1.35 / 1.0 / 0.75 / 0.0** _(lưu ý: code dùng 1.35/0.75 thay vì 2.0/0.5 — cân bằng game hơn)_
-- [x] **Crit Rate động** — `5 + Luck/10 %`, nhân `x1.5` khi trúng đòn chí mạng. Cờ `isCritical` truyền chính xác ra log.
-- [x] **Evasion Rate (Né đòn)** — `Luck/10 %`. Đã xử lý triệt để trong `DamageEffect.Resolve()`, check né tránh trước khi gọi hàm sát thương.
-- [x] **Heal & Stat Buff/Debuff** — Xử lý tự động qua chuỗi list effect (`HealEffect` và `StatStageEffect`).
+- [x] **Damage Formula** — `BaseDmg = floor(((2×Level/5 + 2) × Power × Atk/Def) / 10)`
+- [x] **STAB x1.2** — Áp dụng khi chiêu cùng hệ với attacker, bỏ qua Neutral
+- [x] **Bảng tương khắc 10 hệ** — `TypeChart[10,10]`, hệ số **1.35 / 1.0 / 0.75 / 0.0**
+- [x] **Crit Rate động** — `5 + EffectiveLuck/10 %`, nhân `x1.5` khi trúng
+- [x] **Evasion Rate** — `EffectiveLuck/10 %`; mặc định `luck=0` → 0% né
 - [x] **RNG 0.9–1.0** — Áp dụng cho mọi đòn
 - [x] **Stat Stage Multiplier** — `Max(2,2+stage) / Max(2,2-stage)`, stage -6 ↔ +6
 - [x] **AoE Falloff 3×3** — Tâm x1.0 / Cận tâm x0.8 / Góc chéo x0.7
 - [x] **AoE Falloff 2×2** — RNG kép: chung × [0.85–1.0] → tổng [0.765–1.0]
-- [x] **Physical / Special split** — Dùng `attack/defense` hoặc `spAtk/spDef` tùy `damageCategory` trong DamageEffect.
-- [x] **Speed sort trong JudgePhase** — Sort giảm dần Speed, entity nhanh hơn ra đòn trước
+- [x] **Physical / Special split** — Dùng `attack/defense` hoặc `spAtk/spDef` tùy `MoveCategory`
+- [x] **Speed sort trong JudgePhase** — Sort giảm dần `EffectiveSpeed` (đã tính stage) _(đã sửa từ `Speed` base)_
+- [x] **Luck buff system** — `_luckBonus` flat, 1 stage = +50 luck; `EffectiveLuck = Data.luck + _luckBonus`; dùng `EffectiveLuck` trong crit và evasion
 
 ---
 
@@ -129,94 +127,97 @@
 
 ### Địa Hình (TerrainManager.cs)
 
-- [x] **PlaceTerrain()** — Đặt ô địa hình lên `tilemapTerrain`, lưu dict với duration
-- [x] **Bẫy Gai (ThornTrap)** — Entity bước vào → `LockMovementNextTurn()` trên `BattleEntity`; `OnTurnEnd` chỉ lock khi `CanMove == true` để tránh lock mãi
-- [x] **Vết Cháy (BurnMark)** — `TerrainEffectType` và tile tồn tại; effect runtime cần xác nhận trong `TerrainManager.OnEntityEnterCell`
-- [x] **OnTurnEnd** — Giảm duration, xóa tile và dict entry khi hết hạn; áp địa hình lên tất cả entity còn sống
-- [x] **OnTurnStart** — Hook để reset flag nếu cần đầu lượt
+- [x] **PlaceTerrain()** — Đặt ô địa hình lên `tilemapTerrain`, lưu dict với duration; **lỗi đã sửa**: `BuildTerrainMoveData()` trong `BattlePhaseManager` thiếu copy `effects`; đã thêm `tmp.effects = new List<MoveEffect> { te }`
+- [x] **Bẫy Gai (ThornTrap)** — Entity bước vào → `LockMovementNextTurn()`; `OnTurnEnd` chỉ lock khi `CanMove == true`
+- [x] **Vết Cháy (BurnMark)** — Entity bước vào: nhận 10% MaxHP damage; ở lại cuối lượt: nhận thêm 10% MaxHP damage; tính type multiplier Fire vs defender
+- [x] **OnTurnEnd** — Giảm duration, xóa tile và dict entry khi hết hạn
+- [x] **OnTurnStart** — Hook để reset `_enteredThisTurn` đầu lượt
+- [ ] **Terrain highlight trên sân** — `tilemapTerrain` cần kéo vào Inspector `BattleGridManager`; nếu null → tile màu không hiển thị
 
 ### Thời Tiết (WeatherManager.cs)
 
-- [x] **Bão Tuyết (Blizzard)** — `GetEffectiveAoE()` expand AoE khi Blizzard active (ví dụ Single → Square3x3)
-- [x] **Từ Trường (MagneticField)** — `IsMagneticFieldActive(teamId)` per team; `BattleEntity._moveCountThisCycle` đếm 3 lượt di chuyển liên tiếp → khoá lượt 3
+- [x] **Bão Tuyết (Blizzard)** — `GetEffectiveAoE()` expand AoE khi Blizzard active; **lỗi đã sửa**: `BuildWeatherMoveData()` thiếu copy `effects`; đã thêm `tmp.effects = new List<MoveEffect> { we }`
+- [x] **Từ Trường (MagneticField)** — `IsMagneticFieldActive(teamId)` per team; `_moveCountThisCycle` đếm 3 lượt → khoá lượt 3
 - [x] **ApplyWeather()** — Áp thời tiết mới với duration
 - [x] **OnTurnEnd** — Giảm duration, reset về `None` khi hết
-- [x] **WeatherTarget** — Both / TeamLeft / TeamRight; `CommandPhaseController` tự submit nếu Both (không cần chọn ô)
+- [x] **WeatherTarget** — Both / TeamLeft / TeamRight; auto submit nếu Both
+- [ ] **Weather Visual Effect** — Cần tạo `WeatherVFXController.cs` + Particle prefab cho Blizzard / MagneticField
 
 ---
 
 ## ✅ Battle — Visual Feedback
 
-- [x] **DamagePopup.cs** — `Resources.Load("DamagePopup")`, float up `1.5f` trong `0.8s`, fade alpha, chí mạng: **bold + màu vàng**
-- [x] **EntityHpBar.cs** — World Space Canvas, `LateUpdate` bám `_target.position + Vector3.up * 0.8f`, đổi màu xanh → vàng → đỏ theo % HP
-- [x] **MoveButtonUI.cs** — Nút chiêu đầy đủ: màu nền per category, icon hệ nguyên tố, power/PP display; hỗ trợ Weather (xanh biển) và Terrain (xanh lá đậm)
-- [x] **MoveSelectionUI.cs** — Singleton panel, sinh button động từ `AllMoves`, Show/Hide, Cancel → StepBack
+- [x] **DamagePopup.cs** — Float up `1.5f` trong `0.8s`, fade alpha, chí mạng: **bold + màu vàng**
+- [x] **EntityHpBar.cs** — World Space Canvas, bám `_target.position + Vector3.up * 0.8f`, đổi màu xanh → vàng → đỏ theo % HP
+- [x] **MoveButtonUI.cs** — Màu nền per category, icon hệ nguyên tố, power/PP display; hỗ trợ Weather và Terrain
+- [x] **MoveSelectionUI.cs** — Singleton panel, sinh button động từ `AllMoves`, Cancel → StepBack
 
 ---
 
 ## 🔧 Cấu Hình Kỹ Thuật Hiện Tại
 
-| Thông số                            | Giá trị                              |
-| ----------------------------------- | ------------------------------------ |
-| PPU (Pixels Per Unit)               | 32                                   |
-| Grid Cell Size                      | (1, 1, 0)                            |
-| Kích thước lưới                     | 18 cột × 8 hàng                      |
-| Sân trái (Team 0)                   | col 0–7                              |
-| Gap                                 | col 8–9                              |
-| Sân phải (Team 1)                   | col 10–17                            |
-| Camera Size                         | tự tính qua FitCamera() + 10% margin |
-| Player spawn                        | col 3, row 4                         |
-| Enemy spawn                         | col 14, row 4                        |
-| STAB multiplier (code thực tế)      | ×1.2                                 |
-| TypeChart multiplier (code thực tế) | 1.35 / 1.0 / 0.75 / 0.0              |
-| Crit multiplier                     | ×1.5                                 |
-| Base crit rate                      | 5% + Luck/10                         |
+| Thông số              | Giá trị                              |
+| --------------------- | ------------------------------------ |
+| PPU (Pixels Per Unit) | 32                                   |
+| Grid Cell Size        | (1, 1, 0)                            |
+| Kích thước lưới       | 18 cột × 8 hàng                      |
+| Sân trái (Team 0)     | col 0–7                              |
+| Gap                   | col 8–9                              |
+| Sân phải (Team 1)     | col 10–17                            |
+| Camera Size           | tự tính qua FitCamera() + 10% margin |
+| Player spawn          | col 3, row 4                         |
+| Enemy spawn           | col 14, row 4                        |
+| STAB multiplier       | ×1.2                                 |
+| TypeChart multiplier  | 1.35 / 1.0 / 0.75 / 0.0              |
+| Crit multiplier       | ×1.5                                 |
+| Base crit rate        | 5% + EffectiveLuck/10                |
+| Luck buff per stage   | +50 flat                             |
 
 ---
 
 ## 📁 Files Quan Trọng
 
-| File                        | Thư mục                     | Chức năng chính                                            |
-| --------------------------- | --------------------------- | ---------------------------------------------------------- |
-| `PlayerMovement.cs`         | `Scripts/Player/`           | Di chuyển 8 hướng, Rigidbody2D, Animator                   |
-| `PlayerActions.cs`          | `Scripts/Player/`           | Chế độ Ball/Gun, hồng tâm, bắn projectile                  |
-| `PlayerInteraction.cs`      | `Scripts/Player/`           | Trigger tương tác (tag Interactable, nhấn E)               |
-| `GrassZoneManager.cs`       | `Scripts/World/Encounters/` | Spawn zone, weighted random, heartbeat                     |
-| `ShadowRoaming.cs`          | `Scripts/World/Encounters/` | AI quái Nhát gan/Hung dữ, wander, aggro                    |
-| `EncounterProjectile.cs`    | `Scripts/World/Encounters/` | Bay đến đích, thu phục hoặc khiêu chiến                    |
-| `RuntimeGameState.cs`       | `Scripts/Core/`             | Bridge data xuyên scene                                    |
-| `SetStarterThing.cs`        | `Scripts/`                  | Nạp pet mặc định vào Party                                 |
-| `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing                               |
-| `MoveData.cs`               | `Scripts/Data/`             | Tùy chỉnh hệ nguyên tố, categories, gọi list MoveEffect    |
-| `MoveEffect.cs`             | `Scripts/Data/`             | Base và các logic cho Damage, Heal, StatStage, v.v.        |
-| `EffectResult.cs`           | `Scripts/Data/`             | Dữ liệu kết quả xử lý của các đòn đánh/hiệu ứng            |
-| `AIDifficulty.cs`           | `Scripts/Data/`             | Enum difficulty + archetype                                |
-| `GridPos.cs`                | `Scripts/Combat/`           | Struct tọa độ ô lưới                                       |
-| `BattleGridConfig.cs`       | `Scripts/Combat/`           | ScriptableObject cấu hình lưới                             |
-| `BattleGridManager.cs`      | `Scripts/Combat/`           | Singleton build/quản lý lưới, tiles, AoE                   |
-| `BattleEntity.cs`           | `Scripts/Combat/`           | Component entity: HP, terrain/weather hooks, AI state      |
-| `BattleManager.cs`          | `Scripts/Combat/`           | Spawn 2 phe từ RuntimeGameState                            |
-| `BattlePhaseManager.cs`     | `Scripts/Combat/`           | Vòng đời phase, execution, judge, weather/terrain dispatch |
-| `BattleResultManager.cs`    | `Scripts/Combat/`           | Check kết thúc trận, về Overworld                          |
-| `BattleCommand.cs`          | `Scripts/Combat/`           | Struct lệnh mỗi lượt                                       |
-| `CommandPhaseController.cs` | `Scripts/Combat/`           | Input người chơi, AoE preview, StepBack                    |
-| `CombatCalculator.cs`       | `Scripts/Combat/`           | Công thức GDD: HP, damage, STAB, type, crit, falloff       |
-| `EnemyAIBrain.cs`           | `Scripts/Combat/`           | AI địch 4 mức × 3 archetype                                |
-| `TerrainManager.cs`         | `Scripts/Combat/`           | Địa hình: đặt, hiệu ứng, hết hạn                           |
-| `WeatherManager.cs`         | `Scripts/Combat/`           | Thời tiết: Blizzard, MagneticField, duration               |
-| `DamagePopup.cs`            | `Scripts/UI/`               | Số sát thương bay, crit vàng/bold                          |
-| `EntityHpBar.cs`            | `Scripts/UI/`               | HP bar World Space theo đầu entity                         |
-| `MoveButtonUI.cs`           | `Scripts/UI/`               | Nút chiêu styled per category                              |
-| `MoveSelectionUI.cs`        | `Scripts/UI/`               | Panel chọn chiêu, Cancel → StepBack                        |
+| File                        | Thư mục                     | Chức năng chính                                        |
+| --------------------------- | --------------------------- | ------------------------------------------------------ |
+| `PlayerMovement.cs`         | `Scripts/Player/`           | Di chuyển 8 hướng, Rigidbody2D, Animator               |
+| `PlayerActions.cs`          | `Scripts/Player/`           | Chế độ Ball/Gun, hồng tâm, bắn projectile              |
+| `PlayerInteraction.cs`      | `Scripts/Player/`           | Trigger tương tác (tag Interactable, nhấn E)           |
+| `GrassZoneManager.cs`       | `Scripts/World/Encounters/` | Spawn zone, weighted random, heartbeat                 |
+| `ShadowRoaming.cs`          | `Scripts/World/Encounters/` | AI quái Nhát gan/Hung dữ, wander, aggro                |
+| `EncounterProjectile.cs`    | `Scripts/World/Encounters/` | Bay đến đích, thu phục hoặc khiêu chiến                |
+| `RuntimeGameState.cs`       | `Scripts/Core/`             | Bridge data xuyên scene                                |
+| `SetStarterThing.cs`        | `Scripts/`                  | Nạp pet mặc định vào Party                             |
+| `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing                           |
+| `MoveData.cs`               | `Scripts/Data/`             | ScriptableObject chiêu thức + enums (có StatType.Luck) |
+| `AIDifficulty.cs`           | `Scripts/Data/`             | Enum difficulty + archetype                            |
+| `GridPos.cs`                | `Scripts/Combat/`           | Struct tọa độ ô lưới                                   |
+| `BattleGridConfig.cs`       | `Scripts/Combat/`           | ScriptableObject cấu hình lưới                         |
+| `BattleGridManager.cs`      | `Scripts/Combat/`           | Singleton build/quản lý lưới, tiles, AoE               |
+| `BattleEntity.cs`           | `Scripts/Combat/`           | HP, EffectiveLuck, \_luckBonus, stages                 |
+| `BattleManager.cs`          | `Scripts/Combat/`           | Spawn 2 phe từ RuntimeGameState                        |
+| `BattlePhaseManager.cs`     | `Scripts/Combat/`           | Vòng đời phase, execution, judge, weather/terrain      |
+| `BattleResultManager.cs`    | `Scripts/Combat/`           | Check kết thúc trận, về Overworld                      |
+| `BattleCommand.cs`          | `Scripts/Combat/`           | Struct lệnh mỗi lượt                                   |
+| `CommandPhaseController.cs` | `Scripts/Combat/`           | Input người chơi, AoE preview, StepBack                |
+| `CombatCalculator.cs`       | `Scripts/Combat/`           | Công thức GDD: HP, damage, STAB, type, crit, falloff   |
+| `EnemyAIBrain.cs`           | `Scripts/Combat/`           | AI địch 4 mức × 3 archetype                            |
+| `TerrainManager.cs`         | `Scripts/Combat/`           | Địa hình: đặt, hiệu ứng, hết hạn                       |
+| `WeatherManager.cs`         | `Scripts/Combat/`           | Thời tiết: Blizzard, MagneticField, duration           |
+| `DamagePopup.cs`            | `Scripts/UI/`               | Số sát thương bay, crit vàng/bold                      |
+| `EntityHpBar.cs`            | `Scripts/UI/`               | HP bar World Space theo đầu entity                     |
+| `MoveButtonUI.cs`           | `Scripts/UI/`               | Nút chiêu styled per category                          |
+| `MoveSelectionUI.cs`        | `Scripts/UI/`               | Panel chọn chiêu, Cancel → StepBack                    |
 
 ---
 
 ## ⏳ Chưa Làm / Còn Thiếu
 
-| Hạng mục               | Trạng thái                                                        |
-| ---------------------- | ----------------------------------------------------------------- |
-| PlayerInteraction thật | Hiện chỉ `Debug.Log`, chưa mở UI/action                           |
-| ThingCollection.cs     | Class rỗng, chưa implement                                        |
-| SaveLoad system        | Thư mục tồn tại nhưng chưa có file `.cs` nào                      |
-| BurnMark effect logic  | Tile tồn tại, chưa xác nhận effect thật trong `OnEntityEnterCell` |
-| Multi-unit battle      | Hiện spawn mỗi phe 1 unit (col cố định)                           |
+| Hạng mục                      | Trạng thái                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| PlayerInteraction thật        | Hiện chỉ `Debug.Log`, chưa mở UI/action                                                                            |
+| ThingCollection.cs            | Class rỗng, chưa implement                                                                                         |
+| SaveLoad system               | Thư mục tồn tại nhưng chưa có file `.cs` nào                                                                       |
+| tilemapTerrain Inspector      | Phải kéo tay Tilemap_Terrain vào field `tilemapTerrain` của `BattleGridManager`; nếu null → terrain không hiển thị |
+| Weather Visual Effect         | Cần tạo `WeatherVFXController.cs` + Particle System prefab cho Blizzard / MagneticField                            |
+| Multi-unit battle             | Hiện spawn mỗi phe 1 unit (col cố định)                                                                            |
+| Terrain AoE preview tách biệt | `tilemapTerrainPreview` chưa tạo; preview hiện đang đè lên highlight valid cells khi di chuột                      |
