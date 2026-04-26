@@ -232,6 +232,7 @@ public class BattlePhaseManager : MonoBehaviour
         var tmp = ScriptableObject.CreateInstance<MoveData>();
         tmp.moveName = source.moveName;
         tmp.elementType = source.elementType;
+        tmp.effects = new System.Collections.Generic.List<MoveEffect> { we };
         return tmp;
     }
 
@@ -239,6 +240,8 @@ public class BattlePhaseManager : MonoBehaviour
     {
         var tmp = ScriptableObject.CreateInstance<MoveData>();
         tmp.moveName = source.moveName;
+        tmp.elementType = source.elementType;
+        tmp.effects = new System.Collections.Generic.List<MoveEffect> { te };
         return tmp;
     }
 
