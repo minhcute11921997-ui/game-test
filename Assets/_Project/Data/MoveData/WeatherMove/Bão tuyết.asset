@@ -15,14 +15,17 @@ MonoBehaviour:
   moveName: "B\xE3o tuy\u1EBFt"
   elementType: 7
   category: 3
+  targetScope: 3
   statusSubType: 1
+  statTarget: attack
+  statDelta: 1
+  healPercent: 0.25
   shape: 0
   aoeRadius: 1
   basePower: 40
   accuracy: 100
   pp: 20
   weatherType: 1
-  weatherTarget: 0
   weatherDuration: 10
   terrainEffect: 0
   terrainShape: 0

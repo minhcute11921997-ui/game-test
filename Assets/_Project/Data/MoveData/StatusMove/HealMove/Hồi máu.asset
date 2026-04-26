@@ -15,10 +15,10 @@ MonoBehaviour:
   moveName: "H\u1ED3i m\xE1u"
   elementType: 8
   category: 2
+  targetScope: 2
   statusSubType: 2
   statTarget: attack
   statDelta: 1
-  targetsSelf: 1
   healPercent: 0.5
   shape: 0
   aoeRadius: 1
@@ -26,7 +26,6 @@ MonoBehaviour:
   accuracy: 100
   pp: 20
   weatherType: 0
-  weatherTarget: 0
   weatherDuration: 5
   terrainEffect: 0
   terrainShape: 0

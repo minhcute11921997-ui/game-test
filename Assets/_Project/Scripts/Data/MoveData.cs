@@ -84,10 +84,10 @@ public class MoveData : ScriptableObject
     [Range(-3, 3)]
     public int statDelta = 1;
 
-    [Tooltip("Áp lên chính mình (true) hay lên địch (false)")]
-    public bool targetsSelf = true;
     [Header("Heal (chỉ dùng khi statusSubType = Heal)")]
+
     [Tooltip("Phần trăm MaxHP được hồi, ví dụ 0.25 = 25%")]
+
     [Range(0.05f, 1.0f)]
     public float healPercent = 0.25f;
 

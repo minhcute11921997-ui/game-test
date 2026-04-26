@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2703e1b7663cf3540b77db9bfc54a91b, type: 3}
-  m_Name: "V\xF9ng t\u1EEB tr\u01B0\u1EDDng"
+  m_Name: "Cu\u1ED3ng n\u1ED9"
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  moveName: "V\xF9ng t\u1EEB tr\u01B0\u1EDDng"
-  elementType: 5
-  category: 3
-  targetScope: 2
-  statusSubType: 1
+  moveName: Tackle
+  elementType: 0
+  category: 0
+  targetScope: 0
+  statusSubType: 0
   statTarget: attack
   statDelta: 1
   healPercent: 0.25
@@ -25,8 +25,8 @@ MonoBehaviour:
   basePower: 40
   accuracy: 100
   pp: 20
-  weatherType: 2
-  weatherDuration: 10
+  weatherType: 0
+  weatherDuration: 5
   terrainEffect: 0
   terrainShape: 0
   terrainMaxCount: 1

@@ -170,10 +170,14 @@ public class BattlePhaseManager : MonoBehaviour
             if (move.category == MoveCategory.Status
                 && move.statusSubType == StatusSubType.Heal)
             {
-                int healAmt = Mathf.FloorToInt(attacker.MaxHp * move.healPercent); // 25% MaxHP
-                attacker.Heal(healAmt);
+                BattleEntity healTarget = cmd.HasAttack
+        ? (BattleGridManager.Instance.GetEntityAt(cmd.attackTarget) ?? attacker)
+        : attacker;
+
+                int healAmt = Mathf.FloorToInt(healTarget.MaxHp * move.healPercent);
+                healTarget.Heal(healAmt);
                 if (attacker.TeamId == 1) attacker.IncrementBuffCount();
-                continue; // Không cần attackTarget
+                continue;
             }
 
             if (move.category == MoveCategory.Status
@@ -182,7 +186,7 @@ public class BattlePhaseManager : MonoBehaviour
             {
                 if (attacker.TeamId == 1) attacker.IncrementBuffCount();
 
-                if (move.targetsSelf)
+                if (move.targetScope == TargetScope.OwnSide || move.targetScope == TargetScope.BothSides)
                 {
                     // Buff chính mình
                     attacker.ApplyStage(move.statTarget, move.statDelta);

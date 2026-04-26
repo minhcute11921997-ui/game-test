@@ -1,5 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
+public enum WeatherTarget
+{
+    Both,
+    TeamLeft,
+    TeamRight,
+}
 
 public class WeatherState
 {
