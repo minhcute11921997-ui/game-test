@@ -105,6 +105,16 @@ public class BattleEntity : MonoBehaviour
         if (_currentHp <= 0) Die();
     }
 
+    // ── Hồi máu ──────────────────────────────────────────────
+    public void Heal(int amount)
+    {
+        int before = _currentHp;
+        _currentHp = Mathf.Min(_maxHp, _currentHp + amount);
+        int actual = _currentHp - before;
+        Debug.Log($"[HP] {Data.thingName} hồi {actual} HP: {_currentHp}/{_maxHp}");
+        hpBar?.SetHp(_currentHp, _maxHp);
+    }
+
     // ── Sau khi di chuyển ────────────────────────────────────────
     public void OnMoved()
     {

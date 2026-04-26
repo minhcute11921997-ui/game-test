@@ -166,6 +166,48 @@ public class BattlePhaseManager : MonoBehaviour
                 continue;
             }
 
+            // ── Status: Heal ───────────────────────────────────────
+            if (move.category == MoveCategory.Status
+                && move.statusSubType == StatusSubType.Heal)
+            {
+                int healAmt = Mathf.FloorToInt(attacker.MaxHp * move.healPercent); // 25% MaxHP
+                attacker.Heal(healAmt);
+                if (attacker.TeamId == 1) attacker.IncrementBuffCount();
+                continue; // Không cần attackTarget
+            }
+
+            if (move.category == MoveCategory.Status
+    && (move.statusSubType == StatusSubType.Buff
+        || move.statusSubType == StatusSubType.Debuff))
+            {
+                if (attacker.TeamId == 1) attacker.IncrementBuffCount();
+
+                if (move.targetsSelf)
+                {
+                    // Buff chính mình
+                    attacker.ApplyStage(move.statTarget, move.statDelta);
+                    int newStage = attacker.GetStage(move.statTarget);
+                    string dir = move.statDelta > 0 ? "tăng" : "giảm";
+                    Debug.Log($"[Status] {attacker.Data.thingName} {dir} {move.statTarget} " +
+                              $"{Mathf.Abs(move.statDelta)} stage → hiện tại: {newStage}");
+                }
+                else
+                {
+                    // Debuff địch — cần chọn target qua attackTarget
+                    if (!cmd.HasAttack) { continue; }
+                    BattleEntity debuffTarget = BattleGridManager.Instance.GetEntityAt(cmd.attackTarget);
+                    if (debuffTarget != null && debuffTarget.TeamId != attacker.TeamId)
+                    {
+                        debuffTarget.ApplyStage(move.statTarget, move.statDelta);
+                        int newStage = debuffTarget.GetStage(move.statTarget);
+                        string dir = move.statDelta > 0 ? "tăng" : "giảm";
+                        Debug.Log($"[Status] {attacker.Data.thingName} khiến {debuffTarget.Data.thingName} " +
+                                  $"{dir} {move.statTarget} {Mathf.Abs(move.statDelta)} stage → hiện tại: {newStage}");
+                    }
+                }
+                continue;
+            }
+
             if (!cmd.HasAttack) continue;
             if (move.category == MoveCategory.Status && attacker.TeamId == 1)
                 attacker.IncrementBuffCount();
@@ -181,6 +223,14 @@ public class BattlePhaseManager : MonoBehaviour
             {
                 BattleEntity target = BattleGridManager.Instance.GetEntityAt(cell);
                 if (target == null || target.TeamId == attacker.TeamId) continue;
+
+                float evasionRate = CombatCalculator.CalculateEvasionRate(target.Data.luck);
+                if (Random.value < evasionRate / 100f)
+                {
+                    Debug.Log($"[Combat] {target.Data.thingName} né tránh đòn của {attacker.Data.thingName}!");
+                    // Optional: hiển thị popup "Né!"
+                    continue;
+                }
 
                 int distType = CalcDistType(effectiveShape, cell, cmd.attackTarget);
 

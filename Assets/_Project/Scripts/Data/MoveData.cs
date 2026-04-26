@@ -72,6 +72,16 @@ public class MoveData : ScriptableObject
 
     [Tooltip("Chỉ dùng khi category = Status")]
     public StatusSubType statusSubType = StatusSubType.Buff;
+    [Header("Buff / Debuff (chỉ dùng khi statusSubType = Buff/Debuff)")]
+    [Tooltip("Chỉ số bị ảnh hưởng: attack, defense, spAtk, spDef, speed")]
+    public string statTarget = "attack";
+
+    [Tooltip("Số stage thay đổi: +1/+2 là buff, -1/-2 là debuff")]
+    [Range(-3, 3)]
+    public int statDelta = 1;
+
+    [Tooltip("Áp lên chính mình (true) hay lên địch (false)")]
+    public bool targetsSelf = true;
 
     [Header("Chiêu Tấn Công")]
     public AttackShape shape = AttackShape.Single;
