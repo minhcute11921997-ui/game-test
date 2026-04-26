@@ -1,6 +1,6 @@
 # Tiến Độ Dự Án
 
-> Cập nhật: đối chiếu trực tiếp từng dòng code tất cả 29 file `.cs` trong `Assets/_Project/Scripts`.
+> Cập nhật: đối chiếu trực tiếp từng dòng code tất cả 29 file `.cs` trong `Assets/_Project/Scripts` (Bao gồm cập nhật hệ thống MoveEffect mới).
 
 ---
 
@@ -41,7 +41,9 @@
 ## ✅ Data Layer
 
 - [x] **ThingData.cs** — ScriptableObject đầy đủ: `thingName`, `prefab`, `battlePrefab`, `spawnWeight`, `elementType`, `aiDifficulty`, `archetype`, `defaultMove`, `moves` (List), `AllMoves` property, `hp`, `attack`, `defense`, `spAtk`, `spDef`, `speed`, `level`, `luck`, `moveRange`
-- [x] **MoveData.cs** — ScriptableObject đầy đủ với tất cả enums: `ElementType` (10 hệ), `MoveCategory` (Physical/Special/Status/Weather/Terrain), `StatusSubType`, `AttackShape` (5 dạng), `WeatherType` (None/Blizzard/MagneticField), `TerrainEffectType` (None/ThornTrap/BurnMark), `WeatherTarget`
+- [x] **MoveData.cs** — ScriptableObject đầy đủ với tất cả enums. Đã refactor sử dụng hệ thống `List<MoveEffect> effects` linh hoạt theo thứ tự chuẩn: Buff/Debuff → Damage → Heal → Terrain → Weather.
+- [x] **MoveEffect.cs (Hệ thống mới)** — Abstract class và các kế thừa `DamageEffect`, `HealEffect`, `StatStageEffect`, `TerrainEffect`, `WeatherEffect`. Cung cấp hàm `Resolve()` để xử lý logic và tham số `triggerChance` (tỷ lệ kích hoạt hiệu ứng).
+- [x] **EffectResult.cs** — Class lưu trữ kết quả trả về từ `MoveEffect.Resolve()`, chứa loại kết quả, danh sách trúng đòn, lượng thay đổi và logMessage.
 - [x] **AIDifficulty.cs** — Enum `AIDifficulty` (Easy/Medium/Hard/Ultra) + `ThingArchetype` (Attacker/Defender/Setup)
 - [ ] **ThingCollection.cs** — File tồn tại nhưng _thân class rỗng_, chưa implement
 - [ ] **SaveLoad scripts** — Thư mục `Scripts/SaveLoad/` tồn tại nhưng _không có file `.cs` nào_
@@ -108,16 +110,17 @@
 ## ✅ Battle — Combat Calculation
 
 - [x] **HP Formula V2** — `MaxHP = floor(Base × 8 × Level / 100) + Level + 150`
-- [x] **Damage Formula** — `BaseDmg = floor(((2×Level/5 + 2) × Power × Atk/Def) / 10)`
+- [x] **Damage Formula** — Hỗ trợ nhận trực tiếp `DamageEffect`. `BaseDmg = floor(((2×Level/5 + 2) × Power × Atk/Def) / 10)`
 - [x] **STAB x1.2** — Áp dụng khi chiêu cùng hệ với attacker, bỏ qua Neutral _(lưu ý: code dùng 1.2f, không phải 1.5f như một số ghi chú trước)_
 - [x] **Bảng tương khắc 9 hệ** — `TypeChart[10,10]`, hệ số **1.35 / 1.0 / 0.75 / 0.0** _(lưu ý: code dùng 1.35/0.75 thay vì 2.0/0.5 — cân bằng game hơn)_
-- [x] **Crit Rate động** — `5 + Luck/10 %`, nhân `x1.5` khi trúng
-- [x] **Evasion Rate** — `Luck/10 %`
+- [x] **Crit Rate động** — `5 + Luck/10 %`, nhân `x1.5` khi trúng đòn chí mạng. Cờ `isCritical` truyền chính xác ra log.
+- [x] **Evasion Rate (Né đòn)** — `Luck/10 %`. Đã xử lý triệt để trong `DamageEffect.Resolve()`, check né tránh trước khi gọi hàm sát thương.
+- [x] **Heal & Stat Buff/Debuff** — Xử lý tự động qua chuỗi list effect (`HealEffect` và `StatStageEffect`).
 - [x] **RNG 0.9–1.0** — Áp dụng cho mọi đòn
 - [x] **Stat Stage Multiplier** — `Max(2,2+stage) / Max(2,2-stage)`, stage -6 ↔ +6
 - [x] **AoE Falloff 3×3** — Tâm x1.0 / Cận tâm x0.8 / Góc chéo x0.7
 - [x] **AoE Falloff 2×2** — RNG kép: chung × [0.85–1.0] → tổng [0.765–1.0]
-- [x] **Physical / Special split** — Dùng `attack/defense` hoặc `spAtk/spDef` tùy `MoveCategory`
+- [x] **Physical / Special split** — Dùng `attack/defense` hoặc `spAtk/spDef` tùy `damageCategory` trong DamageEffect.
 - [x] **Speed sort trong JudgePhase** — Sort giảm dần Speed, entity nhanh hơn ra đòn trước
 
 ---
@@ -184,7 +187,9 @@
 | `RuntimeGameState.cs`       | `Scripts/Core/`             | Bridge data xuyên scene                                    |
 | `SetStarterThing.cs`        | `Scripts/`                  | Nạp pet mặc định vào Party                                 |
 | `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing                               |
-| `MoveData.cs`               | `Scripts/Data/`             | ScriptableObject chiêu thức + enums                        |
+| `MoveData.cs`               | `Scripts/Data/`             | Tùy chỉnh hệ nguyên tố, categories, gọi list MoveEffect    |
+| `MoveEffect.cs`             | `Scripts/Data/`             | Base và các logic cho Damage, Heal, StatStage, v.v.        |
+| `EffectResult.cs`           | `Scripts/Data/`             | Dữ liệu kết quả xử lý của các đòn đánh/hiệu ứng            |
 | `AIDifficulty.cs`           | `Scripts/Data/`             | Enum difficulty + archetype                                |
 | `GridPos.cs`                | `Scripts/Combat/`           | Struct tọa độ ô lưới                                       |
 | `BattleGridConfig.cs`       | `Scripts/Combat/`           | ScriptableObject cấu hình lưới                             |
@@ -208,12 +213,10 @@
 
 ## ⏳ Chưa Làm / Còn Thiếu
 
-| Hạng mục                    | Trạng thái                                                                      |
-| --------------------------- | ------------------------------------------------------------------------------- |
-| PlayerInteraction thật      | Hiện chỉ `Debug.Log`, chưa mở UI/action                                         |
-| ThingCollection.cs          | Class rỗng, chưa implement                                                      |
-| SaveLoad system             | Thư mục tồn tại nhưng chưa có file `.cs` nào                                    |
-| BurnMark effect logic       | Tile tồn tại, chưa xác nhận effect thật trong `OnEntityEnterCell`               |
-| Multi-unit battle           | Hiện spawn mỗi phe 1 unit (col cố định)                                         |
-| Buff/Debuff stat stage thật | Công thức GetStageMultiplier() có nhưng chưa thấy nơi gọi để áp dụng lên entity |
-| Heal logic                  | StatusSubType.Heal tồn tại nhưng chưa thấy handler trong JudgePhase             |
+| Hạng mục               | Trạng thái                                                        |
+| ---------------------- | ----------------------------------------------------------------- |
+| PlayerInteraction thật | Hiện chỉ `Debug.Log`, chưa mở UI/action                           |
+| ThingCollection.cs     | Class rỗng, chưa implement                                        |
+| SaveLoad system        | Thư mục tồn tại nhưng chưa có file `.cs` nào                      |
+| BurnMark effect logic  | Tile tồn tại, chưa xác nhận effect thật trong `OnEntityEnterCell` |
+| Multi-unit battle      | Hiện spawn mỗi phe 1 unit (col cố định)                           |
