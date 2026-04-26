@@ -28,7 +28,7 @@ MonoBehaviour:
         aoeShape: 0
         aoeRadius: 1
         triggerChance: 1
-        terrainType: 1
-        terrainShape: 0
+        terrainType: 2
+        terrainShape: 1
         maxCount: 5
         duration: 5

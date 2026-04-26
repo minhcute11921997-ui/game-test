@@ -33,4 +33,4 @@ MonoBehaviour:
   speed: 20
   level: 10
   luck: 50
-  moveRange: 1
+  moveRange: 3

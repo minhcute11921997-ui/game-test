@@ -40,7 +40,7 @@ public class BattleEntity : MonoBehaviour
     {
         if (stat == StatType.Luck)
         {
-            _luckBonus += delta * 30; // mỗi 1 stage = +10 luck
+            _luckBonus += delta * 50; // mỗi 1 stage = +50 luck
             _luckBonus = Mathf.Clamp(_luckBonus, -Data.luck, 200);
             Debug.Log($"[Luck] {Data.thingName} luck {Data.luck} + bonus {_luckBonus} = {EffectiveLuck}");
             return _luckBonus;
