@@ -62,6 +62,13 @@ public enum WeatherTarget
     [InspectorName("Sân phải (Team 1)")] TeamRight,
 }
 
+public enum TargetScope
+{
+    [InspectorName("Sân địch")] EnemySide,
+    [InspectorName("Sân mình")] OwnSide,
+    [InspectorName("Cả 2 sân")] BothSides,
+    [InspectorName("Không cần chọn ô")] NoTarget, // Weather Both
+}
 [CreateAssetMenu(fileName = "NewMove", menuName = "Game/Move Data")]
 public class MoveData : ScriptableObject
 {
@@ -70,6 +77,9 @@ public class MoveData : ScriptableObject
     public ElementType elementType = ElementType.Neutral;
     public MoveCategory category = MoveCategory.Physical;
 
+
+    [Header("Phạm vi chọn ô mục tiêu")]
+    public TargetScope targetScope = TargetScope.EnemySide;
     [Tooltip("Chỉ dùng khi category = Status")]
     public StatusSubType statusSubType = StatusSubType.Buff;
     [Header("Buff / Debuff (chỉ dùng khi statusSubType = Buff/Debuff)")]
@@ -82,6 +92,10 @@ public class MoveData : ScriptableObject
 
     [Tooltip("Áp lên chính mình (true) hay lên địch (false)")]
     public bool targetsSelf = true;
+    [Header("Heal (chỉ dùng khi statusSubType = Heal)")]
+    [Tooltip("Phần trăm MaxHP được hồi, ví dụ 0.25 = 25%")]
+    [Range(0.05f, 1.0f)]
+    public float healPercent = 0.25f;
 
     [Header("Chiêu Tấn Công")]
     public AttackShape shape = AttackShape.Single;
@@ -100,4 +114,6 @@ public class MoveData : ScriptableObject
     public AttackShape terrainShape = AttackShape.Single;
     public int terrainMaxCount = 1;
     public int terrainDuration = 3;
+
+
 }

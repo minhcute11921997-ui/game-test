@@ -29,25 +29,49 @@ public class WeatherManager : MonoBehaviour
     {
         if (target == WeatherTarget.Both)
         {
-            // Phủ cả 2 sân → xóa hết mọi thứ đang có
+            // Phủ cả 2 sân → xóa hết + ghi slot Both
             _states.Clear();
+            _states[WeatherTarget.Both] = new WeatherState
+            {
+                type = move.weatherType,
+                turnsLeft = move.weatherDuration,
+                target = WeatherTarget.Both,
+                isNewThisTurn = true,
+            };
+            Debug.Log($"[Weather] {move.weatherType} phủ CẢ 2 SÂN — {move.weatherDuration} lượt");
         }
         else
         {
-            // Phủ 1 sân cụ thể → xóa sân đó + xóa Both nếu đang phủ sân đó
-            _states.Remove(target);
-            _states.Remove(WeatherTarget.Both);
+            // Phủ 1 sân cụ thể
+            // Nếu đang có slot Both, tách ra thành 2 slot riêng trước
+            if (_states.TryGetValue(WeatherTarget.Both, out var bothState) && bothState.turnsLeft > 0)
+            {
+                WeatherTarget otherSide = (target == WeatherTarget.TeamLeft)
+                    ? WeatherTarget.TeamRight
+                    : WeatherTarget.TeamLeft;
+
+                // Giữ nguyên sân kia với thời tiết Both còn lại
+                _states[otherSide] = new WeatherState
+                {
+                    type = bothState.type,
+                    turnsLeft = bothState.turnsLeft,
+                    target = otherSide,
+                    isNewThisTurn = bothState.isNewThisTurn,
+                };
+                _states.Remove(WeatherTarget.Both);
+                Debug.Log($"[Weather] Tách Both → {otherSide} giữ {bothState.type} ({bothState.turnsLeft} lượt)");
+            }
+
+            // Ghi đè sân được chọn
+            _states[target] = new WeatherState
+            {
+                type = move.weatherType,
+                turnsLeft = move.weatherDuration,
+                target = target,
+                isNewThisTurn = true,
+            };
+            Debug.Log($"[Weather] {move.weatherType} áp vào {target} — {move.weatherDuration} lượt");
         }
-
-        _states[target] = new WeatherState
-        {
-            type = move.weatherType,
-            turnsLeft = move.weatherDuration,
-            target = target,
-            isNewThisTurn = true,
-        };
-
-        Debug.Log($"[Weather] {move.weatherType} áp vào {target} — {move.weatherDuration} lượt (đã xóa thời tiết cũ)");
     }
 
     // ─── Lấy thời tiết đang ảnh hưởng team ──────────────────────

@@ -209,8 +209,7 @@ public class BattlePhaseManager : MonoBehaviour
             }
 
             if (!cmd.HasAttack) continue;
-            if (move.category == MoveCategory.Status && attacker.TeamId == 1)
-                attacker.IncrementBuffCount();
+
 
             WeatherManager.Instance.GetEffectiveAoE(
                 attacker.TeamId, move.shape, move.aoeRadius,

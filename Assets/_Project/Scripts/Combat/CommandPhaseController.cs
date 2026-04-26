@@ -121,23 +121,31 @@ public class CommandPhaseController : MonoBehaviour
         var cfg = BattleGridManager.Instance.config;
         var result = new List<GridPos>();
 
-        // Thời Tiết cả 2 sân → không cần chọn ô
-        if (move != null && move.category == MoveCategory.Weather)
-        {
-            if (move.weatherTarget == WeatherTarget.Both)
-                return result;
+        if (move == null) return result;
 
-            for (int c = 0; c < cfg.TotalCols; c++)
-                for (int r = 0; r < cfg.boardRows; r++)
-                    if (cfg.IsWalkable(c, r))
-                        result.Add(new GridPos(c, r));
+        // NoTarget → submit luôn, không highlight gì
+        if (move.targetScope == TargetScope.NoTarget)
             return result;
+
+        int cStart, cEnd;
+        switch (move.targetScope)
+        {
+            case TargetScope.OwnSide:
+                cStart = _selectedEntity.TeamId == 0 ? 0 : cfg.RightMinCol;
+                cEnd = _selectedEntity.TeamId == 0 ? cfg.LeftMaxCol : cfg.TotalCols - 1;
+                break;
+            case TargetScope.BothSides:
+                cStart = 0;
+                cEnd = cfg.TotalCols - 1;
+                break;
+            case TargetScope.EnemySide:
+            default:
+                cStart = _selectedEntity.TeamId == 0 ? cfg.RightMinCol : 0;
+                cEnd = _selectedEntity.TeamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
+                break;
         }
 
-        int colStart = _selectedEntity.TeamId == 0 ? cfg.RightMinCol : 0;
-        int colEnd = _selectedEntity.TeamId == 0 ? cfg.TotalCols - 1 : cfg.LeftMaxCol;
-
-        for (int c = colStart; c <= colEnd; c++)
+        for (int c = cStart; c <= cEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
                 if (cfg.IsWalkable(c, r))
                     result.Add(new GridPos(c, r));

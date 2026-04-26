@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2703e1b7663cf3540b77db9bfc54a91b, type: 3}
+  m_Name: "H\u1ED3i m\xE1u"
+  m_EditorClassIdentifier: Assembly-CSharp::MoveData
+  moveName: "H\u1ED3i m\xE1u"
+  elementType: 8
+  category: 2
+  statusSubType: 2
+  statTarget: attack
+  statDelta: 1
+  targetsSelf: 1
+  healPercent: 0.5
+  shape: 0
+  aoeRadius: 1
+  basePower: 40
+  accuracy: 100
+  pp: 20
+  weatherType: 0
+  weatherTarget: 0
+  weatherDuration: 5
+  terrainEffect: 0
+  terrainShape: 0
+  terrainMaxCount: 1
+  terrainDuration: 3
