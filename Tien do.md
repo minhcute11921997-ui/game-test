@@ -221,3 +221,6 @@
 | Weather Visual Effect         | Cần tạo `WeatherVFXController.cs` + Particle System prefab cho Blizzard / MagneticField                            |
 | Multi-unit battle             | Hiện spawn mỗi phe 1 unit (col cố định)                                                                            |
 | Terrain AoE preview tách biệt | `tilemapTerrainPreview` chưa tạo; preview hiện đang đè lên highlight valid cells khi di chuột                      |
+
+X Thêm tùy chọn phạm vi cho things như chiếm 1x2, 2x2, hay 3x3
+X Thêm effect đẩy lùi vào move (đẩy lùi so với tâm chiêu hiện tại với things địch )
