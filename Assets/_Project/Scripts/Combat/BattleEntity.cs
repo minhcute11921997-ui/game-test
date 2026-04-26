@@ -53,6 +53,29 @@ public class BattleEntity : MonoBehaviour
     public bool IsImmobilized() => !_canMove || IsForcedStillByMagnet();
 
     private MoveData _chosenMove;
+    private Dictionary<MoveData, int> _currentPP = new();
+
+    public int GetCurrentPP(MoveData move)
+    {
+        if (move == null) return 0;
+        if (!_currentPP.ContainsKey(move))
+            _currentPP[move] = move.maxPP;   // khởi tạo lần đầu
+        return _currentPP[move];
+    }
+
+    public bool UseMove(MoveData move)
+    {
+        if (move == null) return false;
+        int pp = GetCurrentPP(move);
+        if (pp <= 0)
+        {
+            Debug.Log($"[PP] {Data.thingName}: {move.moveName} đã hết PP!");
+            return false;
+        }
+        _currentPP[move] = pp - 1;
+        Debug.Log($"[PP] {Data.thingName}: {move.moveName} PP {pp} → {pp - 1}");
+        return true;
+    }
     public MoveData GetMove() => _chosenMove ?? Data?.defaultMove;
     public void SetChosenMove(MoveData move) => _chosenMove = move;
 

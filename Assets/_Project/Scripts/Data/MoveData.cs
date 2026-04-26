@@ -81,6 +81,8 @@ public class MoveData : ScriptableObject
     public ElementType elementType = ElementType.Neutral;
     public MoveCategory category = MoveCategory.Physical;
 
+    [Range(1, 64)] public int maxPP = 20;
+
     [Header("⚠️ Thứ tự: Buff/Debuff → Damage → Heal → Terrain → Weather")]
     [SerializeReference]
     public List<MoveEffect> effects = new();
@@ -98,7 +100,7 @@ public class MoveData : ScriptableObject
     public bool hasNoTarget =>
         effects.Count > 0 && effects[0].targetScope == TargetScope.NoTarget;
 
-    public int maxPP => 20;
+
 
     public int GetBasePower() => GetDamage()?.basePower ?? 0;
 

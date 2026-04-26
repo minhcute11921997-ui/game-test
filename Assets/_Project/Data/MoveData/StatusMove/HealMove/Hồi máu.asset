@@ -15,19 +15,17 @@ MonoBehaviour:
   moveName: "H\u1ED3i m\xE1u"
   elementType: 8
   category: 2
-  targetScope: 2
-  statusSubType: 2
-  statTarget: attack
-  statDelta: 1
-  healPercent: 0.5
-  shape: 0
-  aoeRadius: 1
-  basePower: 40
-  accuracy: 100
-  pp: 20
-  weatherType: 0
-  weatherDuration: 5
-  terrainEffect: 0
-  terrainShape: 0
-  terrainMaxCount: 1
-  terrainDuration: 3
+  maxPP: 5
+  effects:
+  - rid: 6068995825384816717
+  references:
+    version: 2
+    RefIds:
+    - rid: 6068995825384816717
+      type: {class: HealEffect, ns: , asm: Assembly-CSharp}
+      data:
+        targetScope: 2
+        aoeShape: 0
+        aoeRadius: 1
+        triggerChance: 1
+        healPercent: 0.25

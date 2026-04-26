@@ -15,19 +15,18 @@ MonoBehaviour:
   moveName: "B\xE3o tuy\u1EBFt"
   elementType: 7
   category: 3
-  targetScope: 3
-  statusSubType: 1
-  statTarget: attack
-  statDelta: 1
-  healPercent: 0.25
-  shape: 0
-  aoeRadius: 1
-  basePower: 40
-  accuracy: 100
-  pp: 20
-  weatherType: 1
-  weatherDuration: 10
-  terrainEffect: 0
-  terrainShape: 0
-  terrainMaxCount: 1
-  terrainDuration: 3
+  maxPP: 5
+  effects:
+  - rid: 6068995825384816720
+  references:
+    version: 2
+    RefIds:
+    - rid: 6068995825384816720
+      type: {class: WeatherEffect, ns: , asm: Assembly-CSharp}
+      data:
+        targetScope: 3
+        aoeShape: 0
+        aoeRadius: 1
+        triggerChance: 1
+        weatherType: 1
+        duration: 5

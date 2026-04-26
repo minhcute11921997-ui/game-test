@@ -15,7 +15,19 @@ MonoBehaviour:
   moveName: "\u0110\xE1nh"
   elementType: 0
   category: 0
-  shape: 0
-  basePower: 10
-  accuracy: 100
-  pp: 10
+  maxPP: 40
+  effects:
+  - rid: 6068995825384816714
+  references:
+    version: 2
+    RefIds:
+    - rid: 6068995825384816714
+      type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
+      data:
+        targetScope: 0
+        aoeShape: 0
+        aoeRadius: 1
+        triggerChance: 1
+        damageCategory: 0
+        basePower: 40
+        accuracy: 100

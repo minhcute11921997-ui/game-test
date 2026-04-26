@@ -14,20 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: Tackle
   elementType: 0
-  category: 0
-  targetScope: 0
-  statusSubType: 0
-  statTarget: attack
-  statDelta: 1
-  healPercent: 0.25
-  shape: 0
-  aoeRadius: 1
-  basePower: 40
-  accuracy: 100
-  pp: 20
-  weatherType: 0
-  weatherDuration: 5
-  terrainEffect: 0
-  terrainShape: 0
-  terrainMaxCount: 1
-  terrainDuration: 3
+  category: 2
+  maxPP: 10
+  effects:
+  - rid: 6068995825384816715
+  references:
+    version: 2
+    RefIds:
+    - rid: 6068995825384816715
+      type: {class: StatStageEffect, ns: , asm: Assembly-CSharp}
+      data:
+        targetScope: 2
+        aoeShape: 0
+        aoeRadius: 1
+        triggerChance: 1
+        statType: 0
+        delta: 1

@@ -15,16 +15,19 @@ MonoBehaviour:
   moveName: "Phun L\u1EEDa"
   elementType: 1
   category: 1
-  statusSubType: 0
-  shape: 1
-  aoeRadius: 1
-  basePower: 10
-  accuracy: 100
-  pp: 10
-  envCategory: 0
-  envDuration: 5
-  weatherType: 0
-  weatherTarget: 0
-  terrainEffect: 0
-  terrainShape: 0
-  terrainMaxCount: 1
+  maxPP: 10
+  effects:
+  - rid: 6068995825384816712
+  references:
+    version: 2
+    RefIds:
+    - rid: 6068995825384816712
+      type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
+      data:
+        targetScope: 0
+        aoeShape: 2
+        aoeRadius: 1
+        triggerChance: 1
+        damageCategory: 1
+        basePower: 40
+        accuracy: 100

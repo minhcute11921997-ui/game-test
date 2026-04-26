@@ -118,6 +118,13 @@ public class BattlePhaseManager : MonoBehaviour
             MoveData move = attacker.GetMove();
             if (move == null || move.effects.Count == 0) continue;
 
+            // ── Kiểm tra và trừ PP ──────────────────────────────────
+            if (!attacker.UseMove(move))
+            {
+                Debug.Log($"<color=red>[PP]</color> {attacker.name} hết PP {move.moveName}, bỏ lượt!");
+                continue;  // bỏ lượt nếu hết PP
+            }
+
             Debug.Log($"<color=cyan>[Judge]</color> {attacker.name} dùng {move.moveName}");
             yield return StartCoroutine(ExecuteMove(attacker, cmd, move));
         }

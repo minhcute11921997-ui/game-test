@@ -17,6 +17,7 @@ public class BattleGridManager : MonoBehaviour
     public Tilemap tilemapGrid;
     public Tilemap tilemapTerrain;
 
+
     [Header("Tiles — kéo vào từ Project")]
     public TileBase tileLeft;
     public TileBase tileRight;
