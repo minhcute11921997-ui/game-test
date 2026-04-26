@@ -97,4 +97,16 @@ public class MoveData : ScriptableObject
 
     public bool hasNoTarget =>
         effects.Count > 0 && effects[0].targetScope == TargetScope.NoTarget;
+
+    public int maxPP => 20;
+
+    public int GetBasePower() => GetDamage()?.basePower ?? 0;
+
+    public StatusSubType GetStatusSubType()
+    {
+        if (GetHeal() != null) return StatusSubType.Heal;
+        var stat = effects.OfType<StatStageEffect>().FirstOrDefault();
+        if (stat != null) return stat.delta > 0 ? StatusSubType.Buff : StatusSubType.Debuff;
+        return StatusSubType.Debuff;
+    }
 }

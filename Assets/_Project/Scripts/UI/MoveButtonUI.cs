@@ -37,7 +37,7 @@ public class MoveButtonUI : MonoBehaviour
         _moveData = move;
         _callback = onClick;
 
-        int maxPP = move.pp;
+        int maxPP = move.maxPP;
         int dispPP = currentPP < 0 ? maxPP : currentPP;
 
         Color catColor = GetCategoryColor(move);
@@ -58,7 +58,8 @@ public class MoveButtonUI : MonoBehaviour
         bool hasPower = move.category == MoveCategory.Physical
                      || move.category == MoveCategory.Special;
 
-        textPower.text = hasPower ? move.basePower.ToString() : "—";
+        int power = move.GetDamage()?.basePower ?? 0;
+        textPower.text = hasPower ? power.ToString() : "—";
         textPower.color = Color.white;
 
         // PP: đổi màu đỏ nếu còn ≤ 25%
@@ -78,7 +79,7 @@ public class MoveButtonUI : MonoBehaviour
     {
         MoveCategory.Physical => new Color(0.78f, 0.38f, 0.05f),
         MoveCategory.Special => new Color(0.40f, 0.10f, 0.60f),
-        MoveCategory.Status => move.statusSubType switch
+        MoveCategory.Status => GetStatusSubType(move) switch
         {
             StatusSubType.Buff => new Color(0.10f, 0.50f, 0.18f),
             StatusSubType.Debuff => new Color(0.38f, 0.38f, 0.42f),
@@ -95,7 +96,7 @@ public class MoveButtonUI : MonoBehaviour
     {
         MoveCategory.Physical => new Color(1.00f, 0.58f, 0.15f),
         MoveCategory.Special => new Color(0.72f, 0.45f, 1.00f),
-        MoveCategory.Status => move.statusSubType switch
+        MoveCategory.Status => GetStatusSubType(move) switch
         {
             StatusSubType.Buff => new Color(0.30f, 0.95f, 0.45f),
             StatusSubType.Debuff => new Color(0.85f, 0.85f, 0.90f),
@@ -112,7 +113,7 @@ public class MoveButtonUI : MonoBehaviour
     {
         MoveCategory.Physical => $"hệ {move.elementType.ToString().ToLower()}",
         MoveCategory.Special => $"hệ {move.elementType.ToString().ToLower()}",
-        MoveCategory.Status => move.statusSubType switch
+        MoveCategory.Status => GetStatusSubType(move) switch
         {
             StatusSubType.Buff => "buff",
             StatusSubType.Debuff => "debuff",
@@ -123,4 +124,14 @@ public class MoveButtonUI : MonoBehaviour
         MoveCategory.Terrain => "địa hình",
         _ => "—",
     };
+
+    // Thêm helper nhỏ vào cuối class:
+    static StatusSubType GetStatusSubType(MoveData move)
+    {
+        if (move.GetHeal() != null) return StatusSubType.Heal;
+        // Kiểm tra buff/debuff nếu có class BuffDebuffEffect
+        // Nếu chưa có, tạm dùng Debuff làm mặc định
+        return StatusSubType.Debuff;
+    }
+
 }

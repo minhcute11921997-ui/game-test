@@ -32,6 +32,13 @@ public class WeatherManager : MonoBehaviour
 
     public void ApplyWeather(MoveData move, TargetScope scope, int attackerTeamId, GridPos attackTarget)
     {
+
+        var weatherEffect = move.GetWeather();
+        if (weatherEffect == null)
+        {
+            Debug.LogWarning($"[Weather] {move.moveName} không có WeatherEffect!");
+            return;
+        }
         WeatherTarget target;
 
         if (scope == TargetScope.NoTarget)
@@ -60,12 +67,12 @@ public class WeatherManager : MonoBehaviour
             _states.Clear();
             _states[WeatherTarget.Both] = new WeatherState
             {
-                type = move.weatherType,
-                turnsLeft = move.weatherDuration,
+                type = weatherEffect.weatherType,
+                turnsLeft = weatherEffect.duration,
                 target = WeatherTarget.Both,
                 isNewThisTurn = true,
             };
-            Debug.Log($"[Weather] {move.weatherType} phủ CẢ 2 SÂN — {move.weatherDuration} lượt");
+            Debug.Log($"[Weather] {weatherEffect.weatherType} phủ CẢ 2 SÂN — {weatherEffect.duration} lượt");
         }
         else
         {
@@ -88,12 +95,12 @@ public class WeatherManager : MonoBehaviour
 
             _states[target] = new WeatherState
             {
-                type = move.weatherType,
-                turnsLeft = move.weatherDuration,
+                type = weatherEffect.weatherType,
+                turnsLeft = weatherEffect.duration,
                 target = target,
                 isNewThisTurn = true,
             };
-            Debug.Log($"[Weather] {move.weatherType} áp vào {target} — {move.weatherDuration} lượt");
+            Debug.Log($"[Weather] {weatherEffect.weatherType} áp vào {target} — {weatherEffect.duration} lượt");
         }
     }
 
