@@ -90,31 +90,35 @@ public static class CombatCalculator
     ///   2 = rìm (4 góc chéo trong 3x3)
     /// </summary>
     public static DamageResult Calculate(
-        ThingData attacker,
-        ThingData defender,
+        BattleEntity attacker,   // Đổi từ ThingData -> BattleEntity
+        BattleEntity defender,   // Đổi từ ThingData -> BattleEntity
         MoveData move,
         int attackerLevel,
         int attackerLuck,
         AttackShape aoeShape = AttackShape.Single,
         int cellDistanceType = 0)
     {
-        // 1. Stat tấn công / phòng thủ
+        // 1. Stat tấn công / phòng thủ (ĐỌC TỪ EFFECTIVE STATS CỦA ENTITY)
         float atkStat = (move.category == MoveCategory.Physical)
-            ? attacker.attack : attacker.spAtk;
+            ? attacker.EffectiveAttack : attacker.EffectiveSpAtk;
         float defStat = Mathf.Max(1f, (move.category == MoveCategory.Physical)
-            ? defender.defense : defender.spDef);
+            ? defender.EffectiveDefense : defender.EffectiveSpDef);
+
+        // Lấy Data gốc ra để dùng cho STAB và Hệ
+        ThingData attackerData = attacker.Data;
+        ThingData defenderData = defender.Data;
 
         // 2. Base Damage
         float baseDmg = Mathf.FloorToInt(
             ((2f * attackerLevel / 5f + 2f) * move.basePower * (atkStat / defStat)) / 10f);
 
-        // 3. STAB x1.5
-        bool isStab = move.elementType == attacker.elementType
-                      && attacker.elementType != ElementType.Neutral;
+        // 3. STAB x1.2 (Theo GDD ghi chú của bạn là 1.2 chứ không phải 1.5)
+        bool isStab = move.elementType == attackerData.elementType
+                      && attackerData.elementType != ElementType.Neutral;
         float stabMult = isStab ? 1.2f : 1.0f;
 
         // 4. Tương khắc hệ
-        float typeMult = GetTypeMultiplier(move.elementType, defender.elementType);
+        float typeMult = GetTypeMultiplier(move.elementType, defenderData.elementType);
         if (typeMult == 0f)
             return new DamageResult { damage = 0, typeMultiplier = 0f, isStab = isStab, isCritical = false };
 

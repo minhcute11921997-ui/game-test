@@ -39,6 +39,15 @@ public class BattlePhaseManager : MonoBehaviour
         _commands.Clear();
         Debug.Log("[BattlePhase] === COMMAND PHASE ===");
 
+        if (WeatherManager.Instance != null)
+        {
+            // Team 0 là Sân Trái, Team 1 là Sân Phải
+            var leftWeather = WeatherManager.Instance.GetWeatherForTeam(0);
+            var rightWeather = WeatherManager.Instance.GetWeatherForTeam(1);
+
+            Debug.Log($"<color=cyan>[THỜI TIẾT TRÊN SÂN]</color> Sân Trái: <b>{leftWeather}</b> | Sân Phải: <b>{rightWeather}</b>");
+        }
+
         foreach (var entity in BattleGridManager.Instance.GetAllEntities())
         {
             entity.OnTurnStart();
@@ -115,7 +124,17 @@ public class BattlePhaseManager : MonoBehaviour
         Debug.Log("[BattlePhase] === JUDGE PHASE ===");
 
         var ordered = new List<KeyValuePair<BattleEntity, BattleCommand>>(_commands);
-        ordered.Sort((a, b) => b.Key.Speed.CompareTo(a.Key.Speed));
+        ordered.Sort((a, b) =>
+        {
+            // Ưu tiên 1: So sánh Speed (giảm dần, b so với a)
+            int cmp = b.Key.Speed.CompareTo(a.Key.Speed);
+
+            // Nếu Speed khác nhau, trả về kết quả luôn
+            if (cmp != 0) return cmp;
+
+            // Ưu tiên 2: Cùng Speed -> So sánh điểm Roll (giảm dần, đứa nào roll cao hơn đi trước)
+            return b.Key.TieBreakRoll.CompareTo(a.Key.TieBreakRoll);
+        });
 
         foreach (var kvp in ordered)
         {
@@ -166,7 +185,7 @@ public class BattlePhaseManager : MonoBehaviour
                 int distType = CalcDistType(effectiveShape, cell, cmd.attackTarget);
 
                 var r = CombatCalculator.Calculate(
-                    attacker.Data, target.Data, move,
+                    attacker, target, move,
                     attackerLevel: attacker.Level,
                     attackerLuck: attacker.Data.luck,
                     aoeShape: effectiveShape,

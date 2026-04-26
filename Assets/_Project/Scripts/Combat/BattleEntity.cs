@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleEntity : MonoBehaviour
@@ -5,7 +6,8 @@ public class BattleEntity : MonoBehaviour
     [HideInInspector] public GridPos GridPos;
     [HideInInspector] public int TeamId;
     [HideInInspector] public EntityHpBar hpBar;
-
+    private float _tieBreakRoll;
+    public float TieBreakRoll => _tieBreakRoll;
     public int Speed { get; private set; }
     public int MoveRange { get; private set; }
     public ThingData Data { get; private set; }
@@ -29,6 +31,23 @@ public class BattleEntity : MonoBehaviour
     private bool _lockedNextTurn = false;
     public bool CanMove => _canMove;
 
+    [Header("Stat Stages")]
+    private Dictionary<string, int> _statStages = new Dictionary<string, int>();
+
+    public int GetStage(string stat) => _statStages.ContainsKey(stat) ? _statStages[stat] : 0;
+
+    public void ApplyStage(string stat, int delta)
+    {
+        int cur = GetStage(stat);
+        // Giới hạn max buff/debuff từ -6 đến +6
+        _statStages[stat] = Mathf.Clamp(cur + delta, -6, 6);
+    }
+
+    public float EffectiveAttack => Data.attack * CombatCalculator.GetStageMultiplier(GetStage("attack"));
+    public float EffectiveSpAtk => Data.spAtk * CombatCalculator.GetStageMultiplier(GetStage("spAtk"));
+    public float EffectiveDefense => Data.defense * CombatCalculator.GetStageMultiplier(GetStage("defense"));
+    public float EffectiveSpDef => Data.spDef * CombatCalculator.GetStageMultiplier(GetStage("spDef")); // Thêm SpDef cho đủ
+    public float EffectiveSpeed => Data.speed * CombatCalculator.GetStageMultiplier(GetStage("speed"));
     public bool IsImmobilized()
     {
         // Bị trói nếu: dẫm bẫy gai (!CanMove) HOẶC vi phạm Từ Trường
@@ -67,7 +86,7 @@ public class BattleEntity : MonoBehaviour
     {
         _canMove = !_lockedNextTurn;
         _lockedNextTurn = false;
-
+        _tieBreakRoll = UnityEngine.Random.value;
     }
 
     // ── Khoá di chuyển (TerrainManager gọi) ──────────────────────
