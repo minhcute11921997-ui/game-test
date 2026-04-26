@@ -73,8 +73,12 @@ public class TerrainManager : MonoBehaviour
     // ─── Đặt terrain ────────────────────────────────────────────────────────
     public void PlaceTerrain(GridPos pos, MoveData move)
     {
-        var effectType = move.terrainEffect;
-        int maxCount = move.terrainMaxCount;
+        var te = move.GetTerrain();   // ← đọc từ TerrainEffect
+        if (te == null) return;
+
+        var effectType = te.terrainType;   // TerrainEffectType
+        int maxCount = te.maxCount;
+        int duration = te.duration;
 
         if (!_byType.ContainsKey(effectType))
             _byType[effectType] = new List<GridPos>();
@@ -92,16 +96,16 @@ public class TerrainManager : MonoBehaviour
         {
             pos = pos,
             effectType = effectType,
-            turnsLeft = move.terrainDuration,   // ← dùng terrainDuration
+            turnsLeft = duration,
             maxCount = maxCount,
             element = move.elementType,
+            isNewThisTurn = true
         };
-        cell.isNewThisTurn = true;
         _cells[pos] = cell;
         RefreshTerrainVisual(pos, cell.effectType);
         _byType[effectType].Add(pos);
 
-        Debug.Log($"[Terrain] Đặt {effectType} tại {pos}, còn {move.terrainDuration} lượt");
+        Debug.Log($"[Terrain] Đặt {effectType} tại {pos}, còn {duration} lượt");
     }
 
     // ─── Xóa terrain ────────────────────────────────────────────────────────
