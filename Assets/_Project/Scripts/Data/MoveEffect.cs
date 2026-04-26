@@ -8,8 +8,8 @@ using UnityEngine;
 public abstract class MoveEffect
 {
     public TargetScope targetScope = TargetScope.EnemySide;
-    public AttackShape aoeShape    = AttackShape.Single;
-    public int         aoeRadius   = 1;
+    public AttackShape aoeShape = AttackShape.Single;
+    public int aoeRadius = 1;
 
     [Range(0f, 1f)]
     public float triggerChance = 1f;
@@ -28,13 +28,13 @@ public class DamageEffect : MoveEffect
 {
     public MoveCategory damageCategory = MoveCategory.Physical;
     [Range(0, 200)] public int basePower = 40;
-    [Range(0, 100)] public int accuracy  = 100;
+    [Range(0, 100)] public int accuracy = 100;
 
     public override EffectResult Resolve(BattleEntity attacker, List<BattleEntity> targets)
     {
         var result = new EffectResult
         {
-            triggered  = true,
+            triggered = true,
             resultType = EffectResultType.Damage
         };
 
@@ -71,7 +71,7 @@ public class HealEffect : MoveEffect
     {
         var result = new EffectResult
         {
-            triggered  = true,
+            triggered = true,
             resultType = EffectResultType.Heal
         };
 
@@ -102,10 +102,10 @@ public class StatStageEffect : MoveEffect
     {
         var result = new EffectResult
         {
-            triggered  = true,
+            triggered = true,
             resultType = EffectResultType.StatStage,
-            statType   = statType,
-            statDelta  = delta
+            statType = statType,
+            statDelta = delta
         };
 
         var actualTargets = (targetScope == TargetScope.OwnSide)
@@ -129,16 +129,16 @@ public class StatStageEffect : MoveEffect
 [Serializable]
 public class TerrainEffect : MoveEffect
 {
-    public TerrainEffectType terrainType  = TerrainEffectType.ThornTrap;
-    public AttackShape       terrainShape = AttackShape.Single;
-    public int               maxCount    = 1;
-    public int               duration    = 3;
+    public TerrainEffectType terrainType = TerrainEffectType.ThornTrap;
+    public AttackShape terrainShape = AttackShape.Single;
+    public int maxCount = 1;
+    public int duration = 3;
 
     public override EffectResult Resolve(BattleEntity attacker, List<BattleEntity> targets)
     {
         return new EffectResult
         {
-            triggered  = true,
+            triggered = true,
             resultType = EffectResultType.Terrain,
             logMessage = $"Đặt địa hình {terrainType}"
         };
@@ -150,13 +150,13 @@ public class TerrainEffect : MoveEffect
 public class WeatherEffect : MoveEffect
 {
     public WeatherType weatherType = WeatherType.Blizzard;
-    public int         duration    = 5;
+    public int duration = 5;
 
     public override EffectResult Resolve(BattleEntity attacker, List<BattleEntity> targets)
     {
         return new EffectResult
         {
-            triggered  = true,
+            triggered = true,
             resultType = EffectResultType.Weather,
             logMessage = $"Tung thời tiết {weatherType}"
         };

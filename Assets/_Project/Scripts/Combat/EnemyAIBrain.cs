@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public static class EnemyAIBrain
 {
@@ -403,6 +404,7 @@ public static class EnemyAIBrain
         foreach (var m in moves)
             if (m.GetDamage() == null && m.GetTerrain() == null && m.GetWeather() == null)
                 return m;
+        return null;
     }
 
     static MoveData FindSuperEffectiveMove(List<MoveData> moves, List<BattleEntity> players)

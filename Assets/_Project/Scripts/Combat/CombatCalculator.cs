@@ -54,8 +54,9 @@ public static class CombatCalculator
         MoveData move = attacker.GetMove();
         ElementType moveElement = move != null ? move.elementType : ElementType.Neutral;
 
+        int power = move.GetDamage()?.basePower ?? 40;
         float baseDmg = Mathf.FloorToInt(
-            ((2f * attacker.Level / 5f + 2f) * effect.basePower * (atkStat / defStat)) / 10f);
+            ((2f * attackerLevel / 5f + 2f) * power * (atkStat / defStat)) / 10f);
 
         bool isStab = moveElement == attacker.Data.elementType
                       && attacker.Data.elementType != ElementType.Neutral;
