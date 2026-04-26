@@ -292,11 +292,10 @@ public class CommandPhaseController : MonoBehaviour
         }
 
         // Thời Tiết cả 2 sân → submit luôn không cần chọn ô
-        if (move.category == MoveCategory.Weather && move.weatherTarget == WeatherTarget.Both)
+        if (move.targetScope == TargetScope.NoTarget)
         {
             var envCmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
             BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, envCmd);
-
             _currentUnitIndex++;
             if (_currentUnitIndex < _playerEntities.Count)
                 SelectUnit(_playerEntities[_currentUnitIndex]);

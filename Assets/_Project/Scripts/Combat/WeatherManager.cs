@@ -25,11 +25,34 @@ public class WeatherManager : MonoBehaviour
     void OnDestroy() { if (Instance == this) Instance = null; }
 
     // ─── Áp thời tiết mới — thời tiết sau xóa thời tiết trước trên cùng sân ───
-    public void ApplyWeather(MoveData move, WeatherTarget target)
+    public void ApplyWeather(MoveData move, TargetScope scope, int attackerTeamId, GridPos attackTarget)
     {
+        // Bước 1: Resolve TargetScope → WeatherTarget nội bộ
+        WeatherTarget target;
+
+        if (scope == TargetScope.NoTarget)
+        {
+            // NoTarget = phủ cả 2 sân (Weather Both cũ)
+            target = WeatherTarget.Both;
+        }
+        else
+        {
+            // BothSides / EnemySide / OwnSide → xác định sân cụ thể qua ô được click
+            var cfg = BattleGridManager.Instance.config;
+
+            if (attackTarget.col <= cfg.LeftMaxCol)
+                target = WeatherTarget.TeamLeft;
+            else if (attackTarget.col >= cfg.RightMinCol)
+                target = WeatherTarget.TeamRight;
+            else
+                // Ô click nằm trong gap → fallback theo team attacker
+                target = attackerTeamId == 0 ? WeatherTarget.TeamRight : WeatherTarget.TeamLeft;
+        }
+
+        // Bước 2: Áp vào _states
         if (target == WeatherTarget.Both)
         {
-            // Phủ cả 2 sân → xóa hết + ghi slot Both
+            // Phủ cả 2 sân → xóa hết mọi slot đang có
             _states.Clear();
             _states[WeatherTarget.Both] = new WeatherState
             {
@@ -43,14 +66,13 @@ public class WeatherManager : MonoBehaviour
         else
         {
             // Phủ 1 sân cụ thể
-            // Nếu đang có slot Both, tách ra thành 2 slot riêng trước
+            // Nếu đang có slot Both → tách ra, giữ nguyên sân kia
             if (_states.TryGetValue(WeatherTarget.Both, out var bothState) && bothState.turnsLeft > 0)
             {
-                WeatherTarget otherSide = (target == WeatherTarget.TeamLeft)
+                WeatherTarget otherSide = target == WeatherTarget.TeamLeft
                     ? WeatherTarget.TeamRight
                     : WeatherTarget.TeamLeft;
 
-                // Giữ nguyên sân kia với thời tiết Both còn lại
                 _states[otherSide] = new WeatherState
                 {
                     type = bothState.type,

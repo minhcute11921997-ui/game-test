@@ -55,12 +55,6 @@ public enum TerrainEffectType
     [InspectorName("Vết Cháy")] BurnMark,
 }
 
-public enum WeatherTarget
-{
-    [InspectorName("Cả 2 sân")] Both,
-    [InspectorName("Sân trái (Team 0)")] TeamLeft,
-    [InspectorName("Sân phải (Team 1)")] TeamRight,
-}
 
 public enum TargetScope
 {
@@ -106,7 +100,6 @@ public class MoveData : ScriptableObject
 
     [Header("Thời Tiết (chỉ dùng khi category = Weather)")]
     public WeatherType weatherType = WeatherType.None;
-    public WeatherTarget weatherTarget = WeatherTarget.Both;
     public int weatherDuration = 5;
 
     [Header("Địa Hình (chỉ dùng khi category = Terrain)")]

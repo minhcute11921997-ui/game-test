@@ -258,9 +258,9 @@ public class BattlePhaseManager : MonoBehaviour
     // ── Xử lý chiêu Thời Tiết ────────────────────────────────────
     void HandleWeatherMove(BattleEntity attacker, BattleCommand cmd, MoveData move)
     {
-        WeatherTarget target = ResolveWeatherTarget(cmd, move);
-        WeatherManager.Instance.ApplyWeather(move, target);
-        Debug.Log($"[Weather] {attacker.name} tung thời tiết: {move.weatherType} → {target}");
+        // Bỏ ResolveWeatherTarget, truyền thẳng scope + attackTarget vào
+        WeatherManager.Instance.ApplyWeather(move, move.targetScope, attacker.TeamId, cmd.attackTarget);
+        Debug.Log($"[Weather] {attacker.name} tung thời tiết: {move.weatherType} → scope={move.targetScope}");
     }
 
     // ── Xử lý chiêu Địa Hình ─────────────────────────────────────
@@ -276,20 +276,6 @@ public class BattlePhaseManager : MonoBehaviour
                   $"target={cmd.attackTarget} | {cells.Count} ô");
     }
 
-    WeatherTarget ResolveWeatherTarget(BattleCommand cmd, MoveData move)
-    {
-        if (move.weatherTarget == WeatherTarget.Both)
-            return WeatherTarget.Both;
-
-        if (!cmd.HasAttack || cmd.attackTarget.Equals(cmd.moveTarget))
-            return move.weatherTarget;
-
-        var cfg = BattleGridManager.Instance.config;
-        if (cmd.attackTarget.col <= cfg.LeftMaxCol) return WeatherTarget.TeamLeft;
-        if (cmd.attackTarget.col >= cfg.RightMinCol) return WeatherTarget.TeamRight;
-
-        return move.weatherTarget;
-    }
 
     int CalcDistType(AttackShape shape, GridPos cell, GridPos center)
     {
