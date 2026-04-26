@@ -127,7 +127,7 @@ public class BattlePhaseManager : MonoBehaviour
 
             BattleEntity attacker = kvp.Key;
             BattleCommand cmd = kvp.Value;
-            if (attacker == null || !cmd.HasAttack) continue;
+            if (attacker == null) continue;
 
             MoveData move = attacker.GetMove();
             if (move == null) continue;
@@ -139,6 +139,7 @@ public class BattlePhaseManager : MonoBehaviour
                 continue;
             }
 
+            if (attacker == null) continue;
             // ── Địa Hình ───────────────────────────────────────────
             if (move.category == MoveCategory.Terrain)
             {
