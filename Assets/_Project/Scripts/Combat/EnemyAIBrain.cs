@@ -197,7 +197,8 @@ public static class EnemyAIBrain
                 GridPos predicted = new GridPos(
                     hardTarget.GridPos.col + hardTarget.LastMoveDir.col,
                     hardTarget.GridPos.row + hardTarget.LastMoveDir.row);
-                if (chosenMove != null && chosenMove.shape != AttackShape.Single)
+                var dmgEff = chosenMove?.GetDamage();
+                if (dmgEff != null && dmgEff.aoeShape != AttackShape.Single)
                     return BestAoECenter(fromPos, players, chosenMove, attackable);
                 return attackable.Contains(predicted) ? predicted : hardTarget.GridPos;
 
@@ -280,9 +281,10 @@ public static class EnemyAIBrain
         {
             MoveData move = p.GetMove();
             if (move == null) continue;
-            WeatherManager.Instance.GetEffectiveAoE(
-                p.TeamId, move.shape, move.aoeRadius,
-                out AttackShape effShape, out int effRadius);
+            var dmg = move.GetDamage();
+            AttackShape sh = dmg != null ? dmg.aoeShape : AttackShape.Single;
+            int rad = dmg != null ? dmg.aoeRadius : 1;
+            WeatherManager.Instance.GetEffectiveAoE(p.TeamId, sh, rad, out AttackShape effShape, out int effRadius);
             var aoe = BattleGridManager.Instance.GetAoECells(p.GridPos, effShape, p.GridPos, effRadius);
             foreach (var cell in aoe) result.Add(cell);
         }
@@ -371,23 +373,26 @@ public static class EnemyAIBrain
     {
         MoveData best = null;
         foreach (var m in moves)
-            // ← đổi: bỏ qua cả Weather lẫn Terrain, không chỉ Environment
-            if (m.category != MoveCategory.Status
-             && m.category != MoveCategory.Weather
-             && m.category != MoveCategory.Terrain)
-                if (best == null || m.basePower > best.basePower) best = m;
-        return best;
+        {
+            var dmg = m.GetDamage();
+            if (dmg == null) continue;
+            if (best == null || dmg.basePower > (best.GetDamage()?.basePower ?? 0))
+                best = m;
+        }
+        return best ?? moves.FirstOrDefault();
     }
 
     static MoveData LowestPowerMove(List<MoveData> moves)
     {
         MoveData best = null;
         foreach (var m in moves)
-            if (m.category != MoveCategory.Status
-             && m.category != MoveCategory.Weather
-             && m.category != MoveCategory.Terrain)
-                if (best == null || m.basePower < best.basePower) best = m;
-        return best;
+        {
+            var dmg = m.GetDamage();
+            if (dmg == null) continue;
+            if (best == null || dmg.basePower < (best.GetDamage()?.basePower ?? int.MaxValue))
+                best = m;
+        }
+        return best ?? moves.FirstOrDefault();
     }
 
     static MoveData FindStatusMove(List<MoveData> moves, string hint)
@@ -417,17 +422,17 @@ public static class EnemyAIBrain
     // Trả về true nếu chiêu Terrain/Weather còn có ích
     static bool IsUsefulEnvironmentMove(BattleEntity enemy, MoveData move)
     {
-        if (move.category == MoveCategory.Weather)
+        var we = move.GetWeather();
+        if (we != null)
         {
-            // Dùng đúng API: GetWeatherForTeam(teamId)
             WeatherType current = WeatherManager.Instance.GetWeatherForTeam(enemy.TeamId);
-            return current != move.weatherType;
+            return current != we.weatherType;
         }
-
-        if (move.category == MoveCategory.Terrain)
+        var te = move.GetTerrain();
+        if (te != null)
         {
-            int current = TerrainManager.Instance.CountByType(move.terrainEffect);
-            return current < move.terrainMaxCount;
+            int current = TerrainManager.Instance.CountByType(te.terrainType);
+            return current < te.maxCount;
         }
         return true;
     }

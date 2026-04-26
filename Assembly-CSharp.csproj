@@ -53,6 +53,7 @@
     <Compile Include="Assets\_Project\Scripts\Player\PlayerInteraction.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\RuntimeGameState.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\ShadowRoaming.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\MoveEffect.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\GridPos.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleEntity.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\WeatherManager.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="Assets\_Project\Scripts\Combat\TerrainManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
     <Compile Include="Assets\_Project\Scripts\SetStarterThing.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\EffectResult.cs" />
     <Compile Include="Assets\_Project\TestLoadBattle.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattlePhaseManager.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\GrassZoneManager.cs" />

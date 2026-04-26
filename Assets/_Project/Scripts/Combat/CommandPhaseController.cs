@@ -97,19 +97,26 @@ public class CommandPhaseController : MonoBehaviour
         _validAttackCells = GetAttackableCellsForCurrentMove(from);
 
         MoveData move = _selectedEntity.GetMove();
-        Color hlColor = move?.category switch
+        Color hlColor;
+        if (move.GetTerrain() != null)
+            hlColor = new Color(0.6f, 0.2f, 1f, 0.55f);
+        else if (move.GetWeather() != null)
+            hlColor = new Color(0.55f, 0.85f, 1f, 0.6f);
+        else
         {
-            MoveCategory.Physical => new Color(1f, 0.55f, 0.2f, 0.6f),
-            MoveCategory.Special => new Color(0.3f, 0.55f, 1f, 0.6f),
-            MoveCategory.Status when move.statusSubType == StatusSubType.Buff
-                => new Color(0.3f, 1f, 0.5f, 0.6f),
-            MoveCategory.Status when move.statusSubType == StatusSubType.Debuff
-                => new Color(0.8f, 0.3f, 1f, 0.6f),
-            MoveCategory.Status => new Color(1f, 0.5f, 0.8f, 0.6f),
-            MoveCategory.Weather => new Color(0.55f, 0.85f, 1f, 0.6f),  // xanh trời
-            MoveCategory.Terrain => new Color(0.6f, 0.2f, 1f, 0.55f),   // tím
-            _ => new Color(0.8f, 0.8f, 0.8f, 0.6f),
-        };
+            var dmgEffect = move.GetDamage();
+            if (dmgEffect == null)
+            {
+                var statEffect = move.effects.OfType<StatStageEffect>().FirstOrDefault();
+                hlColor = (statEffect != null && statEffect.delta > 0)
+                    ? new Color(0.3f, 1f, 0.5f, 0.6f)
+                    : new Color(0.8f, 0.3f, 1f, 0.6f);
+            }
+            else
+                hlColor = dmgEffect.damageCategory == MoveCategory.Physical
+                    ? new Color(1f, 0.55f, 0.2f, 0.6f)
+                    : new Color(0.3f, 0.55f, 1f, 0.6f);
+        }
 
         BattleGridManager.Instance.ShowHighlightColored(_validAttackCells, hlColor);
         _lastHoverPos = new GridPos(-999, -999);
@@ -124,11 +131,11 @@ public class CommandPhaseController : MonoBehaviour
         if (move == null) return result;
 
         // NoTarget → submit luôn, không highlight gì
-        if (move.targetScope == TargetScope.NoTarget)
+        if (move.hasNoTarget)
             return result;
 
         int cStart, cEnd;
-        switch (move.targetScope)
+        switch (move.category)
         {
             case TargetScope.OwnSide:
                 cStart = _selectedEntity.TeamId == 0 ? 0 : cfg.RightMinCol;
@@ -228,11 +235,12 @@ public class CommandPhaseController : MonoBehaviour
         var grid = BattleGridManager.Instance;
 
         // Preview Địa Hình
-        if (move.category == MoveCategory.Terrain)
+        if (move.GetTerrain() != null)
         {
             if (_validAttackCells.Contains(hoverPos))
             {
-                var cells = grid.GetAoECells(hoverPos, move.terrainShape, _pendingMove, move.aoeRadius);
+                var te = move.GetTerrain();
+                var cells = grid.GetAoECells(hoverPos, te.terrainShape, _pendingMove, te.aoeRadius);
                 grid.ShowHighlightColored(cells, new Color(1f, 0.6f, 0f, 0.75f));
             }
             else
@@ -242,8 +250,11 @@ public class CommandPhaseController : MonoBehaviour
             return;
         }
 
+        var dmg = move.GetDamage();
+        AttackShape shapeToUse = dmg != null ? dmg.aoeShape : AttackShape.Single;
+        int radiusToUse = dmg != null ? dmg.aoeRadius : 1;
         WeatherManager.Instance.GetEffectiveAoE(
-            _selectedEntity.TeamId, move.shape, move.aoeRadius,
+            _selectedEntity.TeamId, shapeToUse, radiusToUse,
             out AttackShape effShape, out int effRadius);
 
         if (_validAttackCells.Contains(hoverPos))
@@ -285,14 +296,14 @@ public class CommandPhaseController : MonoBehaviour
         Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chọn chiêu: {move.moveName} (Category: {move.category})");
 
         // Địa Hình → vào bước chọn ô đặt
-        if (move.category == MoveCategory.Terrain)
+        if (move.GetTerrain() != null)
         {
             GoToTerrainStep();
             return;
         }
 
         // Thời Tiết cả 2 sân → submit luôn không cần chọn ô
-        if (move.targetScope == TargetScope.NoTarget)
+        if (move.primaryScope == TargetScope.NoTarget)
         {
             var envCmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
             BattlePhaseManager.Instance.SubmitCommand(_selectedEntity, envCmd);

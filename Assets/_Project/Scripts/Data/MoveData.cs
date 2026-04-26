@@ -1,3 +1,6 @@
+// Assets/_Project/Scripts/Data/MoveData.cs
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum ElementType
@@ -19,11 +22,9 @@ public enum MoveCategory
     [InspectorName("Vật Lý")] Physical,
     [InspectorName("Đặc Biệt")] Special,
     [InspectorName("Trạng Thái")] Status,
-    [InspectorName("Thời Tiết")] Weather,   // ← tách ra
-    [InspectorName("Địa Hình")] Terrain,   // ← tách ra
+    [InspectorName("Thời Tiết")] Weather,
+    [InspectorName("Địa Hình")] Terrain,
 }
-
-// EnvironmentCategory đã bị XÓA — không dùng nữa
 
 public enum StatusSubType
 {
@@ -55,14 +56,23 @@ public enum TerrainEffectType
     [InspectorName("Vết Cháy")] BurnMark,
 }
 
-
 public enum TargetScope
 {
     [InspectorName("Sân địch")] EnemySide,
     [InspectorName("Sân mình")] OwnSide,
     [InspectorName("Cả 2 sân")] BothSides,
-    [InspectorName("Không cần chọn ô")] NoTarget, // Weather Both
+    [InspectorName("Không cần chọn ô")] NoTarget,
 }
+
+public enum StatType
+{
+    [InspectorName("Tấn Công (Attack)")] Attack,
+    [InspectorName("Phòng Thủ (Defense)")] Defense,
+    [InspectorName("Đặc Công (SpAtk)")] SpAtk,
+    [InspectorName("Đặc Thủ (SpDef)")] SpDef,
+    [InspectorName("Tốc Độ (Speed)")] Speed,
+}
+
 [CreateAssetMenu(fileName = "NewMove", menuName = "Game/Move Data")]
 public class MoveData : ScriptableObject
 {
@@ -71,42 +81,20 @@ public class MoveData : ScriptableObject
     public ElementType elementType = ElementType.Neutral;
     public MoveCategory category = MoveCategory.Physical;
 
+    [Header("⚠️ Thứ tự: Buff/Debuff → Damage → Heal → Terrain → Weather")]
+    [SerializeReference]
+    public List<MoveEffect> effects = new();
 
-    [Header("Phạm vi chọn ô mục tiêu")]
-    public TargetScope targetScope = TargetScope.EnemySide;
-    [Tooltip("Chỉ dùng khi category = Status")]
-    public StatusSubType statusSubType = StatusSubType.Buff;
-    [Header("Buff / Debuff (chỉ dùng khi statusSubType = Buff/Debuff)")]
-    [Tooltip("Chỉ số bị ảnh hưởng: attack, defense, spAtk, spDef, speed")]
-    public string statTarget = "attack";
+    // Helpers đọc nhanh
+    public DamageEffect GetDamage() => effects.OfType<DamageEffect>().FirstOrDefault();
+    public HealEffect GetHeal() => effects.OfType<HealEffect>().FirstOrDefault();
+    public WeatherEffect GetWeather() => effects.OfType<WeatherEffect>().FirstOrDefault();
+    public TerrainEffect GetTerrain() => effects.OfType<TerrainEffect>().FirstOrDefault();
 
-    [Tooltip("Số stage thay đổi: +1/+2 là buff, -1/-2 là debuff")]
-    [Range(-3, 3)]
-    public int statDelta = 1;
+    // Backward-compat helpers để các hệ thống cũ đọc được nhanh
+    public TargetScope primaryScope =>
+        effects.Count > 0 ? effects[0].targetScope : TargetScope.EnemySide;
 
-    [Header("Heal (chỉ dùng khi statusSubType = Heal)")]
-
-    [Tooltip("Phần trăm MaxHP được hồi, ví dụ 0.25 = 25%")]
-
-    [Range(0.05f, 1.0f)]
-    public float healPercent = 0.25f;
-
-    [Header("Chiêu Tấn Công")]
-    public AttackShape shape = AttackShape.Single;
-    [Range(1, 5)] public int aoeRadius = 1;
-    [Range(0, 200)] public int basePower = 40;
-    [Range(0, 100)] public int accuracy = 100;
-    public int pp = 20;
-
-    [Header("Thời Tiết (chỉ dùng khi category = Weather)")]
-    public WeatherType weatherType = WeatherType.None;
-    public int weatherDuration = 5;
-
-    [Header("Địa Hình (chỉ dùng khi category = Terrain)")]
-    public TerrainEffectType terrainEffect = TerrainEffectType.None;
-    public AttackShape terrainShape = AttackShape.Single;
-    public int terrainMaxCount = 1;
-    public int terrainDuration = 3;
-
-
+    public bool hasNoTarget =>
+        effects.Count > 0 && effects[0].targetScope == TargetScope.NoTarget;
 }
