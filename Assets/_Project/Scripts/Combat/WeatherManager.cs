@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+
 public enum WeatherTarget
 {
     Both,
@@ -19,7 +20,6 @@ public class WeatherManager : MonoBehaviour
 {
     public static WeatherManager Instance;
 
-    // Key = WeatherTarget: mỗi sân (Left/Right/Both) 1 slot
     private readonly Dictionary<WeatherTarget, WeatherState> _states = new();
 
     void Awake()
@@ -30,35 +30,33 @@ public class WeatherManager : MonoBehaviour
 
     void OnDestroy() { if (Instance == this) Instance = null; }
 
-    // ─── Áp thời tiết mới — thời tiết sau xóa thời tiết trước trên cùng sân ───
     public void ApplyWeather(MoveData move, TargetScope scope, int attackerTeamId, GridPos attackTarget)
     {
-        // Bước 1: Resolve TargetScope → WeatherTarget nội bộ
         WeatherTarget target;
 
         if (scope == TargetScope.NoTarget)
         {
-            // NoTarget = phủ cả 2 sân (Weather Both cũ)
             target = WeatherTarget.Both;
         }
         else
         {
-            // BothSides / EnemySide / OwnSide → xác định sân cụ thể qua ô được click
-            var cfg = BattleGridManager.Instance.config;
+            var cfg = BattleGridManager.Instance?.config;
+            if (cfg == null)
+            {
+                Debug.LogWarning("[Weather] BattleGridManager.Instance hoặc config bị null!");
+                return;
+            }
 
             if (attackTarget.col <= cfg.LeftMaxCol)
                 target = WeatherTarget.TeamLeft;
             else if (attackTarget.col >= cfg.RightMinCol)
                 target = WeatherTarget.TeamRight;
             else
-                // Ô click nằm trong gap → fallback theo team attacker
                 target = attackerTeamId == 0 ? WeatherTarget.TeamRight : WeatherTarget.TeamLeft;
         }
 
-        // Bước 2: Áp vào _states
         if (target == WeatherTarget.Both)
         {
-            // Phủ cả 2 sân → xóa hết mọi slot đang có
             _states.Clear();
             _states[WeatherTarget.Both] = new WeatherState
             {
@@ -71,8 +69,6 @@ public class WeatherManager : MonoBehaviour
         }
         else
         {
-            // Phủ 1 sân cụ thể
-            // Nếu đang có slot Both → tách ra, giữ nguyên sân kia
             if (_states.TryGetValue(WeatherTarget.Both, out var bothState) && bothState.turnsLeft > 0)
             {
                 WeatherTarget otherSide = target == WeatherTarget.TeamLeft
@@ -90,7 +86,6 @@ public class WeatherManager : MonoBehaviour
                 Debug.Log($"[Weather] Tách Both → {otherSide} giữ {bothState.type} ({bothState.turnsLeft} lượt)");
             }
 
-            // Ghi đè sân được chọn
             _states[target] = new WeatherState
             {
                 type = move.weatherType,
@@ -102,7 +97,6 @@ public class WeatherManager : MonoBehaviour
         }
     }
 
-    // ─── Lấy thời tiết đang ảnh hưởng team ──────────────────────
     public WeatherType GetWeatherForTeam(int team)
     {
         WeatherTarget teamKey = team == 0 ? WeatherTarget.TeamLeft : WeatherTarget.TeamRight;
@@ -116,7 +110,6 @@ public class WeatherManager : MonoBehaviour
         return WeatherType.None;
     }
 
-    // ─── Cuối lượt: giảm đếm, xóa hết hạn ──────────────────────
     public void OnTurnEnd()
     {
         var expired = new List<WeatherTarget>();
@@ -145,19 +138,14 @@ public class WeatherManager : MonoBehaviour
         }
     }
 
-    // ─── Query hiệu ứng cụ thể ───────────────────────────────────
     public bool IsBlizzardActive(int team)
         => GetWeatherForTeam(team) == WeatherType.Blizzard;
 
     public bool IsMagneticFieldActive(int team)
         => GetWeatherForTeam(team) == WeatherType.MagneticField;
 
-    public void ClearAll()
-    {
-        _states.Clear();
-    }
+    public void ClearAll() => _states.Clear();
 
-    // ─── Tính AoE bị Bão Tuyết thu nhỏ ──────────────────────────
     public void GetEffectiveAoE(int teamId, AttackShape baseShape, int baseRadius,
                                 out AttackShape effShape, out int effRadius)
     {

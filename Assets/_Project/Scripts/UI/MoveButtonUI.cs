@@ -28,10 +28,17 @@ public class MoveButtonUI : MonoBehaviour
     private MoveData _moveData;
     private Action<MoveData> _callback;
 
-    public void Setup(MoveData move, Action<MoveData> onClick)
+    /// <summary>
+    /// Setup button. currentPP = PP hiện tại (sau khi dùng), maxPP = PP tối đa của move.
+    /// Nếu không truyền currentPP thì mặc định dùng move.pp (full).
+    /// </summary>
+    public void Setup(MoveData move, Action<MoveData> onClick, int currentPP = -1)
     {
         _moveData = move;
         _callback = onClick;
+
+        int maxPP = move.pp;
+        int dispPP = currentPP < 0 ? maxPP : currentPP;
 
         Color catColor = GetCategoryColor(move);
         Color accentColor = GetAccentColor(move);
@@ -39,8 +46,9 @@ public class MoveButtonUI : MonoBehaviour
         panelTop.color = catColor;
         iconBG.color = accentColor;
 
+        // Icon hệ
         int idx = (int)move.elementType;
-        if (elementIcons != null && idx < elementIcons.Length && elementIcons[idx] != null)
+        if (elementIcons != null && idx >= 0 && idx < elementIcons.Length && elementIcons[idx] != null)
             iconElement.sprite = elementIcons[idx];
 
         textCategoryTag.text = GetCategoryTag(move).ToUpper();
@@ -52,12 +60,15 @@ public class MoveButtonUI : MonoBehaviour
 
         textPower.text = hasPower ? move.basePower.ToString() : "—";
         textPower.color = Color.white;
-        textPPValue.text = move.pp.ToString();
-        textPPMax.text = $"/ {move.pp}";
-        textPPValue.color = Color.white;
+
+        // PP: đổi màu đỏ nếu còn ≤ 25%
+        textPPValue.text = dispPP.ToString();
+        textPPMax.text = $"/ {maxPP}";
+        bool ppLow = maxPP > 0 && (float)dispPP / maxPP <= 0.25f;
+        textPPValue.color = ppLow ? new Color(1f, 0.3f, 0.3f) : Color.white;
         textPPMax.color = new Color(1f, 1f, 1f, 0.55f);
 
-        button.interactable = true;
+        button.interactable = dispPP > 0;
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => _callback?.Invoke(_moveData));
     }
@@ -65,34 +76,34 @@ public class MoveButtonUI : MonoBehaviour
     // ── Màu NỀN PanelTop theo category ───────────────────────────
     public static Color GetCategoryColor(MoveData move) => move.category switch
     {
-        MoveCategory.Physical => new Color(0.78f, 0.38f, 0.05f),   // Cam đậm
-        MoveCategory.Special => new Color(0.40f, 0.10f, 0.60f),   // Tím
+        MoveCategory.Physical => new Color(0.78f, 0.38f, 0.05f),
+        MoveCategory.Special => new Color(0.40f, 0.10f, 0.60f),
         MoveCategory.Status => move.statusSubType switch
         {
-            StatusSubType.Buff => new Color(0.10f, 0.50f, 0.18f), // Xanh lá
-            StatusSubType.Debuff => new Color(0.38f, 0.38f, 0.42f), // Xám
-            StatusSubType.Heal => new Color(0.72f, 0.08f, 0.08f), // Đỏ
+            StatusSubType.Buff => new Color(0.10f, 0.50f, 0.18f),
+            StatusSubType.Debuff => new Color(0.38f, 0.38f, 0.42f),
+            StatusSubType.Heal => new Color(0.72f, 0.08f, 0.08f),
             _ => new Color(0.35f, 0.35f, 0.38f),
         },
-        MoveCategory.Weather => new Color(0.05f, 0.32f, 0.58f),   // Xanh nước biển
-        MoveCategory.Terrain => new Color(0.22f, 0.42f, 0.10f),   // Xanh lá đậm
+        MoveCategory.Weather => new Color(0.05f, 0.32f, 0.58f),
+        MoveCategory.Terrain => new Color(0.22f, 0.42f, 0.10f),
         _ => new Color(0.25f, 0.25f, 0.28f),
     };
 
-    // ── Màu ACCENT (viền, text số) ────────────────────────────────
+    // ── Màu ACCENT ────────────────────────────────────────────────
     static Color GetAccentColor(MoveData move) => move.category switch
     {
-        MoveCategory.Physical => new Color(1.00f, 0.58f, 0.15f),   // Cam sáng
-        MoveCategory.Special => new Color(0.72f, 0.45f, 1.00f),   // Tím sáng
+        MoveCategory.Physical => new Color(1.00f, 0.58f, 0.15f),
+        MoveCategory.Special => new Color(0.72f, 0.45f, 1.00f),
         MoveCategory.Status => move.statusSubType switch
         {
-            StatusSubType.Buff => new Color(0.30f, 0.95f, 0.45f), // Xanh sáng
-            StatusSubType.Debuff => new Color(0.85f, 0.85f, 0.90f), // Trắng
-            StatusSubType.Heal => new Color(1.00f, 0.35f, 0.35f), // Đỏ sáng
+            StatusSubType.Buff => new Color(0.30f, 0.95f, 0.45f),
+            StatusSubType.Debuff => new Color(0.85f, 0.85f, 0.90f),
+            StatusSubType.Heal => new Color(1.00f, 0.35f, 0.35f),
             _ => new Color(0.80f, 0.80f, 0.85f),
         },
-        MoveCategory.Weather => new Color(0.20f, 0.72f, 1.00f),   // Xanh trời sáng
-        MoveCategory.Terrain => new Color(0.50f, 0.90f, 0.20f),   // Xanh lá sáng
+        MoveCategory.Weather => new Color(0.20f, 0.72f, 1.00f),
+        MoveCategory.Terrain => new Color(0.50f, 0.90f, 0.20f),
         _ => new Color(0.75f, 0.75f, 0.80f),
     };
 
