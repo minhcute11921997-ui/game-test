@@ -66,7 +66,7 @@ public static class CombatCalculator
         if (typeMult == 0f)
             return new DamageResult { damage = 0, typeMultiplier = 0f, isStab = isStab };
 
-        bool isCrit = Random.value < (CalculateCritRate(attacker.Data.luck) / 100f);
+        bool isCrit = Random.value < (CalculateCritRate(attacker.EffectiveLuck) / 100f);
         float critMult = isCrit ? 1.5f : 1.0f;
         float rng = Random.Range(0.9f, 1.0f);
         float falloff = GetFalloff(effect.aoeShape, cellDistanceType, ref rng);

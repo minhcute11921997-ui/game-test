@@ -71,6 +71,7 @@ public enum StatType
     [InspectorName("Đặc Công (SpAtk)")] SpAtk,
     [InspectorName("Đặc Thủ (SpDef)")] SpDef,
     [InspectorName("Tốc Độ (Speed)")] Speed,
+    [InspectorName("May Mắn (Luck)")] Luck,
 }
 
 [CreateAssetMenu(fileName = "NewMove", menuName = "Game/Move Data")]

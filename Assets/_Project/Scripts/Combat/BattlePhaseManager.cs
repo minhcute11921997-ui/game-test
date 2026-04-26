@@ -105,7 +105,7 @@ public class BattlePhaseManager : MonoBehaviour
         var ordered = new List<KeyValuePair<BattleEntity, BattleCommand>>(_commands);
         ordered.Sort((a, b) =>
         {
-            int cmp = b.Key.Speed.CompareTo(a.Key.Speed);
+            int cmp = b.Key.EffectiveSpeed.CompareTo(a.Key.EffectiveSpeed);
             return cmp != 0 ? cmp : b.Key.TieBreakRoll.CompareTo(a.Key.TieBreakRoll);
         });
 

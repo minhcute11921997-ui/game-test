@@ -38,6 +38,14 @@ public class BattleEntity : MonoBehaviour
     /// <summary>Áp dụng stage, trả về stage mới sau khi clamp.</summary>
     public int ApplyStage(StatType stat, int delta)
     {
+        if (stat == StatType.Luck)
+        {
+            _luckBonus += delta * 30; // mỗi 1 stage = +10 luck
+            _luckBonus = Mathf.Clamp(_luckBonus, -Data.luck, 200);
+            Debug.Log($"[Luck] {Data.thingName} luck {Data.luck} + bonus {_luckBonus} = {EffectiveLuck}");
+            return _luckBonus;
+        }
+
         int cur = GetStage(stat);
         int newStage = Mathf.Clamp(cur + delta, -6, 6);
         _statStages[stat] = newStage;
@@ -49,7 +57,8 @@ public class BattleEntity : MonoBehaviour
     public float EffectiveDefense => Data.defense * CombatCalculator.GetStageMultiplier(GetStage(StatType.Defense));
     public float EffectiveSpDef => Data.spDef * CombatCalculator.GetStageMultiplier(GetStage(StatType.SpDef));
     public float EffectiveSpeed => Data.speed * CombatCalculator.GetStageMultiplier(GetStage(StatType.Speed));
-
+    private int _luckBonus = 0;
+    public int EffectiveLuck => Data.luck + _luckBonus;
     public bool IsImmobilized() => !_canMove || IsForcedStillByMagnet();
 
     private MoveData _chosenMove;

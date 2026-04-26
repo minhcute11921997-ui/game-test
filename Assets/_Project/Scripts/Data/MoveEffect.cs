@@ -42,7 +42,7 @@ public class DamageEffect : MoveEffect
         {
             if (target == null || target.TeamId == attacker.TeamId) continue;
 
-            float evasionRate = CombatCalculator.CalculateEvasionRate(target.Data.luck);
+            float evasionRate = CombatCalculator.CalculateEvasionRate(target.EffectiveLuck);
             if (UnityEngine.Random.value < evasionRate / 100f)
             {
                 result.logMessage += $"{target.Data.thingName} né!\n";
