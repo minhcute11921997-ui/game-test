@@ -7,31 +7,41 @@ public class BattleResultManager : MonoBehaviour
 {
     public bool CheckBattleEnd()
     {
-        var allEntities = FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude);
-        var team0 = new List<BattleEntity>();
-        var team1 = new List<BattleEntity>();
+        // Dùng BattleGridManager thay vì FindObjectsByType
+        // vì entity đã bị Destroy trước khi hàm này được gọi
+        var allEntities = BattleGridManager.Instance.GetAllEntities();
+
+        var team0Alive = new List<BattleEntity>();
+        var team1Alive = new List<BattleEntity>();
 
         foreach (var e in allEntities)
         {
-            if (e.TeamId == 0) team0.Add(e);
-            else team1.Add(e);
+            if (!e.IsDead)
+            {
+                if (e.TeamId == 0) team0Alive.Add(e);
+                else team1Alive.Add(e);
+            }
         }
-        if (team0.Count == 0 || team1.Count == 0) return false;
-        
-        bool team0Dead = team0.TrueForAll(e => e.CurrentHp <= 0);
-        bool team1Dead = team1.TrueForAll(e => e.CurrentHp <= 0);
 
-        if (team0Dead || team1Dead)
+        Debug.Log($"[Result] Team0 alive: {team0Alive.Count} | Team1 alive: {team1Alive.Count}");
+
+        bool team0Wiped = team0Alive.Count == 0;
+        bool team1Wiped = team1Alive.Count == 0;
+
+        if (team0Wiped || team1Wiped)
         {
+            string winner = team1Wiped ? "PLAYER THẮNG!" : "PLAYER THUA!";
+            Debug.Log($"<color=yellow>[BattleResult] {winner}</color>");
             StartCoroutine(ReturnOverworld());
             return true;
         }
+
         return false;
     }
 
     IEnumerator ReturnOverworld()
     {
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(1.5f);
         SceneManager.LoadScene("OverworldScene");
     }
 }
