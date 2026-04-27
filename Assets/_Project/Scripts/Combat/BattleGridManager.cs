@@ -16,6 +16,7 @@ public class BattleGridManager : MonoBehaviour
     public Tilemap tilemapHighlight;
     public Tilemap tilemapGrid;
     public Tilemap tilemapTerrain;
+    public Tilemap tilemapFootprint;
 
 
     [Header("Tiles — kéo vào từ Project")]
@@ -26,6 +27,8 @@ public class BattleGridManager : MonoBehaviour
     public TileBase tileGrid;
     public TileBase tileTerrainBurn;
     public TileBase tileTerrainThorn;
+    public TileBase tileFootprintPlayer;
+    public TileBase tileFootprintEnemy;
 
     // Thêm vào BattleGridManager.cs
     public Tilemap FootprintTilemap => tilemapHighlight;
@@ -44,6 +47,10 @@ public class BattleGridManager : MonoBehaviour
             tileTerrainBurn = CreateSolidColorTile(new Color(1f, 0.3f, 0f, 0.55f));
         if (tileTerrainThorn == null)
             tileTerrainThorn = CreateSolidColorTile(new Color(0.1f, 0.7f, 0.1f, 0.55f));
+        if (tileFootprintPlayer == null)
+            tileFootprintPlayer = CreateSolidColorTile(new Color(0.2f, 1f, 0.3f, 0.35f));
+        if (tileFootprintEnemy == null)
+            tileFootprintEnemy = CreateSolidColorTile(new Color(1f, 0.25f, 0.25f, 0.35f));
 
         BuildGrid();
         FitCamera();
@@ -264,6 +271,8 @@ public class BattleGridManager : MonoBehaviour
             _occupied[cell] = entity;
         entity.GridPos = to;
 
+        RefreshAllFootprints();
+
         // Lerp visual
         float t = 0f;
         while (t < 1f)
@@ -381,5 +390,32 @@ public class BattleGridManager : MonoBehaviour
         return tile;
     }
 
+    // ── Footprint Tilemap ─────────────────────────────────────────
+
+    /// Vẽ footprint của 1 entity lên tilemapFootprint
+    public void ShowFootprint(BattleEntity entity)
+    {
+        if (tilemapFootprint == null) return;
+        TileBase tile = entity.TeamId == 0 ? tileFootprintPlayer : tileFootprintEnemy;
+        foreach (var cell in GetFootprintCells(entity.GridPos, entity.Data.footprint))
+            tilemapFootprint.SetTile(new Vector3Int(cell.col, cell.row, 0), tile);
+    }
+
+    /// Xóa footprint của 1 entity (dùng khi entity chết hoặc di chuyển)
+    public void ClearFootprint(BattleEntity entity)
+    {
+        if (tilemapFootprint == null) return;
+        foreach (var cell in GetFootprintCells(entity.GridPos, entity.Data.footprint))
+            tilemapFootprint.SetTile(new Vector3Int(cell.col, cell.row, 0), null);
+    }
+
+    /// Xóa toàn bộ rồi vẽ lại footprint của tất cả entity hiện tại
+    public void RefreshAllFootprints()
+    {
+        if (tilemapFootprint == null) return;
+        tilemapFootprint.ClearAllTiles();
+        foreach (var entity in GetAllEntities())
+            ShowFootprint(entity);
+    }
 
 }

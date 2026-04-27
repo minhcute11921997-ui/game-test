@@ -17,6 +17,8 @@ public class BattleManager : MonoBehaviour
         SpawnEntity(grid, player, teamId: 0, col: 3, row: 4);
         SpawnEntity(grid, enemy, teamId: 1, col: 14, row: 4);
 
+        grid.RefreshAllFootprints();
+
         // Hiển thị footprint của tất cả entity sau khi spawn xong
         ShowAllFootprints();
     }
