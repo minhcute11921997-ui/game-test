@@ -10,6 +10,7 @@ public class TerrainCell
     public int maxCount;
     public ElementType element;
     public bool isNewThisTurn = true;
+    public int ownerTeam; // ← THÊM: team đặt terrain này
 }
 
 public class TerrainManager : MonoBehaviour
@@ -17,7 +18,10 @@ public class TerrainManager : MonoBehaviour
     public static TerrainManager Instance;
 
     private readonly Dictionary<GridPos, TerrainCell> _cells = new();
-    private readonly Dictionary<TerrainEffectType, List<GridPos>> _byType = new();
+
+    // ← SỬA: key = (type, teamId) để tính riêng từng team
+    private readonly Dictionary<(TerrainEffectType, int), List<GridPos>> _byType = new();
+
     private readonly HashSet<BattleEntity> _enteredThisTurn = new();
 
     // ─── Visual helpers ─────────────────────────────────────────────────────
@@ -71,21 +75,25 @@ public class TerrainManager : MonoBehaviour
     void OnDestroy() { if (Instance == this) Instance = null; }
 
     // ─── Đặt terrain ────────────────────────────────────────────────────────
-    public void PlaceTerrain(GridPos pos, MoveData move)
+    public void PlaceTerrain(GridPos pos, MoveData move, int ownerTeam = 0)
     {
-        var te = move.GetTerrain();   // ← đọc từ TerrainEffect
+        var te = move.GetTerrain();
         if (te == null) return;
 
-        var effectType = te.terrainType;   // TerrainEffectType
+        var effectType = te.terrainType;
         int maxCount = te.maxCount;
         int duration = te.duration;
 
-        if (!_byType.ContainsKey(effectType))
-            _byType[effectType] = new List<GridPos>();
+        // key riêng cho từng team
+        var key = (effectType, ownerTeam);
 
-        if (_byType[effectType].Count >= maxCount)
+        if (!_byType.ContainsKey(key))
+            _byType[key] = new List<GridPos>();
+
+        // Xóa ô cũ nhất của CÙNG TEAM nếu vượt maxCount
+        if (_byType[key].Count >= maxCount)
         {
-            GridPos oldest = _byType[effectType][0];
+            GridPos oldest = _byType[key][0];
             RemoveTerrain(oldest);
         }
 
@@ -99,20 +107,25 @@ public class TerrainManager : MonoBehaviour
             turnsLeft = duration,
             maxCount = maxCount,
             element = move.elementType,
-            isNewThisTurn = true
+            isNewThisTurn = true,
+            ownerTeam = ownerTeam  // ← lưu team
         };
         _cells[pos] = cell;
         RefreshTerrainVisual(pos, cell.effectType);
-        _byType[effectType].Add(pos);
+        _byType[key].Add(pos);
 
-        Debug.Log($"[Terrain] Đặt {effectType} tại {pos}, còn {duration} lượt");
+        Debug.Log($"[Terrain] Team {ownerTeam} đặt {effectType} tại {pos}, còn {duration} lượt");
     }
 
     // ─── Xóa terrain ────────────────────────────────────────────────────────
     public void RemoveTerrain(GridPos pos)
     {
         if (!_cells.TryGetValue(pos, out var cell)) return;
-        _byType[cell.effectType].Remove(pos);
+
+        var key = (cell.effectType, cell.ownerTeam);
+        if (_byType.TryGetValue(key, out var list))
+            list.Remove(pos);
+
         _cells.Remove(pos);
         ClearTerrainVisual(pos);
     }
@@ -122,8 +135,13 @@ public class TerrainManager : MonoBehaviour
         => _cells.TryGetValue(pos, out var cell) ? cell : null;
 
     public bool HasTerrain(GridPos pos) => _cells.ContainsKey(pos);
+
+    public int CountByType(TerrainEffectType type, int teamId)
+        => _byType.TryGetValue((type, teamId), out var list) ? list.Count : 0;
+
+    // Overload cũ — tổng 2 team (dùng nếu cần)
     public int CountByType(TerrainEffectType type)
-    => _byType.TryGetValue(type, out var list) ? list.Count : 0;
+        => CountByType(type, 0) + CountByType(type, 1);
 
     // ─── Gọi khi entity bước vào ô ─────────────────────────────────────────
     public void OnEntityEnterCell(BattleEntity entity, GridPos pos)
@@ -149,7 +167,7 @@ public class TerrainManager : MonoBehaviour
     {
         Debug.Log($"<color=orange>[TerrainEnd]</color> Tổng ô terrain: {_cells.Count}");
         foreach (var kvp in _cells)
-            Debug.Log($"  Ô {kvp.Key} | type={kvp.Value.effectType} | turnsLeft={kvp.Value.turnsLeft} | isNew={kvp.Value.isNewThisTurn}");
+            Debug.Log($"  Ô {kvp.Key} | type={kvp.Value.effectType} | team={kvp.Value.ownerTeam} | turnsLeft={kvp.Value.turnsLeft}");
 
         foreach (var entity in allEntities)
         {

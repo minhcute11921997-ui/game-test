@@ -182,7 +182,7 @@ public class BattlePhaseManager : MonoBehaviour
                     var cells = BattleGridManager.Instance.GetAoECells(
                         cmd.attackTarget, te.terrainShape, attacker.GridPos, te.aoeRadius);
                     foreach (var cell in cells)
-                        TerrainManager.Instance.PlaceTerrain(cell, BuildTerrainMoveData(te, move));
+                        TerrainManager.Instance.PlaceTerrain(cell, BuildTerrainMoveData(te, move), attacker.TeamId);
                     Debug.Log($"<color=magenta>[Terrain]</color> {attacker.name} đặt {te.terrainType} | {cells.Count} ô");
                 }
                 break;
