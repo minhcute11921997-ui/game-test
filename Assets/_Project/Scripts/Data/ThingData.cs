@@ -16,8 +16,8 @@ public class ThingData : ScriptableObject
     public ElementType elementType = ElementType.Neutral;
 
     [Header("AI Chiến Đấu")]
-    public AIDifficulty   aiDifficulty = AIDifficulty.Medium;
-    public ThingArchetype archetype    = ThingArchetype.Attacker;
+    public AIDifficulty aiDifficulty = AIDifficulty.Medium;
+    public ThingArchetype archetype = ThingArchetype.Attacker;
 
     [Header("Kỹ Năng Mặc Định")]
     public MoveData defaultMove;
@@ -50,4 +50,6 @@ public class ThingData : ScriptableObject
 
     [Header("Di Chuyển")]
     public int moveRange = 1;
+    [Header("Phạm Vi Chiếm Ô")]
+    public ThingFootprint footprint = ThingFootprint.Size1x1;
 }

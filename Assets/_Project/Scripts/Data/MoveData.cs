@@ -74,6 +74,14 @@ public enum StatType
     [InspectorName("May Mắn (Luck)")] Luck,
 }
 
+public enum ThingFootprint
+{
+    [InspectorName("1×1 (Mặc định)")] Size1x1,
+    [InspectorName("2×2")] Size2x2,
+    [InspectorName("3×3")] Size3x3,
+    [InspectorName("Chữ Thập (bán kính 1)")] Cross1,
+}
+
 [CreateAssetMenu(fileName = "NewMove", menuName = "Game/Move Data")]
 public class MoveData : ScriptableObject
 {

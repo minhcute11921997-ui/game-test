@@ -184,6 +184,39 @@ public class BattleGridManager : MonoBehaviour
         }
     }
 
+    public List<GridPos> GetFootprintCells(GridPos origin, ThingFootprint footprint)
+    {
+        var cells = new List<GridPos>();
+        switch (footprint)
+        {
+            case ThingFootprint.Size1x1:
+                cells.Add(origin);
+                break;
+
+            case ThingFootprint.Size2x2:
+                for (int dc = 0; dc <= 1; dc++)
+                    for (int dr = 0; dr <= 1; dr++)
+                        cells.Add(new GridPos(origin.col + dc, origin.row + dr));
+                break;
+
+            case ThingFootprint.Size3x3:
+                for (int dc = -1; dc <= 1; dc++)
+                    for (int dr = -1; dr <= 1; dr++)
+                        cells.Add(new GridPos(origin.col + dc, origin.row + dr));
+                break;
+
+            case ThingFootprint.Cross1:
+                cells.Add(origin);
+                cells.Add(new GridPos(origin.col + 1, origin.row));
+                cells.Add(new GridPos(origin.col - 1, origin.row));
+                cells.Add(new GridPos(origin.col, origin.row + 1));
+                cells.Add(new GridPos(origin.col, origin.row - 1));
+                break;
+        }
+        // Lọc ô nằm ngoài bảng
+        cells.RemoveAll(p => !config.IsInBounds(p.col, p.row));
+        return cells;
+    }
     public void ShowHighlightColored(IEnumerable<GridPos> cells, Color color)
     {
         tilemapHighlight.ClearAllTiles();
