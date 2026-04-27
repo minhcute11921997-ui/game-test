@@ -1,6 +1,4 @@
-// Assets/_Project/Scripts/UI/BookSelectionUI.cs
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -9,10 +7,18 @@ public class BookSelectionUI : MonoBehaviour
 {
     public static BookSelectionUI Instance { get; private set; }
 
+    [Header("Panel Root")]
     [SerializeField] private GameObject panel;
-    [SerializeField] private Transform bookListContainer; // ScrollView content
-    [SerializeField] private GameObject bookButtonPrefab; // prefab 1 nút sách
+
+    [Header("List")]
+    [SerializeField] private Transform bookListContainer;
+    [SerializeField] private GameObject bookButtonPrefab;
+
+    [Header("Buttons")]
     [SerializeField] private Button btnCancel;
+
+    [Header("Empty State")]
+    [SerializeField] private GameObject emptyLabel;
 
     private Action<BookData> _onChosen;
 
@@ -22,6 +28,7 @@ public class BookSelectionUI : MonoBehaviour
         Instance = this;
     }
     void OnDestroy() { if (Instance == this) Instance = null; }
+
     void Start()
     {
         Hide();
@@ -31,42 +38,32 @@ public class BookSelectionUI : MonoBehaviour
     public void Show(Action<BookData> onChosen)
     {
         _onChosen = onChosen;
-
-        // Xóa nút cũ
         for (int i = bookListContainer.childCount - 1; i >= 0; i--)
             Destroy(bookListContainer.GetChild(i).gameObject);
 
-        // Sinh nút theo inventory
-        var inventory = RuntimeGameState.BookInventory;
-        if (inventory.Count == 0)
+        bool hasItems = false;
+        foreach (var entry in RuntimeGameState.BookInventory)
         {
-            Debug.Log("[BookUI] Không có sách nào trong túi!");
-            // Có thể show text "Túi trống"
-        }
+            if (entry?.bookData == null || entry.count <= 0) continue;
+            hasItems = true;
 
-        foreach (var entry in inventory)
-        {
-            if (entry.count <= 0) continue;
             var go = Instantiate(bookButtonPrefab, bookListContainer);
-            var btn = go.GetComponent<Button>();
-            var txtName = go.transform.Find("TxtName")?.GetComponent<TextMeshProUGUI>();
-            var txtCount = go.transform.Find("TxtCount")?.GetComponent<TextMeshProUGUI>();
-            var img = go.transform.Find("Icon")?.GetComponent<Image>();
+            go.transform.Find("TxtName")?.GetComponent<TextMeshProUGUI>()
+                ?.SetText(entry.bookData.bookName);
+            go.transform.Find("TxtCount")?.GetComponent<TextMeshProUGUI>()
+                ?.SetText($"x{entry.count}");
+            go.transform.Find("TxtBonus")?.GetComponent<TextMeshProUGUI>()
+                ?.SetText(entry.bookData.captureRateBonus > 0 ? $"+{entry.bookData.captureRateBonus}%" : "");
+            var iconComp = go.transform.Find("Icon")?.GetComponent<Image>();
+            if (iconComp && entry.bookData.icon) iconComp.sprite = entry.bookData.icon;
 
-            if (txtName) txtName.text = entry.bookData.bookName;
-            if (txtCount) txtCount.text = $"x{entry.count}";
-            if (img && entry.bookData.icon) img.sprite = entry.bookData.icon;
-
-            var capturedBook = entry.bookData; // capture cho lambda
-            btn.onClick.AddListener(() =>
-            {
-                Hide();
-                _onChosen?.Invoke(capturedBook);
-            });
+            var captured = entry.bookData;
+            go.GetComponent<Button>()?.onClick.AddListener(() => { Hide(); _onChosen?.Invoke(captured); });
         }
 
+        if (emptyLabel) emptyLabel.SetActive(!hasItems);
         panel.SetActive(true);
     }
 
-    public void Hide() => panel.SetActive(false);
+    public void Hide() => panel?.SetActive(false);
 }
