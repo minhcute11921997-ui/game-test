@@ -78,6 +78,8 @@ Chỉ kích hoạt 1 lần duy nhất
 UI MoveButtonUI hiển thị đúng power mới sau buff
 
 Chỉ áp dụng cho thing Angel đã đủ 4 lượt
+nếu thu về thì reset lại lượt đếm
+mỗi thing angel có bộ đếm riêng
 
 2.6 Tộc Chiến Binh (Warrior)
 Điều kiện: HP > 60% — tụt ≤60% mất hiệu ứng ngay lập tức
@@ -150,31 +152,6 @@ Hệ thống Giám Khảo: Cần đặt lịch hẹn qua Trung tâm Guild, chờ
 Phân Khu Guild: Thợ Săn (Chiến đấu), Sinh Thái (Bảo tồn), Kỹ Thuật (Chế tạo). Nhiệm vụ và cách NPC đối xử sẽ thay đổi theo phân khu người chơi chọn
 .
 Drafting Esports: Thể thức chuyên nghiệp "Mang 6 Chọn 4" ra sân
-. Có cơ chế Cấm/Chọn 1 trong 6 loại Bản đồ
-. 9. BẢN ĐỒ CHIẾN THUẬT ĐA DẠNG (11 TACTICAL MAPS)
-Game có 11 map với cơ chế xoay tua luật lệ đặc thù nhằm ép người chơi thay đổi đội hình
-:
-Đồng cỏ Tinh Thể: Ăn crystal hồi máu snowball
-.
-Xưởng Máy Rèn: Ô sắt nổ sát thương diện rộng mỗi 3 lượt
-.
-Đỉnh Núi Băng Giá: Bão tuyết trừ P.P chiêu thức mỗi 3 lượt
-.
-Phế Tích Tự Động: Cột đá chắn tầm nhìn xuất hiện/biến mất
-.
-Đầm Lầy Sương Mù: Mù hoàn toàn (True Blind), sát thương trúng sau 2 lượt mới báo hiệu vị trí
-.
-Đảo Gió Trời: Gió bẻ cong quỹ đạo đạn đạo
-.
-Thảo Nguyên Trống: Không vật cản, thuần kỹ năng
-.
-Đền Thờ Nhật Thực: Giải đố vị trí trên các ô Đen/Trắng để nhận Buff
-.
-Đấu Trường Tâm Lý: Minigame Kéo-Búa-Bao giành buff Tốc độ
-.
-Đại Dương Sâu Thẳm: Đứng trên sân quá 4 lượt sẽ bị Ngạt Thở mất máu, ép đổi người
-.
-Vách Núi Cheo Leo: Chiêu thức gây Đẩy Lùi (Knockback), rớt khỏi rìa chịu sát thương và phải thu hồi
 . 10. CỐT TRUYỆN & THẾ GIỚI LORE (STORYLINE)
 Khởi đầu (Học viện Tinh thể): Nhập vai học sinh năm cuối. Dùng "Cuốn Sách Phong Ấn" (Grimoire) và các Trang giấy thay vì Pokeball để thu phục
 .
