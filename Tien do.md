@@ -89,6 +89,8 @@
 - [x] **AoE hover preview** — `UpdateAoEPreview()` real-time mỗi frame khi hover ô tấn công, color-coded theo `MoveCategory`
 - [x] **MoveSelectionUI** — Panel sinh `MoveButtonUI` động, `OnCancelButtonClicked → StepBack()`
 - [x] **BattleCommand struct** — `moveTarget`, `attackTarget`, `HasAttack`; static factories `StayAndAttack / MoveOnly / MoveAndAttack`
+- [x] **PP Management** — `GetCurrentPP()` dùng `TryGetValue`, khởi tạo PP dict từ `AllMoves`; tracking PP per move trong trận
+- [x] **Input Lock/Unlock** — Lock input khi chuyển sang lượt enemy AI, unlock khi quay lại lượt player; tránh click nhầm khi AI đang xử lý
 
 ---
 
@@ -132,7 +134,8 @@
 - [x] **Vết Cháy (BurnMark)** — Entity bước vào: nhận 10% MaxHP damage; ở lại cuối lượt: nhận thêm 10% MaxHP damage; tính type multiplier Fire vs defender
 - [x] **OnTurnEnd** — Giảm duration, xóa tile và dict entry khi hết hạn
 - [x] **OnTurnStart** — Hook để reset `_enteredThisTurn` đầu lượt
-- [ ] **Terrain highlight trên sân** — `tilemapTerrain` cần kéo vào Inspector `BattleGridManager`; nếu null → tile màu không hiển thị
+- [ ] **Terrain highlight trên sân** — `tilemapTerrain` cần kéo vào Inspector
+- [x] **Terrain gắn Owner Team** — `PlaceTerrain()` lưu thêm `ownerTeamId` để phân biệt địa hình của phe nào đặt`BattleGridManager`; nếu null → tile màu không hiển thị
 
 ### Thời Tiết (WeatherManager.cs)
 
@@ -153,6 +156,17 @@
 - [x] **MoveSelectionUI.cs** — Singleton panel, sinh button động từ `AllMoves`, Cancel → StepBack
 
 ---
+
+---
+
+## ✅ Battle — Action Panel & Book System
+
+- [x] **BattleActionPanel.cs** — Panel 3 nút: Fight (mở MoveSelectionUI), Flee (thoát trận với xác suất), Capture (mở BookSelectionUI); player turn bị skip nếu flee/capture thất bại
+- [x] **BookSelectionUI.cs** — UI danh sách sách trong inventory, hiển thị tên + bonus, xử lý inventory rỗng
+- [x] **BookData.cs** — ScriptableObject dữ liệu sách: tên, mô tả, hệ số tăng tỷ lệ bắt
+- [x] **BookEntry.cs** — Struct lưu 1 entry sách trong inventory (BookData + số lượng)
+- [x] **Capture chance theo level địch** — Công thức tính dựa trên cấp độ enemy, nhân hệ số từ BookData
+- [x] **RuntimeGameState mở rộng** — Thêm `Books` (List<BookEntry>), `AddBook()`, quản lý book inventory xuyên scene
 
 ## 🔧 Cấu Hình Kỹ Thuật Hiện Tại
 
@@ -207,6 +221,12 @@
 | `EntityHpBar.cs`            | `Scripts/UI/`               | HP bar World Space theo đầu entity                     |
 | `MoveButtonUI.cs`           | `Scripts/UI/`               | Nút chiêu styled per category                          |
 | `MoveSelectionUI.cs`        | `Scripts/UI/`               | Panel chọn chiêu, Cancel → StepBack                    |
+| `BattleActionPanel.cs`      | `Scripts/UI/`               | Panel Fight/Flee/Capture trong trận chiến              |
+| `BookSelectionUI.cs`        | `Scripts/UI/`               | UI chọn sách khi thu phục                              |
+| `BookData.cs`               | `Scripts/Data/`             | ScriptableObject dữ liệu sách                          |
+| `BookEntry.cs`              | `Scripts/Data/`             | Entry sách trong inventory                             |
+| `MoveEffect.cs`             | `Scripts/Data/`             | Class hiệu ứng chiêu thức (tách từ MoveData)           |
+| `EffectResult.cs`           | `Scripts/Data/`             | Struct kết quả sau áp effect                           |
 
 ---
 
