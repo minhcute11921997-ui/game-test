@@ -249,8 +249,12 @@ public class CommandPhaseController : MonoBehaviour
             }
             else
             {
-                Debug.Log("[Command] Đang ở nhân vật đầu tiên, không thể lùi thêm.");
-                ShowMoveHighlight(_selectedEntity.GridPos);
+                // Back về màn hình đầu (Chiến Đấu / Bỏ Lượt)
+                Debug.Log("<color=yellow>[Command] Lùi: Về màn hình chọn hành động</color>");
+                _inputActive = false;
+                _selectedEntity = null;
+                BattleGridManager.Instance.ClearHighlight();
+                BattleActionPanel.Instance.Show();
             }
         }
     }

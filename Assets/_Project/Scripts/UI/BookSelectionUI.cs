@@ -65,5 +65,15 @@ public class BookSelectionUI : MonoBehaviour
         panel.SetActive(true);
     }
 
-    public void Hide() => panel?.SetActive(false);
+    public void Hide() => panel?.SetActive(false); void Update()
+    {
+        if (!panel.activeSelf) return;
+
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+        {
+            Hide();
+            _onChosen?.Invoke(null);  // null = Cancel → BattleActionPanel.Show()
+        }
+    }
+
 }
