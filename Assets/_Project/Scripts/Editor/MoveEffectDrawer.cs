@@ -1,60 +1,93 @@
 #if UNITY_EDITOR
-using UnityEditor;
-using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
+
+[CustomPropertyDrawer(typeof(MoveEffect), true)]
+public class MoveEffectDrawer : PropertyDrawer
+{
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        EditorGUI.PropertyField(position, property, label, true);
+    }
+
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        => EditorGUI.GetPropertyHeight(property, true);
+}
 
 [CustomEditor(typeof(MoveData))]
 public class MoveDataEditor : Editor
 {
-    static readonly List<Type> effectTypes = new()
+    // Cache danh sách subtype — chỉ quét 1 lần
+    private static List<Type> _effectTypes;
+    private static string[] _effectNames;
+
+    static void BuildTypeCache()
     {
-        typeof(DamageEffect),
-        typeof(HealEffect),
-        typeof(StatStageEffect),
-        typeof(WeatherEffect),
-        typeof(TerrainEffect),
-    };
+        if (_effectTypes != null) return;
+        _effectTypes = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(MoveEffect)))
+            .OrderBy(t => t.Name)
+            .ToList();
+        _effectNames = _effectTypes.Select(t => PrettyName(t)).ToArray();
+    }
+
+    static string PrettyName(Type t)
+    {
+        // DamageEffect → Damage, KnockbackEffect → Knockback, v.v.
+        var name = t.Name.Replace("Effect", "");
+        return name;
+    }
 
     public override void OnInspectorGUI()
     {
-        // Vẽ các field mặc định (moveName, elementType, category...)
+        BuildTypeCache();
+        serializedObject.Update();
+
+        // Vẽ các field không phải effects bình thường
         DrawPropertiesExcluding(serializedObject, "effects");
-        serializedObject.ApplyModifiedProperties();
 
         EditorGUILayout.Space(8);
-        EditorGUILayout.LabelField("Effects", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("⚔ Effects", EditorStyles.boldLabel);
 
-        var data = (MoveData)target;
+        var effectsProp = serializedObject.FindProperty("effects");
 
-        for (int i = 0; i < data.effects.Count; i++)
+        for (int i = 0; i < effectsProp.arraySize; i++)
         {
-            var effect = data.effects[i];
-            EditorGUILayout.BeginVertical("box");
+            var elem = effectsProp.GetArrayElementAtIndex(i);
+            var managedRef = elem.managedReferenceValue;
+            string typeName = managedRef != null ? PrettyName(managedRef.GetType()) : "null";
 
+            EditorGUILayout.BeginVertical(GUI.skin.box);
+
+            // Header: tên type + nút xóa + nút lên/xuống
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(effect?.GetType().Name ?? "(null)", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"[{i}] {typeName}", EditorStyles.boldLabel);
+            GUILayout.FlexibleSpace();
+            if (i > 0 && GUILayout.Button("▲", GUILayout.Width(24)))
+            {
+                effectsProp.MoveArrayElement(i, i - 1);
+                break;
+            }
+            if (i < effectsProp.arraySize - 1 && GUILayout.Button("▼", GUILayout.Width(24)))
+            {
+                effectsProp.MoveArrayElement(i, i + 1);
+                break;
+            }
             if (GUILayout.Button("✕", GUILayout.Width(24)))
             {
-                Undo.RecordObject(data, "Remove Effect");
-                data.effects.RemoveAt(i);
-                EditorUtility.SetDirty(data);
-                EditorGUILayout.EndHorizontal();
-                EditorGUILayout.EndVertical();
+                effectsProp.DeleteArrayElementAtIndex(i);
                 break;
             }
             EditorGUILayout.EndHorizontal();
 
-            if (effect != null)
-            {
-                var so = new SerializedObject(data);
-                var listProp = so.FindProperty("effects");
-                var elemProp = listProp.GetArrayElementAtIndex(i);
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(elemProp, true);
-                EditorGUI.indentLevel--;
-                so.ApplyModifiedProperties();
-            }
+            // Vẽ các field của effect đó
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(elem, GUIContent.none, true);
+            EditorGUI.indentLevel--;
 
             EditorGUILayout.EndVertical();
         }
@@ -63,17 +96,18 @@ public class MoveDataEditor : Editor
 
         // Dropdown thêm effect mới
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Thêm Effect:");
-        foreach (var t in effectTypes)
+        EditorGUILayout.LabelField("➕ Thêm Effect:", GUILayout.Width(100));
+        int chosen = EditorGUILayout.Popup(-1, _effectNames);
+        if (chosen >= 0)
         {
-            if (GUILayout.Button(t.Name.Replace("Effect", "")))
-            {
-                Undo.RecordObject(data, $"Add {t.Name}");
-                data.effects.Add((MoveEffect)Activator.CreateInstance(t));
-                EditorUtility.SetDirty(data);
-            }
+            var newEffect = (MoveEffect)Activator.CreateInstance(_effectTypes[chosen]);
+            effectsProp.arraySize++;
+            effectsProp.GetArrayElementAtIndex(effectsProp.arraySize - 1)
+                       .managedReferenceValue = newEffect;
         }
         EditorGUILayout.EndHorizontal();
+
+        serializedObject.ApplyModifiedProperties();
     }
 }
 #endif

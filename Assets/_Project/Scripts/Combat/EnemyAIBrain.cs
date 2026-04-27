@@ -6,6 +6,9 @@ public static class EnemyAIBrain
 {
     public static BattleCommand Decide(BattleEntity enemy, List<BattleEntity> players)
     {
+        if (BattleDebugController.Instance != null && BattleDebugController.Instance.enemyForceIdle)
+            return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
+
         if (players.Count == 0)
             return BattleCommand.MoveOnly(enemy.GridPos, enemy.GridPos);
 

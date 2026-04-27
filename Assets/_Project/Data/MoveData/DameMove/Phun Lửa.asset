@@ -18,6 +18,7 @@ MonoBehaviour:
   maxPP: 10
   effects:
   - rid: 6068995825384816712
+  - rid: 6068995849571532870
   references:
     version: 2
     RefIds:
@@ -31,3 +32,11 @@ MonoBehaviour:
         damageCategory: 1
         basePower: 40
         accuracy: 100
+    - rid: 6068995849571532870
+      type: {class: KnockbackEffect, ns: , asm: Assembly-CSharp}
+      data:
+        targetScope: 0
+        aoeShape: 0
+        aoeRadius: 1
+        triggerChance: 1
+        pushDistance: 1

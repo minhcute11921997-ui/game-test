@@ -161,20 +161,23 @@ public class WeatherEffect : MoveEffect
             logMessage = $"Tung thời tiết {weatherType}"
         };
     }
-    // ── KnockbackEffect ───────────────────────────────────────────────
-    [Serializable]
-    public class KnockbackEffect : MoveEffect
-    {
-        [Range(1, 5)] public int pushDistance = 1;
 
-        public override EffectResult Resolve(BattleEntity attacker, List<BattleEntity> targets)
+}
+
+
+// ── KnockbackEffect ───────────────────────────────────────────────
+[Serializable]
+public class KnockbackEffect : MoveEffect
+{
+    [Range(1, 5)] public int pushDistance = 1;
+
+    public override EffectResult Resolve(BattleEntity attacker, List<BattleEntity> targets)
+    {
+        return new EffectResult
         {
-            return new EffectResult
-            {
-                triggered = true,
-                resultType = EffectResultType.Knockback,
-                logMessage = $"Knockback {pushDistance} ô"
-            };
-        }
+            triggered = true,
+            resultType = EffectResultType.Knockback,
+            logMessage = $"Knockback {pushDistance} ô"
+        };
     }
 }
