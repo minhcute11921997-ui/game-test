@@ -25,7 +25,7 @@ MonoBehaviour:
       type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
       data:
         targetScope: 0
-        aoeShape: 2
+        aoeShape: 4
         aoeRadius: 1
         triggerChance: 1
         damageCategory: 1

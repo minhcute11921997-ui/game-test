@@ -334,19 +334,34 @@ public class BattleGridManager : MonoBehaviour
                 break;
 
             case AttackShape.Line:
-                // Hướng từ attacker đến tâm, kéo dài đến hết bảng
-                int dirCol = centerPos.col > attackerPos.col ? 1 :
-                             centerPos.col < attackerPos.col ? -1 : 0;
-                int dirRow = centerPos.row > attackerPos.row ? 1 :
-                             centerPos.row < attackerPos.row ? -1 : 0;
-                var cur = centerPos;
-                for (int i = 0; i < 18; i++)
                 {
-                    if (!cfg.IsInBounds(cur.col, cur.row)) break;
-                    result.Add(cur);
-                    cur = new GridPos(cur.col + dirCol, cur.row + dirRow);
+                    int dc = centerPos.col - attackerPos.col;
+                    int dr = centerPos.row - attackerPos.row;
+                    if (dc == 0 && dr == 0) break;
+
+                    // Bresenham để tạo đường thẳng từ attacker đến hết bảng
+                    // Xác định "chiều dài dominant"
+                    int absDc = Mathf.Abs(dc);
+                    int absDr = Mathf.Abs(dr);
+                    int signC = dc > 0 ? 1 : (dc < 0 ? -1 : 0);
+                    int signR = dr > 0 ? 1 : (dr < 0 ? -1 : 0);
+
+                    int col = attackerPos.col;
+                    int row = attackerPos.row;
+
+                    int err = absDc - absDr;
+
+                    for (int i = 0; i < 36; i++) // tối đa 36 bước
+                    {
+                        int e2 = 2 * err;
+                        if (e2 > -absDr) { err -= absDr; col += signC; }
+                        if (e2 < absDc) { err += absDc; row += signR; }
+
+                        if (!cfg.IsInBounds(col, row)) break;
+                        result.Add(new GridPos(col, row));
+                    }
+                    break;
                 }
-                break;
         }
 
         // Lọc bỏ ô nằm ngoài bảng

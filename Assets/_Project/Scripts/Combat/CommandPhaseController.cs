@@ -178,25 +178,7 @@ public class CommandPhaseController : MonoBehaviour
                 break;
         }
 
-        var dmg = move.GetDamage();
-
-        // ★ Với Line: chỉ lấy ô trên cùng hàng HOẶC cùng cột với from (ô sau di chuyển)
-        if (dmg != null && dmg.aoeShape == AttackShape.Line)
-        {
-            for (int c = cStart; c <= cEnd; c++)
-                for (int r = 0; r < cfg.boardRows; r++)
-                {
-                    if (!cfg.IsWalkable(c, r)) continue;
-                    bool sameRow = (r == from.row);
-                    bool sameCol = (c == from.col);
-                    if (!sameRow && !sameCol) continue; // loại ô chéo
-                    if (c == from.col && r == from.row) continue; // loại chính mình
-                    result.Add(new GridPos(c, r));
-                }
-            return result;
-        }
-
-        // Mọi shape khác: giữ nguyên logic cũ
+        // Tất cả shape (kể cả Line) đều cho chọn bất kỳ ô walkable nào
         for (int c = cStart; c <= cEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
                 if (cfg.IsWalkable(c, r))
