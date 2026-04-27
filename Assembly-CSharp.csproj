@@ -49,6 +49,7 @@
     <Analyzer Include="E:\unity\6000.4.3f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\_Project\Scripts\UI\BookSelectionUI.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleGridconfig.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerInteraction.cs" />
     <Compile Include="Assets\_Project\Scripts\Core\RuntimeGameState.cs" />
@@ -68,12 +69,15 @@
     <Compile Include="Assets\_Project\Scripts\World\Encounters\GrassZoneManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CommandPhaseController.cs" />
+    <Compile Include="Assets\_Project\Scripts\UI\BattleActionPanel.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\CombatCalculator.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\BookData.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerActions.cs" />
     <Compile Include="Assets\_Project\Scripts\UI\EntityHpBar.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleManager.cs" />
     <Compile Include="Assets\_Project\Scripts\UI\MoveButtonUI.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleResultManager.cs" />
+    <Compile Include="Assets\_Project\Scripts\Data\BookEntry.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattleGridManager.cs" />
     <Compile Include="Assets\_Project\Scripts\UI\DamagePopup.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\EnemyAIBrain.cs" />

@@ -32,7 +32,7 @@ public class CommandPhaseController : MonoBehaviour
     {
         _playerEntities = FindPlayerEntities();
         _currentUnitIndex = 0;
-        SelectUnit(_playerEntities.Count > 0 ? _playerEntities[0] : null);
+        BattleActionPanel.Instance.Show();
     }
 
     List<BattleEntity> FindPlayerEntities()
@@ -43,6 +43,24 @@ public class CommandPhaseController : MonoBehaviour
         return result;
     }
 
+    public void StartFightFlow()
+    {
+        SelectUnit(_playerEntities.Count > 0 ? _playerEntities[0] : null);
+    }
+
+    // Gọi khi Flee/Capture thất bại — bỏ lượt player, chỉ địch đánh
+    public void SkipPlayerTurn()
+    {
+        // Không submit command cho player → chỉ submit enemy
+        // Dùng MoveOnly tại chỗ đứng (không làm gì)
+        foreach (var entity in _playerEntities)
+        {
+            var skipCmd = BattleCommand.MoveOnly(entity.GridPos, entity.GridPos);
+            BattlePhaseManager.Instance.SubmitCommand(entity, skipCmd);
+        }
+        // Enemy vẫn submit bình thường
+        SubmitEnemyCommands();
+    }
     void SelectUnit(BattleEntity entity)
     {
         if (entity == null) return;
