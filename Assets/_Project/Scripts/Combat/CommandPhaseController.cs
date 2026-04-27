@@ -16,6 +16,7 @@ public class CommandPhaseController : MonoBehaviour
     private List<BattleEntity> _playerEntities = new();
     private int _currentUnitIndex = 0;
     private GridPos _lastHoverPos = new GridPos(-999, -999);
+    private bool _inputActive = false;
 
     void Awake()
     {
@@ -45,12 +46,14 @@ public class CommandPhaseController : MonoBehaviour
 
     public void StartFightFlow()
     {
+        _inputActive = true;
         SelectUnit(_playerEntities.Count > 0 ? _playerEntities[0] : null);
     }
 
     // Gọi khi Flee/Capture thất bại — bỏ lượt player, chỉ địch đánh
     public void SkipPlayerTurn()
     {
+        _inputActive = false;
         // Không submit command cho player → chỉ submit enemy
         // Dùng MoveOnly tại chỗ đứng (không làm gì)
         foreach (var entity in _playerEntities)
@@ -183,6 +186,8 @@ public class CommandPhaseController : MonoBehaviour
     {
         if (BattlePhaseManager.Instance.CurrentPhase != BattlePhase.CommandPhase) return;
 
+        if (!_inputActive) return;
+
         GridPos hoverPos = GetMouseGridPos();
 
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
@@ -220,7 +225,7 @@ public class CommandPhaseController : MonoBehaviour
             Debug.Log("<color=yellow>[Command] Lùi: Hủy chọn ô mục tiêu → Chọn lại chiêu</color>");
             _step = InputStep.SelectSkill;
             _selectedEntity.SetChosenMove(null);
-            MoveSelectionUI.Instance.Show(_selectedEntity.Data.AllMoves, OnMoveChosen);
+            MoveSelectionUI.Instance.Show(_selectedEntity.Data.AllMoves, OnMoveChosen, _selectedEntity);
         }
         else if (_step == InputStep.SelectSkill)
         {
@@ -303,7 +308,7 @@ public class CommandPhaseController : MonoBehaviour
             return;
         }
 
-        MoveSelectionUI.Instance.Show(moves, OnMoveChosen);
+        MoveSelectionUI.Instance.Show(moves, OnMoveChosen, _selectedEntity);
         Debug.Log($"[Command] Đến {_pendingMove} — Đang chọn chiêu...");
     }
 
