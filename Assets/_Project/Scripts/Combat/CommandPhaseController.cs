@@ -169,8 +169,7 @@ public class CommandPhaseController : MonoBehaviour
                 cEnd = _selectedEntity.TeamId == 0 ? cfg.LeftMaxCol : cfg.TotalCols - 1;
                 break;
             case TargetScope.BothSides:
-                cStart = 0;
-                cEnd = cfg.TotalCols - 1;
+                cStart = 0; cEnd = cfg.TotalCols - 1;
                 break;
             case TargetScope.EnemySide:
             default:
@@ -179,6 +178,25 @@ public class CommandPhaseController : MonoBehaviour
                 break;
         }
 
+        var dmg = move.GetDamage();
+
+        // ★ Với Line: chỉ lấy ô trên cùng hàng HOẶC cùng cột với from (ô sau di chuyển)
+        if (dmg != null && dmg.aoeShape == AttackShape.Line)
+        {
+            for (int c = cStart; c <= cEnd; c++)
+                for (int r = 0; r < cfg.boardRows; r++)
+                {
+                    if (!cfg.IsWalkable(c, r)) continue;
+                    bool sameRow = (r == from.row);
+                    bool sameCol = (c == from.col);
+                    if (!sameRow && !sameCol) continue; // loại ô chéo
+                    if (c == from.col && r == from.row) continue; // loại chính mình
+                    result.Add(new GridPos(c, r));
+                }
+            return result;
+        }
+
+        // Mọi shape khác: giữ nguyên logic cũ
         for (int c = cStart; c <= cEnd; c++)
             for (int r = 0; r < cfg.boardRows; r++)
                 if (cfg.IsWalkable(c, r))
@@ -265,6 +283,16 @@ public class CommandPhaseController : MonoBehaviour
         if (move == null) return;
 
         var grid = BattleGridManager.Instance;
+        var dmg = move.GetDamage();
+
+        if (dmg != null && dmg.aoeShape == AttackShape.Line)
+        {
+            if (hoverPos.Equals(_pendingMove))
+            {
+                grid.ShowHighlightColored(_validAttackCells, /* màu highlight */ new Color(1f, 0.55f, 0.2f, 0.6f));
+                return;
+            }
+        }
 
         if (move.GetTerrain() != null)
         {
@@ -279,7 +307,6 @@ public class CommandPhaseController : MonoBehaviour
             return;
         }
 
-        var dmg = move.GetDamage();
         AttackShape shapeToUse = dmg != null ? dmg.aoeShape : AttackShape.Single;
         int radiusToUse = dmg != null ? dmg.aoeRadius : 1;
         WeatherManager.Instance.GetEffectiveAoE(
