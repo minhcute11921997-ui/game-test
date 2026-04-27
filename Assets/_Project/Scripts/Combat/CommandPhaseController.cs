@@ -105,7 +105,16 @@ public class CommandPhaseController : MonoBehaviour
                 if (cfg.GetTeam(c) != teamId) continue;
 
                 var pos = new GridPos(c, r);
-                if (BattleGridManager.Instance.IsOccupied(pos) && pos != origin) continue;
+                var footprintAtDest = BattleGridManager.Instance
+    .GetFootprintCells(pos, _selectedEntity.Data.footprint);
+                bool blocked = false;
+                foreach (var fp in footprintAtDest)
+                {
+                    if (fp.Equals(origin)) continue; // ô gốc của chính mình thì bỏ qua
+                    var occupant = BattleGridManager.Instance.GetEntityAt(fp);
+                    if (occupant != null && occupant != _selectedEntity) { blocked = true; break; }
+                }
+                if (blocked) continue;
 
                 result.Add(pos);
             }

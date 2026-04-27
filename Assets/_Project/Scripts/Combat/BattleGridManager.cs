@@ -135,15 +135,17 @@ public class BattleGridManager : MonoBehaviour
 
     public void PlaceEntity(BattleEntity entity, GridPos pos)
     {
-        _occupied[pos] = entity;
+        foreach (var cell in GetFootprintCells(pos, entity.Data.footprint))
+            _occupied[cell] = entity;
         entity.GridPos = pos;
         entity.transform.position = GridToWorld(pos);
     }
-
     public void MoveEntity(BattleEntity entity, GridPos from, GridPos to)
     {
-        _occupied.Remove(from);
-        _occupied[to] = entity;
+        foreach (var cell in GetFootprintCells(from, entity.Data.footprint))
+            _occupied.Remove(cell);
+        foreach (var cell in GetFootprintCells(to, entity.Data.footprint))
+            _occupied[cell] = entity;
         entity.GridPos = to;
         entity.transform.position = GridToWorld(to);
     }
@@ -171,7 +173,13 @@ public class BattleGridManager : MonoBehaviour
         ShowHighlight(cells);
     }
 
-    public void RemoveEntity(GridPos pos) => _occupied.Remove(pos);
+    public void RemoveEntity(GridPos pos)
+    {
+        var entity = GetEntityAt(pos);
+        if (entity == null) { _occupied.Remove(pos); return; }
+        foreach (var cell in GetFootprintCells(entity.GridPos, entity.Data.footprint))
+            _occupied.Remove(cell);
+    }
 
     public void ShowHighlight(IEnumerable<GridPos> cells)
     {
@@ -247,8 +255,10 @@ public class BattleGridManager : MonoBehaviour
         Vector3 endPos = GridToWorld(to);
 
         // Update data ngay
-        _occupied.Remove(from);
-        _occupied[to] = entity;
+        foreach (var cell in GetFootprintCells(from, entity.Data.footprint))
+            _occupied.Remove(cell);
+        foreach (var cell in GetFootprintCells(to, entity.Data.footprint))
+            _occupied[cell] = entity;
         entity.GridPos = to;
 
         // Lerp visual
@@ -344,7 +354,9 @@ public class BattleGridManager : MonoBehaviour
 
     public List<BattleEntity> GetAllEntities()
     {
-        return new List<BattleEntity>(_occupied.Values);
+        // Dùng HashSet để loại trùng entity chiếm nhiều ô
+        var seen = new HashSet<BattleEntity>(_occupied.Values);
+        return new List<BattleEntity>(seen);
     }
 
     public TileBase CreateSolidColorTile(Color color)
