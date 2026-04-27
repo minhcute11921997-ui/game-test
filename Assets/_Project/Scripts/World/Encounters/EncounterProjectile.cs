@@ -83,6 +83,19 @@ public class EncounterProjectile : MonoBehaviour
     {
         Debug.Log("<color=red>KHIÊU CHIẾN! Chuyển sang cảnh 8x8.</color>");
 
+        if (RuntimeGameState.BookInventory.Count > 0)
+        {
+            string bookList = "Danh sách sách hiện có: ";
+            foreach (var entry in RuntimeGameState.BookInventory)
+            {
+                bookList += $"\n- {entry.bookData.bookName} (x{entry.count})";
+            }
+            Debug.Log($"<color=cyan>[Inventory] {bookList}</color>");
+        }
+        else
+        {
+            Debug.Log("<color=orange>[Inventory] Hiện không có quyển sách nào trong túi đồ.</color>");
+        }
         // 1. Nạp dữ liệu vào Cầu nối
         RuntimeGameState.CurrentEnemy = thing.myData;
 

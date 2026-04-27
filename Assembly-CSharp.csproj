@@ -64,7 +64,6 @@
     <Compile Include="Assets\_Project\Scripts\Data\ThingData.cs" />
     <Compile Include="Assets\_Project\Scripts\SetStarterThing.cs" />
     <Compile Include="Assets\_Project\Scripts\Data\EffectResult.cs" />
-    <Compile Include="Assets\_Project\TestLoadBattle.cs" />
     <Compile Include="Assets\_Project\Scripts\Combat\BattlePhaseManager.cs" />
     <Compile Include="Assets\_Project\Scripts\World\Encounters\GrassZoneManager.cs" />
     <Compile Include="Assets\_Project\Scripts\Player\PlayerMovement.cs" />
