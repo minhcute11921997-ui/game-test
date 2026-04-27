@@ -1,6 +1,6 @@
 # Tiến Độ Dự Án
 
-> Cập nhật: đối chiếu trực tiếp từng dòng code tất cả 29 file `.cs` trong `Assets/_Project/Scripts` + các sửa đổi trong session hiện tại.
+> Cập nhật: đối chiếu trực tiếp từng dòng code tất cả file `.cs` trong `Assets/_Project/Scripts` + các sửa đổi trong session hiện tại.
 
 ---
 
@@ -40,7 +40,7 @@
 
 ## ✅ Data Layer
 
-- [x] **ThingData.cs** — ScriptableObject đầy đủ: `thingName`, `prefab`, `battlePrefab`, `spawnWeight`, `elementType`, `aiDifficulty`, `archetype`, `defaultMove`, `moves` (List), `AllMoves` property, `hp`, `attack`, `defense`, `spAtk`, `spDef`, `speed`, `level`, `luck`, `moveRange`
+- [x] **ThingData.cs** — ScriptableObject đầy đủ: `thingName`, `prefab`, `battlePrefab`, `spawnWeight`, `elementType`, `aiDifficulty`, `archetype`, `defaultMove`, `moves` (List), `AllMoves` property, `hp`, `attack`, `defense`, `spAtk`, `spDef`, `speed`, `level`, `luck`, `moveRange`; **thêm `footprint` (ThingFootprint enum)** để cấu hình kích thước chiếm ô
 - [x] **MoveData.cs** — ScriptableObject đầy đủ với tất cả enums: `ElementType` (10 hệ), `MoveCategory` (Physical/Special/Status/Weather/Terrain), `StatusSubType`, `AttackShape` (5 dạng), `WeatherType` (None/Blizzard/MagneticField), `TerrainEffectType` (None/ThornTrap/BurnMark); **thêm `Luck` vào enum `StatType`** để chiêu buff có thể tăng luck
 - [x] **AIDifficulty.cs** — Enum `AIDifficulty` (Easy/Medium/Hard/Ultra) + `ThingArchetype` (Attacker/Defender/Setup)
 - [ ] **ThingCollection.cs** — File tồn tại nhưng _thân class rỗng_, chưa implement
@@ -50,7 +50,7 @@
 
 ## ✅ Core / Bridge
 
-- [x] **RuntimeGameState.cs** — Static class: `CurrentEnemy`, `Party` (List<ThingData>), `ActiveThing` (Party[0]), `ResetForNewSession()`
+- [x] **RuntimeGameState.cs** — Static class: `CurrentEnemy`, `Party` (List<ThingData>), `ActiveThing` (Party[0]), `ResetForNewSession()`; thêm `BookInventory` (List<BookEntry>), `AddBook()`, `UseBook()`
 - [x] **SetStarterThing.cs** — Gán `starterThing` vào Party trong `Awake()` nếu Party chưa có dữ liệu (đảm bảo trước `BattleManager.Start()`)
 
 ---
@@ -67,12 +67,15 @@
 
 - [x] **GridPos.cs** — Struct tọa độ ô lưới (col, row)
 - [x] **BattleGridConfig.cs** — ScriptableObject: `boardCols=8`, `boardRows=8`, `gapCols=2` → tổng 18 cột; helpers `GetTeam()`, `IsWalkable()`, `IsInBounds()`, `IsGap()`
-- [x] **BattleGridManager.cs** — Singleton, build 18×8 grid với 6 Tilemaps (Left/Right/Gap/Highlight/Grid/Terrain), entity tracking qua `Dictionary<GridPos, BattleEntity>`
+- [x] **BattleGridManager.cs** — Singleton, build 18×8 grid với 7 Tilemaps (Left/Right/Gap/Highlight/Grid/Terrain/**Footprint**), entity tracking qua `Dictionary<GridPos, BattleEntity>`
 - [x] **Grid mờ border 1px** — `CreateGridTile()` sinh sprite 32×32 runtime, border trắng 25% trong suốt
 - [x] **Terrain tiles runtime** — `CreateSolidColorTile()` tạo tile màu tùy ý (burn = cam 55%, thorn = xanh lá 55%)
+- [x] **Footprint tiles runtime** — `tileFootprintPlayer` (xanh 35%), `tileFootprintEnemy` (đỏ 35%) sinh runtime; `ShowFootprint()` / `ClearFootprint()` / `RefreshAllFootprints()` sau mỗi lần di chuyển
 - [x] **FitCamera()** — Tính orthographicSize theo gridWidth/gridHeight × 1.1 margin, center chính xác
-- [x] **PlaceEntity / MoveEntity** — Update cả `_occupied` dict và `transform.position` đồng thời
-- [x] **MoveEntitySmooth()** — Coroutine Lerp với `duration`; có callback `onArrived`
+- [x] **PlaceEntity / MoveEntity** — Cập nhật toàn bộ ô trong footprint của entity vào `_occupied` dict; **PlaceEntity & MoveEntity giờ nhận biết footprint đa ô**
+- [x] **MoveEntitySmooth()** — Coroutine Lerp với `duration`; update `_occupied` footprint ngay đầu rồi lerp visual; gọi `RefreshAllFootprints()` sau di chuyển
+- [x] **GetFootprintCells()** — Trả về danh sách ô chiếm dựa trên `ThingFootprint`: `Size1x1` (1 ô), `Size2x2` (4 ô góc phải-trên), `Size3x3` (9 ô tâm), `Cross1` (tâm + 4 ô chữ thập); lọc ô ngoài bảng
+- [x] **GetAllEntities()** — Dùng `HashSet` để loại trùng entity chiếm nhiều ô
 - [x] **ShowHighlight / ShowHighlightColored / ShowAoEPreview / ClearHighlight** — Đầy đủ
 - [x] **GetAoECells()** — Hỗ trợ tất cả 5 AttackShape: Single, Cross, Square2x2, Square3x3, Line
 
@@ -122,6 +125,7 @@
 - [x] **Physical / Special split** — Dùng `attack/defense` hoặc `spAtk/spDef` tùy `MoveCategory`
 - [x] **Speed sort trong JudgePhase** — Sort giảm dần `EffectiveSpeed` (đã tính stage) _(đã sửa từ `Speed` base)_
 - [x] **Luck buff system** — `_luckBonus` flat, 1 stage = +50 luck; `EffectiveLuck = Data.luck + _luckBonus`; dùng `EffectiveLuck` trong crit và evasion
+- [x] **ResolveTargetsWithDistance** — Tính `distType` nhỏ nhất (0/1/2) cho mỗi entity bị trúng; entity chiếm nhiều ô nhận dame theo ô gần tâm nhất (mạnh nhất)
 
 ---
 
@@ -135,7 +139,7 @@
 - [x] **OnTurnEnd** — Giảm duration, xóa tile và dict entry khi hết hạn
 - [x] **OnTurnStart** — Hook để reset `_enteredThisTurn` đầu lượt
 - [ ] **Terrain highlight trên sân** — `tilemapTerrain` cần kéo vào Inspector
-- [x] **Terrain gắn Owner Team** — `PlaceTerrain()` lưu thêm `ownerTeamId` để phân biệt địa hình của phe nào đặt`BattleGridManager`; nếu null → tile màu không hiển thị
+- [x] **Terrain gắn Owner Team** — `PlaceTerrain()` lưu thêm `ownerTeamId` để phân biệt địa hình của phe nào đặt
 
 ### Thời Tiết (WeatherManager.cs)
 
@@ -157,16 +161,29 @@
 
 ---
 
----
-
 ## ✅ Battle — Action Panel & Book System
 
-- [x] **BattleActionPanel.cs** — Panel 3 nút: Fight (mở MoveSelectionUI), Flee (thoát trận với xác suất), Capture (mở BookSelectionUI); player turn bị skip nếu flee/capture thất bại
-- [x] **BookSelectionUI.cs** — UI danh sách sách trong inventory, hiển thị tên + bonus, xử lý inventory rỗng
+- [x] **BattleActionPanel.cs** — Panel 3 nút: Fight (mở MoveSelectionUI), Flee (thoát trận với xác suất), Capture (mở BookSelectionUI); player turn bị skip nếu flee/capture thất bại; **Cancel trong BookSelectionUI → quay lại BattleActionPanel** (ESC/RClick cần thêm `Update()` vào BookSelectionUI)
+- [x] **BookSelectionUI.cs** — UI danh sách sách trong inventory, hiển thị tên + bonus, xử lý inventory rỗng; nút Cancel → `_onChosen(null)` → back về BattleActionPanel
 - [x] **BookData.cs** — ScriptableObject dữ liệu sách: tên, mô tả, hệ số tăng tỷ lệ bắt
 - [x] **BookEntry.cs** — Struct lưu 1 entry sách trong inventory (BookData + số lượng)
-- [x] **Capture chance theo level địch** — Công thức tính dựa trên cấp độ enemy, nhân hệ số từ BookData
-- [x] **RuntimeGameState mở rộng** — Thêm `Books` (List<BookEntry>), `AddBook()`, quản lý book inventory xuyên scene
+- [x] **Capture chance theo level địch** — `Clamp(60 - enemyLevel * 3 + book.captureRateBonus, 5, 95)`
+- [x] **RuntimeGameState mở rộng** — Thêm `BookInventory` (List<BookEntry>), `AddBook()`, `UseBook()` quản lý book inventory xuyên scene
+
+---
+
+## ✅ Battle — Footprint System
+
+- [x] **ThingFootprint enum** — `Size1x1`, `Size2x2`, `Size3x3`, `Cross1`; khai báo trong `ThingData.cs`
+- [x] **ThingData.footprint field** — Header "Phạm Vi Chiếm Ô", mặc định `Size1x1`
+- [x] **GetFootprintCells()** — `BattleGridManager` tính danh sách ô chiếm theo từng shape; lọc ô ngoài bảng
+- [x] **PlaceEntity / MoveEntity / RemoveEntity** — Toàn bộ đọc footprint; entity 2×2 chiếm 4 ô trong `_occupied`
+- [x] **MoveEntitySmooth() footprint-aware** — Xóa footprint cũ → ghi footprint mới → lerp visual → `RefreshAllFootprints()`
+- [x] **GetAllEntities() dedup** — HashSet loại trùng entity chiếm nhiều ô
+- [x] **tilemapFootprint** — Tilemap riêng (field `tilemapFootprint`) vẽ màu entity chiếm; player xanh 35%, enemy đỏ 35%
+- [x] **ShowFootprint / ClearFootprint / RefreshAllFootprints** — Tự động refresh sau mỗi lần di chuyển
+
+---
 
 ## 🔧 Cấu Hình Kỹ Thuật Hiện Tại
 
@@ -201,12 +218,12 @@
 | `EncounterProjectile.cs`    | `Scripts/World/Encounters/` | Bay đến đích, thu phục hoặc khiêu chiến                |
 | `RuntimeGameState.cs`       | `Scripts/Core/`             | Bridge data xuyên scene                                |
 | `SetStarterThing.cs`        | `Scripts/`                  | Nạp pet mặc định vào Party                             |
-| `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing                           |
+| `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing + footprint               |
 | `MoveData.cs`               | `Scripts/Data/`             | ScriptableObject chiêu thức + enums (có StatType.Luck) |
 | `AIDifficulty.cs`           | `Scripts/Data/`             | Enum difficulty + archetype                            |
 | `GridPos.cs`                | `Scripts/Combat/`           | Struct tọa độ ô lưới                                   |
 | `BattleGridConfig.cs`       | `Scripts/Combat/`           | ScriptableObject cấu hình lưới                         |
-| `BattleGridManager.cs`      | `Scripts/Combat/`           | Singleton build/quản lý lưới, tiles, AoE               |
+| `BattleGridManager.cs`      | `Scripts/Combat/`           | Singleton build/quản lý lưới, tiles, AoE, footprint   |
 | `BattleEntity.cs`           | `Scripts/Combat/`           | HP, EffectiveLuck, \_luckBonus, stages                 |
 | `BattleManager.cs`          | `Scripts/Combat/`           | Spawn 2 phe từ RuntimeGameState                        |
 | `BattlePhaseManager.cs`     | `Scripts/Combat/`           | Vòng đời phase, execution, judge, weather/terrain      |
@@ -238,9 +255,12 @@
 | ThingCollection.cs            | Class rỗng, chưa implement                                                                                         |
 | SaveLoad system               | Thư mục tồn tại nhưng chưa có file `.cs` nào                                                                       |
 | tilemapTerrain Inspector      | Phải kéo tay Tilemap_Terrain vào field `tilemapTerrain` của `BattleGridManager`; nếu null → terrain không hiển thị |
+| tilemapFootprint Inspector    | Phải kéo tay Tilemap_Footprint vào field `tilemapFootprint` của `BattleGridManager`; nếu null → footprint không hiển thị |
 | Weather Visual Effect         | Cần tạo `WeatherVFXController.cs` + Particle System prefab cho Blizzard / MagneticField                            |
 | Multi-unit battle             | Hiện spawn mỗi phe 1 unit (col cố định)                                                                            |
 | Terrain AoE preview tách biệt | `tilemapTerrainPreview` chưa tạo; preview hiện đang đè lên highlight valid cells khi di chuột                      |
+| ESC/RClick back BookSelectionUI | Nút Cancel đã hoạt động; cần thêm `Update()` vào `BookSelectionUI` để bắt ESC / RClick                           |
+| Knockback effect              | `MoveEffect.cs` chưa có `KnockbackEffect`; thiết kế đẩy lùi target so với tâm chiêu chưa implement               |
 
-X Thêm tùy chọn phạm vi cho things như chiếm 1x1, 2x2, hay 3x3
-X Thêm effect đẩy lùi vào move (đẩy lùi so với tâm chiêu hiện tại với things địch )
+X Thêm tùy chọn phạm vi cho things như chiếm 1x1, 2x2, hay 3x3 ✅ (đã làm — ThingFootprint + GetFootprintCells)
+X Thêm effect đẩy lùi vào move (đẩy lùi so với tâm chiêu hiện tại với things địch) — chưa làm
