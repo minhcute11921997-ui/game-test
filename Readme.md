@@ -117,17 +117,6 @@ Mốc 1/3 con: Giảm 10%/15% dame nhận vào thing Legendary từ non-Legendar
 
 Không cộng dồn nếu có 2 Legendary trên sân
 
-🗂️ Hạ Tầng Kỹ Thuật Cần Thêm
-Component Dùng cho
-Component Dùng cho
-TribeType enum + field trên ThingData Tất cả tộc
-TribeManager singleton Đếm số thing mỗi tộc đang sống, expose mốc hiện tại
-PersistentEffectManager Giant, Gunner — tick cuối lượt, tự xóa khi hết
-\_turnsOnField counter trên BattleEntity Angel
-\_movedLastTurn flag trên BattleEntity Giant
-\_damagedThisTurn flag trên BattleEntity (dự phòng cho tộc sau)
-Runtime MoveData copy per entity Angel (+Power), tránh modify ScriptableObject gốc
-
 . 5. PHÁT TRIỂN SỨC MẠNH & KỸ NĂNG (PROGRESSION)
 Lên cấp & Tiến hóa: Max level 100
 . Tiến hóa làm tăng lớn tổng chỉ số (BST)

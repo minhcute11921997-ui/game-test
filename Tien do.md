@@ -218,60 +218,70 @@
 
 ## 📁 Files Quan Trọng
 
-| File                        | Thư mục                     | Chức năng chính                                        |
-| --------------------------- | --------------------------- | ------------------------------------------------------ |
-| `PlayerMovement.cs`         | `Scripts/Player/`           | Di chuyển 8 hướng, Rigidbody2D, Animator               |
-| `PlayerActions.cs`          | `Scripts/Player/`           | Chế độ Ball/Gun, hồng tâm, bắn projectile              |
-| `PlayerInteraction.cs`      | `Scripts/Player/`           | Trigger tương tác (tag Interactable, nhấn E)           |
-| `GrassZoneManager.cs`       | `Scripts/World/Encounters/` | Spawn zone, weighted random, heartbeat                 |
-| `ShadowRoaming.cs`          | `Scripts/World/Encounters/` | AI quái Nhát gan/Hung dữ, wander, aggro                |
-| `EncounterProjectile.cs`    | `Scripts/World/Encounters/` | Bay đến đích, thu phục hoặc khiêu chiến                |
-| `RuntimeGameState.cs`       | `Scripts/Core/`             | Bridge data xuyên scene                                |
-| `SetStarterThing.cs`        | `Scripts/`                  | Nạp pet mặc định vào Party                             |
-| `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing + footprint               |
-| `MoveData.cs`               | `Scripts/Data/`             | ScriptableObject chiêu thức + enums (có StatType.Luck) |
-| `AIDifficulty.cs`           | `Scripts/Data/`             | Enum difficulty + archetype                            |
-| `GridPos.cs`                | `Scripts/Combat/`           | Struct tọa độ ô lưới                                   |
-| `BattleGridConfig.cs`       | `Scripts/Combat/`           | ScriptableObject cấu hình lưới                         |
-| `BattleGridManager.cs`      | `Scripts/Combat/`           | Singleton build/quản lý lưới, tiles, AoE, footprint   |
-| `BattleEntity.cs`           | `Scripts/Combat/`           | HP, EffectiveLuck, \_luckBonus, stages                 |
-| `BattleManager.cs`          | `Scripts/Combat/`           | Spawn 2 phe từ RuntimeGameState                        |
-| `BattlePhaseManager.cs`     | `Scripts/Combat/`           | Vòng đời phase, execution, judge, weather/terrain      |
-| `BattleResultManager.cs`    | `Scripts/Combat/`           | Check kết thúc trận, về Overworld                      |
-| `BattleCommand.cs`          | `Scripts/Combat/`           | Struct lệnh mỗi lượt                                   |
-| `BattleDebugController.cs`  | `Scripts/Combat/`           | MonoBehaviour debug: `enemyForceIdle` flag cho testing |
-| `CommandPhaseController.cs` | `Scripts/Combat/`           | Input người chơi, AoE preview, StepBack                |
-| `CombatCalculator.cs`       | `Scripts/Combat/`           | Công thức GDD: HP, damage, STAB, type, crit, falloff   |
-| `EnemyAIBrain.cs`           | `Scripts/Combat/`           | AI địch 4 mức × 3 archetype; check forceIdle đầu Decide() |
-| `TerrainManager.cs`         | `Scripts/Combat/`           | Địa hình: đặt, hiệu ứng, hết hạn                       |
-| `WeatherManager.cs`         | `Scripts/Combat/`           | Thời tiết: Blizzard, MagneticField, duration           |
-| `DamagePopup.cs`            | `Scripts/UI/`               | Số sát thương bay, crit vàng/bold                      |
-| `EntityHpBar.cs`            | `Scripts/UI/`               | HP bar World Space theo đầu entity                     |
-| `MoveButtonUI.cs`           | `Scripts/UI/`               | Nút chiêu styled per category                          |
-| `MoveSelectionUI.cs`        | `Scripts/UI/`               | Panel chọn chiêu, Cancel → StepBack                    |
-| `BattleActionPanel.cs`      | `Scripts/UI/`               | Panel Fight/Flee/Capture trong trận chiến              |
-| `BookSelectionUI.cs`        | `Scripts/UI/`               | UI chọn sách khi thu phục                              |
-| `BookData.cs`               | `Scripts/Data/`             | ScriptableObject dữ liệu sách                          |
-| `BookEntry.cs`              | `Scripts/Data/`             | Entry sách trong inventory                             |
+| File                        | Thư mục                     | Chức năng chính                                                  |
+| --------------------------- | --------------------------- | ---------------------------------------------------------------- |
+| `PlayerMovement.cs`         | `Scripts/Player/`           | Di chuyển 8 hướng, Rigidbody2D, Animator                         |
+| `PlayerActions.cs`          | `Scripts/Player/`           | Chế độ Ball/Gun, hồng tâm, bắn projectile                        |
+| `PlayerInteraction.cs`      | `Scripts/Player/`           | Trigger tương tác (tag Interactable, nhấn E)                     |
+| `GrassZoneManager.cs`       | `Scripts/World/Encounters/` | Spawn zone, weighted random, heartbeat                           |
+| `ShadowRoaming.cs`          | `Scripts/World/Encounters/` | AI quái Nhát gan/Hung dữ, wander, aggro                          |
+| `EncounterProjectile.cs`    | `Scripts/World/Encounters/` | Bay đến đích, thu phục hoặc khiêu chiến                          |
+| `RuntimeGameState.cs`       | `Scripts/Core/`             | Bridge data xuyên scene                                          |
+| `SetStarterThing.cs`        | `Scripts/`                  | Nạp pet mặc định vào Party                                       |
+| `ThingData.cs`              | `Scripts/Data/`             | ScriptableObject stats Thing + footprint                         |
+| `MoveData.cs`               | `Scripts/Data/`             | ScriptableObject chiêu thức + enums (có StatType.Luck)           |
+| `AIDifficulty.cs`           | `Scripts/Data/`             | Enum difficulty + archetype                                      |
+| `GridPos.cs`                | `Scripts/Combat/`           | Struct tọa độ ô lưới                                             |
+| `BattleGridConfig.cs`       | `Scripts/Combat/`           | ScriptableObject cấu hình lưới                                   |
+| `BattleGridManager.cs`      | `Scripts/Combat/`           | Singleton build/quản lý lưới, tiles, AoE, footprint              |
+| `BattleEntity.cs`           | `Scripts/Combat/`           | HP, EffectiveLuck, \_luckBonus, stages                           |
+| `BattleManager.cs`          | `Scripts/Combat/`           | Spawn 2 phe từ RuntimeGameState                                  |
+| `BattlePhaseManager.cs`     | `Scripts/Combat/`           | Vòng đời phase, execution, judge, weather/terrain                |
+| `BattleResultManager.cs`    | `Scripts/Combat/`           | Check kết thúc trận, về Overworld                                |
+| `BattleCommand.cs`          | `Scripts/Combat/`           | Struct lệnh mỗi lượt                                             |
+| `BattleDebugController.cs`  | `Scripts/Combat/`           | MonoBehaviour debug: `enemyForceIdle` flag cho testing           |
+| `CommandPhaseController.cs` | `Scripts/Combat/`           | Input người chơi, AoE preview, StepBack                          |
+| `CombatCalculator.cs`       | `Scripts/Combat/`           | Công thức GDD: HP, damage, STAB, type, crit, falloff             |
+| `EnemyAIBrain.cs`           | `Scripts/Combat/`           | AI địch 4 mức × 3 archetype; check forceIdle đầu Decide()        |
+| `TerrainManager.cs`         | `Scripts/Combat/`           | Địa hình: đặt, hiệu ứng, hết hạn                                 |
+| `WeatherManager.cs`         | `Scripts/Combat/`           | Thời tiết: Blizzard, MagneticField, duration                     |
+| `DamagePopup.cs`            | `Scripts/UI/`               | Số sát thương bay, crit vàng/bold                                |
+| `EntityHpBar.cs`            | `Scripts/UI/`               | HP bar World Space theo đầu entity                               |
+| `MoveButtonUI.cs`           | `Scripts/UI/`               | Nút chiêu styled per category                                    |
+| `MoveSelectionUI.cs`        | `Scripts/UI/`               | Panel chọn chiêu, Cancel → StepBack                              |
+| `BattleActionPanel.cs`      | `Scripts/UI/`               | Panel Fight/Flee/Capture trong trận chiến                        |
+| `BookSelectionUI.cs`        | `Scripts/UI/`               | UI chọn sách khi thu phục                                        |
+| `BookData.cs`               | `Scripts/Data/`             | ScriptableObject dữ liệu sách                                    |
+| `BookEntry.cs`              | `Scripts/Data/`             | Entry sách trong inventory                                       |
 | `MoveEffect.cs`             | `Scripts/Data/`             | Class hiệu ứng chiêu thức (tách từ MoveData); có KnockbackEffect |
-| `EffectResult.cs`           | `Scripts/Data/`             | Struct kết quả sau áp effect                           |
+| `EffectResult.cs`           | `Scripts/Data/`             | Struct kết quả sau áp effect                                     |
 
 ---
 
 ## ⏳ Chưa Làm / Còn Thiếu
 
-| Hạng mục                      | Trạng thái                                                                                                         |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| PlayerInteraction thật        | Hiện chỉ `Debug.Log`, chưa mở UI/action                                                                            |
-| ThingCollection.cs            | Class rỗng, chưa implement                                                                                         |
-| SaveLoad system               | Thư mục tồn tại nhưng chưa có file `.cs` nào                                                                       |
-| tilemapTerrain Inspector      | Phải kéo tay Tilemap_Terrain vào field `tilemapTerrain` của `BattleGridManager`; nếu null → terrain không hiển thị |
-| tilemapFootprint Inspector    | Phải kéo tay Tilemap_Footprint vào field `tilemapFootprint` của `BattleGridManager`; nếu null → footprint không hiển thị |
-| Weather Visual Effect         | Cần tạo `WeatherVFXController.cs` + Particle System prefab cho Blizzard / MagneticField                            |
-| Multi-unit battle             | Hiện spawn mỗi phe 1 unit (col cố định)                                                                            |
-| Terrain AoE preview tách biệt | `tilemapTerrainPreview` chưa tạo; preview hiện đang đè lên highlight valid cells khi di chuột                      |
-| ESC/RClick back BookSelectionUI | Nút Cancel đã hoạt động; cần thêm `Update()` vào `BookSelectionUI` để bắt ESC / RClick                           |
+| Hạng mục                        | Trạng thái                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| PlayerInteraction thật          | Hiện chỉ `Debug.Log`, chưa mở UI/action                                                                                  |
+| ThingCollection.cs              | Class rỗng, chưa implement                                                                                               |
+| SaveLoad system                 | Thư mục tồn tại nhưng chưa có file `.cs` nào                                                                             |
+| tilemapTerrain Inspector        | Phải kéo tay Tilemap_Terrain vào field `tilemapTerrain` của `BattleGridManager`; nếu null → terrain không hiển thị       |
+| tilemapFootprint Inspector      | Phải kéo tay Tilemap_Footprint vào field `tilemapFootprint` của `BattleGridManager`; nếu null → footprint không hiển thị |
+| Weather Visual Effect           | Cần tạo `WeatherVFXController.cs` + Particle System prefab cho Blizzard / MagneticField                                  |
+| Multi-unit battle               | Hiện spawn mỗi phe 1 unit (col cố định)                                                                                  |
+| Terrain AoE preview tách biệt   | `tilemapTerrainPreview` chưa tạo; preview hiện đang đè lên highlight valid cells khi di chuột                            |
+| ESC/RClick back BookSelectionUI | Nút Cancel đã hoạt động; cần thêm `Update()` vào `BookSelectionUI` để bắt ESC / RClick                                   |
 
 X Thêm tùy chọn phạm vi cho things như chiếm 1x1, 2x2, hay 3x3 ✅ (đã làm — ThingFootprint + GetFootprintCells)
 X Thêm effect đẩy lùi vào move (đẩy lùi so với tâm chiêu hiện tại với things địch) ✅ (đã làm — KnockbackEffect + pushDistance; set aoeShape giống DamageEffect trong Inspector)
 X Thêm cơ chế enemy đứng yên để test chiêu ✅ (đã làm — BattleDebugController.enemyForceIdle)
+🗂️ Hạ Tầng Kỹ Thuật Cần Thêm
+Component Dùng cho
+Component Dùng cho
+TribeType enum + field trên ThingData Tất cả tộc
+TribeManager singleton Đếm số thing mỗi tộc đang sống, expose mốc hiện tại
+PersistentEffectManager Giant, Gunner — tick cuối lượt, tự xóa khi hết
+\_turnsOnField counter trên BattleEntity Angel
+\_movedLastTurn flag trên BattleEntity Giant
+\_damagedThisTurn flag trên BattleEntity (dự phòng cho tộc sau)
+Runtime MoveData copy per entity Angel (+Power), tránh modify ScriptableObject gốc
