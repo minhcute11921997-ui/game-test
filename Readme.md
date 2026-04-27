@@ -41,84 +41,160 @@
    Tương khắc Hệ (9 Hệ): Hỏa, Mộc, Thủy, Thổ, Lôi, Phong, Băng, Quang, Ám
    . Nhận thưởng STAB (x1.2 sát thương) khi dùng chiêu trùng hệ
    .
-   Tộc (9 Tộc): Cơ chế cộng hưởng giống Auto-Chess
-   .
-   Tộc Nội Tại: Cơ Khí, Siêu Nhiên, Thú, Cổ Đại, Thiên Thần, Chiến Binh, Huyền Thoại (Kích hoạt vĩnh viễn)
-   .
-   Tộc Hiện Diện (Legacy): Khổng Lồ, Pháo Thủ (Để lại hiệu ứng buff/oanh tạc từ 4-5 lượt sau khi rời sân)
-   .
-5. PHÁT TRIỂN SỨC MẠNH & KỸ NĂNG (PROGRESSION)
-   Lên cấp & Tiến hóa: Max level 100
-   . Tiến hóa làm tăng lớn tổng chỉ số (BST)
-   .
-   Gacha Kỹ Năng: Lên cấp sẽ Gacha ngẫu nhiên chiêu thức mới, có thể lưu vào "Kho lưu trữ" để mua lại sau
-   .
-   Độ tinh thông Kỹ năng (Move Mastery): Nâng cấp chiêu thức ngẫu nhiên hệ số từ x0.9 đến x1.1 (tối đa 3 khe). Cần dùng tiền tệ game để "Tẩy luyện" (Reroll) thành x1.1
-   .
-6. KHÁM PHÁ & THU THẬP (OVERWORLD & LOOTING)
-   Hệ sinh thái Động: Thing trốn trong bụi cỏ dạng Bóng đen (Shadows)
-   . Người chơi có thể đặt Mồi nhử (Bait) để tăng tỷ lệ ra quái hiếm
-   .
-   Tương tác ngắm bắn trên Map: Phím A để ném bóng (thu phục), Phím B để bắn đạn (vào trận lấy nguyên liệu)
-   .
-   Cơ chế Clean Kill (Đánh giá Sao): Hạ gục 1-3 Hit giữ nguyên 3 Sao. Dùng chiêu khắc hệ, đánh nhiều Hit, hoặc dính Thiêu Đốt/Trúng Độc sẽ làm hỏng nguyên liệu (tụt Sao)
-   . Hiệu ứng Ngủ/Tê liệt tính là 0 Hit
-   .
-   Cơ chế Thu phục (Minigame): Ném bóng có vùng ảnh hưởng 3x3. Trúng tâm 1x1 tỷ lệ bắt cao nhất (Perfect Hit). Máu địch càng thấp tỷ lệ càng cao
-   . Lệnh ném bóng là Hành động ưu tiên (Giai đoạn 0)
-   .
-7. QUẢN LÝ CỨ ĐIỂM & KINH TẾ (BASE BUILDING)
-   Resort Sinh Thái: Xây chuồng trại theo Hệ cho Thing
-   .
-   Kinh tế & Chế tạo: Thing ở nhà tạo ra nguyên liệu thụ động. Ghép nguyên liệu và chiến lợi phẩm 3 Sao để chế bóng/mồi nhử xịn
-   .
-   Du lịch: Thing hiếm tạo Điểm Hấp Dẫn kéo NPC đến tham quan và vứt tiền xu. Có thể thuê NPC tự động hóa thu hoạch
-   .
-8. HỆ THỐNG GUILD, NHIỆM VỤ & THI ĐẤU (GUILD & EXAMINER)
-   Phân cấp (Rank F đến S): Thăng hạng thông qua tích lũy Quota (Nhiệm vụ) và đánh bại Giám khảo (Examiner)
-   .
-   Hệ thống Giám Khảo: Cần đặt lịch hẹn qua Trung tâm Guild, chờ 2-3 ngày in-game
-   . Người chơi có thể đi thu thập "Tình báo" (Intel) tại quán trọ để biết con bài tẩy, map ưa thích của Giám khảo
-   .
-   Phân Khu Guild: Thợ Săn (Chiến đấu), Sinh Thái (Bảo tồn), Kỹ Thuật (Chế tạo). Nhiệm vụ và cách NPC đối xử sẽ thay đổi theo phân khu người chơi chọn
-   .
-   Drafting Esports: Thể thức chuyên nghiệp "Mang 6 Chọn 4" ra sân
-   . Có cơ chế Cấm/Chọn 1 trong 6 loại Bản đồ
-   .
-9. BẢN ĐỒ CHIẾN THUẬT ĐA DẠNG (11 TACTICAL MAPS)
-   Game có 11 map với cơ chế xoay tua luật lệ đặc thù nhằm ép người chơi thay đổi đội hình
-   :
-   Đồng cỏ Tinh Thể: Ăn crystal hồi máu snowball
-   .
-   Xưởng Máy Rèn: Ô sắt nổ sát thương diện rộng mỗi 3 lượt
-   .
-   Đỉnh Núi Băng Giá: Bão tuyết trừ P.P chiêu thức mỗi 3 lượt
-   .
-   Phế Tích Tự Động: Cột đá chắn tầm nhìn xuất hiện/biến mất
-   .
-   Đầm Lầy Sương Mù: Mù hoàn toàn (True Blind), sát thương trúng sau 2 lượt mới báo hiệu vị trí
-   .
-   Đảo Gió Trời: Gió bẻ cong quỹ đạo đạn đạo
-   .
-   Thảo Nguyên Trống: Không vật cản, thuần kỹ năng
-   .
-   Đền Thờ Nhật Thực: Giải đố vị trí trên các ô Đen/Trắng để nhận Buff
-   .
-   Đấu Trường Tâm Lý: Minigame Kéo-Búa-Bao giành buff Tốc độ
-   .
-   Đại Dương Sâu Thẳm: Đứng trên sân quá 4 lượt sẽ bị Ngạt Thở mất máu, ép đổi người
-   .
-   Vách Núi Cheo Leo: Chiêu thức gây Đẩy Lùi (Knockback), rớt khỏi rìa chịu sát thương và phải thu hồi
-   .
-10. CỐT TRUYỆN & THẾ GIỚI LORE (STORYLINE)
-    Khởi đầu (Học viện Tinh thể): Nhập vai học sinh năm cuối. Dùng "Cuốn Sách Phong Ấn" (Grimoire) và các Trang giấy thay vì Pokeball để thu phục
-    .
-    Bài kiểm tra: Phục hồi khu Resort, đấu giải vòng bảng hạn chế cấp độ (Soft Level Cap), ép thắng bằng chiến thuật
-    .
-    Tốt nghiệp: Thành tích thi đấu Tứ kết -> Chung kết quyết định bằng cấp và nhận Skin Grimoire lung linh tương ứng
-    . Sau đó gia nhập Guild tham gia thế giới rộng lớn.
-    Cốt lõi Thế giới: Năng lượng từ Đại tinh thể (Primal Crystals) tạo ra biến thể vùng miền (Regional Variants) và hình thành các Tộc/Hệ. Các thế lực tội phạm muốn khai thác tinh thể tạo ra quái vật cuồng nộ
-    . Các vùng xuất hiện tinh thể đột biến (Crystal Surge) gia tăng quái hiếm
+   Spec Tộc — Bản Chốt Cuối Cùng
+   2.1 Tộc Cơ Khí (Mecha)
+   Mốc 2/3/4 con: +2/+3/+4 PP cho tất cả chiêu của toàn team khi bắt đầu trận
+
+2.2 Tộc Siêu Nhiên (Supernatural)
+Chỉ áp dụng cho thing Supernatural khi tung chiêu
+
+Shape Single, Cross, Square2x2, Square3x3 mở rộng thêm 1 ô xung quanh — Line không mở rộng
+
+Cross chỉ mở rộng 4 hướng thẳng, không chéo
+
+Ô rìa chỉ gây dame thuần (không knockback/terrain/weather)
+
+Dame rìa = dame gốc × 30%/40%/50% mốc 2/3/4, tính từ dame gốc trước falloff
+
+2.3 Tộc Thú (Feral)
+Khi thing Feral tung chiêu Terrain → lan tỏa 1 ô ngẫu nhiên cùng loại tại ô kế cạnh trống trong cùng sân
+
+Terrain do thing Feral đặt có duration +1/+1/+2 lượt theo mốc 2/3/4
+
+2.4 Tộc Cổ Đại (Ancient)
+Mỗi loài Ancient trong đội mang flat stat bonus cộng thẳng vào base stat toàn team khi bắt đầu trận
+
+Tối đa 4 loài × số stat nhỏ (set trực tiếp trên ThingData)
+
+Cộng dồn từ nhiều loài khác nhau
+
+2.5 Tộc Thiên Thần (Angel)
+Đếm số lượt đứng trên sân từ khi spawn (\_turnsOnField tăng mỗi OnTurnStart)
+
+Sau đủ 4 lượt → tất cả chiêu Physical và Special của thing Angel đó được cộng +20/+30/+40 Power vào runtime copy
+
+Chỉ kích hoạt 1 lần duy nhất
+
+UI MoveButtonUI hiển thị đúng power mới sau buff
+
+Chỉ áp dụng cho thing Angel đã đủ 4 lượt
+
+2.6 Tộc Chiến Binh (Warrior)
+Điều kiện: HP > 60% — tụt ≤60% mất hiệu ứng ngay lập tức
+
+Mốc 1 con: Kháng hoàn toàn debuff từ địch + buff/heal từ đồng đội (tự buff/heal bản thân vẫn nhận)
+
+Mốc 2-3 con: Thêm lifesteal 8% dame cuối gây ra — hồi vào chính con tung chiêu, xử lý trước heal cuối lượt
+
+Mốc 4 con: Lifesteal 15%
+
+Chỉ áp dụng cho thing Warrior
+
+2.7 Tộc Khổng Lồ (Giant)
+Footprint 3×3, không bị knockback
+
+Di chuyển lượt này → lượt sau không được di chuyển (\_movedLastTurn flag)
+
+Mốc 2/3/4 con: Giảm hit rate toàn sân ta 8%/10%/12% — không cộng dồn nếu 2 Giant
+
+Khi Giant chết/về sách → hiệu ứng kéo dài thêm 3 lượt qua PersistentEffectManager
+
+2.8 Tộc Pháo Thủ (Gunner)
+Cuối lượt: random 4/6/9 ô 1×1 trên lưới 18×8 (kể cả gap)
+
+Trúng thing địch: gây 8% MaxHP dame (cộng dồn)
+
+Trúng thing ta: hồi 6% MaxHP (cộng dồn, cap 18%/lượt per entity)
+
+Không cộng dồn số vùng nếu có 2 Gunner trên sân cùng lúc
+
+Khi Gunner chết/về sách → hiệu ứng kéo dài thêm 4 lượt qua PersistentEffectManager
+
+2.9 Tộc Huyền Thoại (Legendary)
+Passive aura: Khi thing Legendary tấn công trúng non-Legendary → target bị giảm 10% Def/SpDef trong 2 lượt
+
+Mốc 1/3 con: Giảm 10%/15% dame nhận vào thing Legendary từ non-Legendary
+
+Không cộng dồn nếu có 2 Legendary trên sân
+
+🗂️ Hạ Tầng Kỹ Thuật Cần Thêm
+Component Dùng cho
+Component Dùng cho
+TribeType enum + field trên ThingData Tất cả tộc
+TribeManager singleton Đếm số thing mỗi tộc đang sống, expose mốc hiện tại
+PersistentEffectManager Giant, Gunner — tick cuối lượt, tự xóa khi hết
+\_turnsOnField counter trên BattleEntity Angel
+\_movedLastTurn flag trên BattleEntity Giant
+\_damagedThisTurn flag trên BattleEntity (dự phòng cho tộc sau)
+Runtime MoveData copy per entity Angel (+Power), tránh modify ScriptableObject gốc
+
+. 5. PHÁT TRIỂN SỨC MẠNH & KỸ NĂNG (PROGRESSION)
+Lên cấp & Tiến hóa: Max level 100
+. Tiến hóa làm tăng lớn tổng chỉ số (BST)
+.
+Gacha Kỹ Năng: Lên cấp sẽ Gacha ngẫu nhiên chiêu thức mới, có thể lưu vào "Kho lưu trữ" để mua lại sau
+.
+Độ tinh thông Kỹ năng (Move Mastery): Nâng cấp chiêu thức ngẫu nhiên hệ số từ x0.9 đến x1.1 (tối đa 3 khe). Cần dùng tiền tệ game để "Tẩy luyện" (Reroll) thành x1.1
+. 6. KHÁM PHÁ & THU THẬP (OVERWORLD & LOOTING)
+Hệ sinh thái Động: Thing trốn trong bụi cỏ dạng Bóng đen (Shadows)
+. Người chơi có thể đặt Mồi nhử (Bait) để tăng tỷ lệ ra quái hiếm
+.
+Tương tác ngắm bắn trên Map: Phím A để ném bóng (thu phục), Phím B để bắn đạn (vào trận lấy nguyên liệu)
+.
+Cơ chế Clean Kill (Đánh giá Sao): Hạ gục 1-3 Hit giữ nguyên 3 Sao. Dùng chiêu khắc hệ, đánh nhiều Hit, hoặc dính Thiêu Đốt/Trúng Độc sẽ làm hỏng nguyên liệu (tụt Sao)
+. Hiệu ứng Ngủ/Tê liệt tính là 0 Hit
+.
+Cơ chế Thu phục (Minigame): Ném bóng có vùng ảnh hưởng 3x3. Trúng tâm 1x1 tỷ lệ bắt cao nhất (Perfect Hit). Máu địch càng thấp tỷ lệ càng cao
+. Lệnh ném bóng là Hành động ưu tiên (Giai đoạn 0)
+. 7. QUẢN LÝ CỨ ĐIỂM & KINH TẾ (BASE BUILDING)
+Resort Sinh Thái: Xây chuồng trại theo Hệ cho Thing
+.
+Kinh tế & Chế tạo: Thing ở nhà tạo ra nguyên liệu thụ động. Ghép nguyên liệu và chiến lợi phẩm 3 Sao để chế bóng/mồi nhử xịn
+.
+Du lịch: Thing hiếm tạo Điểm Hấp Dẫn kéo NPC đến tham quan và vứt tiền xu. Có thể thuê NPC tự động hóa thu hoạch
+. 8. HỆ THỐNG GUILD, NHIỆM VỤ & THI ĐẤU (GUILD & EXAMINER)
+Phân cấp (Rank F đến S): Thăng hạng thông qua tích lũy Quota (Nhiệm vụ) và đánh bại Giám khảo (Examiner)
+.
+Hệ thống Giám Khảo: Cần đặt lịch hẹn qua Trung tâm Guild, chờ 2-3 ngày in-game
+. Người chơi có thể đi thu thập "Tình báo" (Intel) tại quán trọ để biết con bài tẩy, map ưa thích của Giám khảo
+.
+Phân Khu Guild: Thợ Săn (Chiến đấu), Sinh Thái (Bảo tồn), Kỹ Thuật (Chế tạo). Nhiệm vụ và cách NPC đối xử sẽ thay đổi theo phân khu người chơi chọn
+.
+Drafting Esports: Thể thức chuyên nghiệp "Mang 6 Chọn 4" ra sân
+. Có cơ chế Cấm/Chọn 1 trong 6 loại Bản đồ
+. 9. BẢN ĐỒ CHIẾN THUẬT ĐA DẠNG (11 TACTICAL MAPS)
+Game có 11 map với cơ chế xoay tua luật lệ đặc thù nhằm ép người chơi thay đổi đội hình
+:
+Đồng cỏ Tinh Thể: Ăn crystal hồi máu snowball
+.
+Xưởng Máy Rèn: Ô sắt nổ sát thương diện rộng mỗi 3 lượt
+.
+Đỉnh Núi Băng Giá: Bão tuyết trừ P.P chiêu thức mỗi 3 lượt
+.
+Phế Tích Tự Động: Cột đá chắn tầm nhìn xuất hiện/biến mất
+.
+Đầm Lầy Sương Mù: Mù hoàn toàn (True Blind), sát thương trúng sau 2 lượt mới báo hiệu vị trí
+.
+Đảo Gió Trời: Gió bẻ cong quỹ đạo đạn đạo
+.
+Thảo Nguyên Trống: Không vật cản, thuần kỹ năng
+.
+Đền Thờ Nhật Thực: Giải đố vị trí trên các ô Đen/Trắng để nhận Buff
+.
+Đấu Trường Tâm Lý: Minigame Kéo-Búa-Bao giành buff Tốc độ
+.
+Đại Dương Sâu Thẳm: Đứng trên sân quá 4 lượt sẽ bị Ngạt Thở mất máu, ép đổi người
+.
+Vách Núi Cheo Leo: Chiêu thức gây Đẩy Lùi (Knockback), rớt khỏi rìa chịu sát thương và phải thu hồi
+. 10. CỐT TRUYỆN & THẾ GIỚI LORE (STORYLINE)
+Khởi đầu (Học viện Tinh thể): Nhập vai học sinh năm cuối. Dùng "Cuốn Sách Phong Ấn" (Grimoire) và các Trang giấy thay vì Pokeball để thu phục
+.
+Bài kiểm tra: Phục hồi khu Resort, đấu giải vòng bảng hạn chế cấp độ (Soft Level Cap), ép thắng bằng chiến thuật
+.
+Tốt nghiệp: Thành tích thi đấu Tứ kết -> Chung kết quyết định bằng cấp và nhận Skin Grimoire lung linh tương ứng
+. Sau đó gia nhập Guild tham gia thế giới rộng lớn.
+Cốt lõi Thế giới: Năng lượng từ Đại tinh thể (Primal Crystals) tạo ra biến thể vùng miền (Regional Variants) và hình thành các Tộc/Hệ. Các thế lực tội phạm muốn khai thác tinh thể tạo ra quái vật cuồng nộ
+. Các vùng xuất hiện tinh thể đột biến (Crystal Surge) gia tăng quái hiếm
 
 11. AI enemy
 

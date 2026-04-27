@@ -15,7 +15,7 @@ MonoBehaviour:
   thingName: dragon
   prefab: {fileID: 852538494185195702, guid: 2621d31170358c74eb670055e424cc3a, type: 3}
   battlePrefab: {fileID: 852538494185195702, guid: f34615c31d2da6f43b7dde22d6bb1fee, type: 3}
-  spawnWeight: 50
+  spawnWeight: 10
   elementType: 5
   aiDifficulty: 1
   archetype: 0
@@ -27,9 +27,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8ff5930852054454da2e673e440a06c1, type: 2}
   - {fileID: 11400000, guid: ca2320530ab0b0c42924642279457c3c, type: 2}
   hp: 30
-  attack: 25
+  attack: 1
   defense: 15
-  spAtk: 50
+  spAtk: 1
   spDef: 15
   speed: 20
   level: 10
