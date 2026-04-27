@@ -152,6 +152,9 @@ public class BattlePhaseManager : MonoBehaviour
             {
                 var targets = ResolveTargets(attacker, cmd, effect);
                 var result = effect.Resolve(attacker, targets);
+                if (effect is KnockbackEffect)
+                    foreach (var t in targets)
+                        result.hits.Add((t, 0));
                 if (!string.IsNullOrEmpty(result.logMessage))
                     Debug.Log($"[Effect] {result.logMessage}");
                 ApplyEffectResult(result, attacker, cmd, move, effect);
@@ -225,6 +228,28 @@ public class BattlePhaseManager : MonoBehaviour
                     WeatherManager.Instance.ApplyWeather(
                         BuildWeatherMoveData(we, move), we.targetScope, attacker.TeamId, cmd.attackTarget);
                     Debug.Log($"[Weather] {attacker.name} tung {we.weatherType} → scope={we.targetScope}");
+                }
+                break;
+
+            case EffectResultType.Knockback:
+                if (effect is KnockbackEffect kb && cmd.HasAttack)
+                {
+                    // Tính hướng đẩy: từ attacker → target, đẩy target tiếp tục theo hướng đó
+                    foreach (var (target, _) in result.hits)
+                    {
+                        if (target == null || target.IsDead) continue;
+
+                        GridPos dir = CalcKnockbackDir(attacker.GridPos, target.GridPos);
+                        GridPos dest = FindKnockbackDest(target.GridPos, dir, kb.pushDistance);
+
+                        if (!dest.Equals(target.GridPos))
+                        {
+                            StartCoroutine(BattleGridManager.Instance
+                                .MoveEntitySmooth(target, dest, null, 0.2f));
+                            Debug.Log($"[Knockback] {target.Data.thingName} bị đẩy " +
+                                      $"từ {target.GridPos} → {dest}");
+                        }
+                    }
                 }
                 break;
         }
@@ -337,5 +362,30 @@ public class BattlePhaseManager : MonoBehaviour
             Debug.Log("[BattlePhase] === RESULT PHASE ===");
         }
         else BeginCommandPhase();
+    }
+    GridPos CalcKnockbackDir(GridPos from, GridPos to)
+    {
+        int dc = to.col - from.col;
+        int dr = to.row - from.row;
+        return new GridPos(
+            dc == 0 ? 0 : (dc > 0 ? 1 : -1),
+            dr == 0 ? 0 : (dr > 0 ? 1 : -1)
+        );
+    }
+
+    GridPos FindKnockbackDest(GridPos start, GridPos dir, int distance)
+    {
+        var cfg = BattleGridManager.Instance.config;
+        GridPos cur = start;
+        for (int i = 0; i < distance; i++)
+        {
+            var next = new GridPos(cur.col + dir.col, cur.row + dir.row);
+            if (!cfg.IsInBounds(next.col, next.row)) break;    // ra khỏi bảng → dừng
+            if (!cfg.IsWalkable(next.col, next.row)) break;    // tường → dừng
+            var occupant = BattleGridManager.Instance.GetEntityAt(next);
+            if (occupant != null) break;                        // có entity chặn → dừng
+            cur = next;
+        }
+        return cur;
     }
 }

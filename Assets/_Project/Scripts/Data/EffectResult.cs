@@ -1,11 +1,14 @@
 // Assets/_Project/Scripts/Data/EffectResult.cs
 using System.Collections.Generic;
 
-public enum EffectResultType { Damage, Heal, StatStage, Terrain, Weather }
+public enum EffectResultType { Damage, Heal, StatStage, Terrain, Weather, Knockback }
+
 
 public class EffectResult
 {
     public bool triggered;
+    public int knockbackDistance;
+    public GridPos knockbackDirection;
     public EffectResultType resultType;
     public List<(BattleEntity target, int value)> hits = new();
     public string logMessage;
