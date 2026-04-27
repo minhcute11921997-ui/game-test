@@ -118,11 +118,10 @@ public class BattlePhaseManager : MonoBehaviour
             MoveData move = attacker.GetMove();
             if (move == null || move.effects.Count == 0) continue;
 
-            // ── Kiểm tra và trừ PP ──────────────────────────────────
             if (!attacker.UseMove(move))
             {
                 Debug.Log($"<color=red>[PP]</color> {attacker.name} hết PP {move.moveName}, bỏ lượt!");
-                continue;  // bỏ lượt nếu hết PP
+                continue;
             }
 
             Debug.Log($"<color=cyan>[Judge]</color> {attacker.name} dùng {move.moveName}");
@@ -142,17 +141,56 @@ public class BattlePhaseManager : MonoBehaviour
                 continue;
             }
 
-            var targets = ResolveTargets(attacker, cmd, effect);
-            var result = effect.Resolve(attacker, targets);
-
-            if (!string.IsNullOrEmpty(result.logMessage))
-                Debug.Log($"[Effect] {result.logMessage}");
-
-            // Áp dụng kết quả thực tế
-            ApplyEffectResult(result, attacker, cmd, move, effect);
-
-            yield return StartCoroutine(effect.PlayAnimation(result, attacker));
+            // ── Damage: xử lý riêng với falloff theo distType ──────
+            if (effect is DamageEffect dmgEffect)
+            {
+                ApplyDamageEffect(attacker, cmd, dmgEffect);
+                yield return StartCoroutine(effect.PlayAnimation(
+                    new EffectResult { triggered = true, resultType = EffectResultType.Damage }, attacker));
+            }
+            else
+            {
+                var targets = ResolveTargets(attacker, cmd, effect);
+                var result = effect.Resolve(attacker, targets);
+                if (!string.IsNullOrEmpty(result.logMessage))
+                    Debug.Log($"[Effect] {result.logMessage}");
+                ApplyEffectResult(result, attacker, cmd, move, effect);
+                yield return StartCoroutine(effect.PlayAnimation(result, attacker));
+            }
         }
+    }
+
+    // ── Damage với falloff theo khoảng cách ──────────────────────
+    void ApplyDamageEffect(BattleEntity attacker, BattleCommand cmd, DamageEffect effect)
+    {
+        if (!cmd.HasAttack) return;
+
+        var hitMap = ResolveTargetsWithDistance(attacker, cmd, effect);
+        var logMsg = "";
+
+        foreach (var kvp in hitMap)
+        {
+            BattleEntity target = kvp.Key;
+            int distType = kvp.Value;
+
+            float evasionRate = CombatCalculator.CalculateEvasionRate(target.EffectiveLuck);
+            if (Random.value < evasionRate / 100f)
+            {
+                logMsg += $"{target.Data.thingName} né!\n";
+                continue;
+            }
+
+            var dmgResult = CombatCalculator.CalculateDamage(attacker, target, effect, distType);
+            target.TakeDamage(dmgResult.damage, dmgResult.isCritical);
+
+            logMsg += $"{attacker.Data.thingName}→{target.Data.thingName}: {dmgResult.damage} dmg " +
+                      $"(x{dmgResult.typeMultiplier:F2})" +
+                      $"{(dmgResult.isCritical ? " CHÍ MẠNG!" : "")}" +
+                      $" [dist={distType}]\n";
+        }
+
+        if (!string.IsNullOrEmpty(logMsg))
+            Debug.Log($"[Damage] {logMsg}");
     }
 
     void ApplyEffectResult(EffectResult result, BattleEntity attacker,
@@ -160,11 +198,6 @@ public class BattlePhaseManager : MonoBehaviour
     {
         switch (result.resultType)
         {
-            case EffectResultType.Damage:
-                foreach (var (target, dmg) in result.hits)
-                    target.TakeDamage(dmg, false);
-                break;
-
             case EffectResultType.Heal:
                 foreach (var (target, amt) in result.hits)
                     target.Heal(amt);
@@ -172,7 +205,6 @@ public class BattlePhaseManager : MonoBehaviour
                 break;
 
             case EffectResultType.StatStage:
-                // Đã apply bên trong StatStageEffect.Resolve — không apply lại
                 if (attacker.TeamId == 1) attacker.IncrementBuffCount();
                 break;
 
@@ -198,6 +230,7 @@ public class BattlePhaseManager : MonoBehaviour
         }
     }
 
+    // ── ResolveTargets (Heal / Stat / Terrain / Weather) ─────────
     List<BattleEntity> ResolveTargets(BattleEntity attacker, BattleCommand cmd, MoveEffect effect)
     {
         var result = new List<BattleEntity>();
@@ -212,21 +245,57 @@ public class BattlePhaseManager : MonoBehaviour
             var entity = BattleGridManager.Instance.GetEntityAt(cell);
             if (entity == null) continue;
 
-            bool isEnemy = entity.TeamId != attacker.TeamId;
-            bool isAlly = entity.TeamId == attacker.TeamId;
-
             switch (effect.targetScope)
             {
-                case TargetScope.EnemySide: if (isEnemy) result.Add(entity); break;
-                case TargetScope.OwnSide: if (isAlly) result.Add(entity); break;
+                case TargetScope.EnemySide: if (entity.TeamId != attacker.TeamId) result.Add(entity); break;
+                case TargetScope.OwnSide: if (entity.TeamId == attacker.TeamId) result.Add(entity); break;
                 case TargetScope.BothSides: result.Add(entity); break;
             }
         }
-
         return result;
     }
 
-    // Helper tạo MoveData tạm để WeatherManager / TerrainManager đọc
+    // ── ResolveTargets với distType — Damage + hỗ trợ footprint lớn ─
+    // Key = entity, Value = distType nhỏ nhất tìm được (dame to nhất)
+    Dictionary<BattleEntity, int> ResolveTargetsWithDistance(
+        BattleEntity attacker, BattleCommand cmd, MoveEffect effect)
+    {
+        var result = new Dictionary<BattleEntity, int>();
+        if (!cmd.HasAttack) return result;
+
+        var cells = BattleGridManager.Instance.GetAoECells(
+            cmd.attackTarget, effect.aoeShape, attacker.GridPos, effect.aoeRadius);
+
+        foreach (var cell in cells)
+        {
+            var entity = BattleGridManager.Instance.GetEntityAt(cell);
+            if (entity == null) continue;
+
+            bool valid = effect.targetScope switch
+            {
+                TargetScope.EnemySide => entity.TeamId != attacker.TeamId,
+                TargetScope.OwnSide => entity.TeamId == attacker.TeamId,
+                _ => true
+            };
+            if (!valid) continue;
+
+            int distType = GetCellDistanceType(cell, cmd.attackTarget);
+            if (!result.ContainsKey(entity) || distType < result[entity])
+                result[entity] = distType;
+        }
+        return result;
+    }
+
+    // distType: 0 = tâm, 1 = cạnh (cùng hàng/cột), 2 = góc chéo
+    int GetCellDistanceType(GridPos cell, GridPos center)
+    {
+        int dc = Mathf.Abs(cell.col - center.col);
+        int dr = Mathf.Abs(cell.row - center.row);
+        if (dc == 0 && dr == 0) return 0;
+        if (dc == 0 || dr == 0) return 1;
+        return 2;
+    }
+
     MoveData BuildWeatherMoveData(WeatherEffect we, MoveData source)
     {
         var tmp = ScriptableObject.CreateInstance<MoveData>();

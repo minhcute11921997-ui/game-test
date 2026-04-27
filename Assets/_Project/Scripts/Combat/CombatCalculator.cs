@@ -135,9 +135,12 @@ public static class CombatCalculator
         switch (shape)
         {
             case AttackShape.Single:
-            case AttackShape.Cross:
             case AttackShape.Line:
                 return 1.0f;
+            case AttackShape.Cross:
+                if (cellDistanceType == 0) return 1.0f;
+                if (cellDistanceType == 1) return 0.85f;
+                return 0.75f;
             case AttackShape.Square3x3:
                 if (cellDistanceType == 0) return 1.0f;
                 if (cellDistanceType == 1) return 0.8f;
