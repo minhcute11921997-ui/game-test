@@ -35,3 +35,4 @@ MonoBehaviour:
   level: 10
   luck: 50
   moveRange: 1
+  footprint: 1

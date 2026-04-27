@@ -27,6 +27,9 @@ public class BattleGridManager : MonoBehaviour
     public TileBase tileTerrainBurn;
     public TileBase tileTerrainThorn;
 
+    // Thêm vào BattleGridManager.cs
+    public Tilemap FootprintTilemap => tilemapHighlight;
+    public TileBase FootprintTile => tileHighlight;
 
 
     private readonly Dictionary<GridPos, BattleEntity> _occupied = new();
