@@ -107,6 +107,7 @@
 - [x] **PickAttackTarget** — Hard/Ultra: dự đoán vị trí + AoE center tối ưu; Easy/Medium: ưu tiên target HP thấp nhất
 - [x] **FilterOutHarmfulTerrain** — AI tránh ô địa hình có hại khi di chuyển
 - [x] **FindFinishTarget** — Ưu tiên tấn công target có thể kill ngay lượt này
+- [x] **Enemy Force Idle (Debug)** — `BattleDebugController.enemyForceIdle` flag; khi bật enemy luôn submit lệnh đứng yên để test chiêu thức; không ảnh hưởng build production
 
 ---
 
@@ -126,6 +127,15 @@
 - [x] **Speed sort trong JudgePhase** — Sort giảm dần `EffectiveSpeed` (đã tính stage) _(đã sửa từ `Speed` base)_
 - [x] **Luck buff system** — `_luckBonus` flat, 1 stage = +50 luck; `EffectiveLuck = Data.luck + _luckBonus`; dùng `EffectiveLuck` trong crit và evasion
 - [x] **ResolveTargetsWithDistance** — Tính `distType` nhỏ nhất (0/1/2) cho mỗi entity bị trúng; entity chiếm nhiều ô nhận dame theo ô gần tâm nhất (mạnh nhất)
+
+---
+
+## ✅ Battle — Effects System
+
+- [x] **KnockbackEffect** — `MoveEffect` subclass với `pushDistance`; đẩy target lùi theo hướng từ attacker → target; dừng khi gặp tường/ô bị chiếm/ngoài bảng
+- [x] **Knockback + AoE** — Set `aoeShape` và `aoeRadius` của `KnockbackEffect` giống `DamageEffect` trong Inspector để đẩy đúng toàn bộ target trong vùng chiêu
+- [x] **CalcKnockbackDir** — Tính hướng đẩy 8 hướng từ `attacker.GridPos → target.GridPos`, normalize về (-1/0/+1)
+- [x] **FindKnockbackDest** — Duyệt từng bước theo hướng, dừng khi out of bounds / không walkable / ô đã có entity
 
 ---
 
@@ -229,9 +239,10 @@
 | `BattlePhaseManager.cs`     | `Scripts/Combat/`           | Vòng đời phase, execution, judge, weather/terrain      |
 | `BattleResultManager.cs`    | `Scripts/Combat/`           | Check kết thúc trận, về Overworld                      |
 | `BattleCommand.cs`          | `Scripts/Combat/`           | Struct lệnh mỗi lượt                                   |
+| `BattleDebugController.cs`  | `Scripts/Combat/`           | MonoBehaviour debug: `enemyForceIdle` flag cho testing |
 | `CommandPhaseController.cs` | `Scripts/Combat/`           | Input người chơi, AoE preview, StepBack                |
 | `CombatCalculator.cs`       | `Scripts/Combat/`           | Công thức GDD: HP, damage, STAB, type, crit, falloff   |
-| `EnemyAIBrain.cs`           | `Scripts/Combat/`           | AI địch 4 mức × 3 archetype                            |
+| `EnemyAIBrain.cs`           | `Scripts/Combat/`           | AI địch 4 mức × 3 archetype; check forceIdle đầu Decide() |
 | `TerrainManager.cs`         | `Scripts/Combat/`           | Địa hình: đặt, hiệu ứng, hết hạn                       |
 | `WeatherManager.cs`         | `Scripts/Combat/`           | Thời tiết: Blizzard, MagneticField, duration           |
 | `DamagePopup.cs`            | `Scripts/UI/`               | Số sát thương bay, crit vàng/bold                      |
@@ -242,7 +253,7 @@
 | `BookSelectionUI.cs`        | `Scripts/UI/`               | UI chọn sách khi thu phục                              |
 | `BookData.cs`               | `Scripts/Data/`             | ScriptableObject dữ liệu sách                          |
 | `BookEntry.cs`              | `Scripts/Data/`             | Entry sách trong inventory                             |
-| `MoveEffect.cs`             | `Scripts/Data/`             | Class hiệu ứng chiêu thức (tách từ MoveData)           |
+| `MoveEffect.cs`             | `Scripts/Data/`             | Class hiệu ứng chiêu thức (tách từ MoveData); có KnockbackEffect |
 | `EffectResult.cs`           | `Scripts/Data/`             | Struct kết quả sau áp effect                           |
 
 ---
@@ -260,7 +271,7 @@
 | Multi-unit battle             | Hiện spawn mỗi phe 1 unit (col cố định)                                                                            |
 | Terrain AoE preview tách biệt | `tilemapTerrainPreview` chưa tạo; preview hiện đang đè lên highlight valid cells khi di chuột                      |
 | ESC/RClick back BookSelectionUI | Nút Cancel đã hoạt động; cần thêm `Update()` vào `BookSelectionUI` để bắt ESC / RClick                           |
-| Knockback effect              | `MoveEffect.cs` chưa có `KnockbackEffect`; thiết kế đẩy lùi target so với tâm chiêu chưa implement               |
 
 X Thêm tùy chọn phạm vi cho things như chiếm 1x1, 2x2, hay 3x3 ✅ (đã làm — ThingFootprint + GetFootprintCells)
-X Thêm effect đẩy lùi vào move (đẩy lùi so với tâm chiêu hiện tại với things địch) — chưa làm
+X Thêm effect đẩy lùi vào move (đẩy lùi so với tâm chiêu hiện tại với things địch) ✅ (đã làm — KnockbackEffect + pushDistance; set aoeShape giống DamageEffect trong Inspector)
+X Thêm cơ chế enemy đứng yên để test chiêu ✅ (đã làm — BattleDebugController.enemyForceIdle)
