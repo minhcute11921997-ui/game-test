@@ -21,10 +21,11 @@ MonoBehaviour:
   archetype: 0
   defaultMove: {fileID: 11400000, guid: 8fe279d9cc790f7448809df14749a65a, type: 2}
   moves:
-  - {fileID: 11400000, guid: 3edfdce678456c24382173de35630d09, type: 2}
+  - {fileID: 11400000, guid: 6bc43c7194e399440b8f33fc7775781a, type: 2}
   - {fileID: 11400000, guid: 5c10444ea3fb9e44582483ab3a9498ff, type: 2}
   - {fileID: 11400000, guid: c16e78c61370d2e43bf1f4db6630df01, type: 2}
   - {fileID: 11400000, guid: 8ff5930852054454da2e673e440a06c1, type: 2}
+  - {fileID: 11400000, guid: ca2320530ab0b0c42924642279457c3c, type: 2}
   hp: 30
   attack: 25
   defense: 15

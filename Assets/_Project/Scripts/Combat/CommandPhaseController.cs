@@ -9,6 +9,8 @@ public class CommandPhaseController : MonoBehaviour
     private enum InputStep { SelectMove, SelectSkill, SelectAttack }
     private InputStep _step = InputStep.SelectMove;
 
+    private bool _inputActive = false;
+
     private BattleEntity _selectedEntity;
     private GridPos _pendingMove;
     private List<GridPos> _validMoveCells = new();
@@ -16,7 +18,6 @@ public class CommandPhaseController : MonoBehaviour
     private List<BattleEntity> _playerEntities = new();
     private int _currentUnitIndex = 0;
     private GridPos _lastHoverPos = new GridPos(-999, -999);
-    private bool _inputActive = false;
 
     void Awake()
     {
@@ -33,6 +34,7 @@ public class CommandPhaseController : MonoBehaviour
     {
         _playerEntities = FindPlayerEntities();
         _currentUnitIndex = 0;
+        _inputActive = false;           // ← KHÓA: chờ player bấm Chiến Đấu
         BattleActionPanel.Instance.Show();
     }
 
@@ -46,24 +48,21 @@ public class CommandPhaseController : MonoBehaviour
 
     public void StartFightFlow()
     {
-        _inputActive = true;
+        _inputActive = true;            // ← MỞ: player chọn Chiến Đấu
         SelectUnit(_playerEntities.Count > 0 ? _playerEntities[0] : null);
     }
 
-    // Gọi khi Flee/Capture thất bại — bỏ lượt player, chỉ địch đánh
     public void SkipPlayerTurn()
     {
-        _inputActive = false;
-        // Không submit command cho player → chỉ submit enemy
-        // Dùng MoveOnly tại chỗ đứng (không làm gì)
+        _inputActive = false;           // ← KHÓA: bỏ lượt
         foreach (var entity in _playerEntities)
         {
             var skipCmd = BattleCommand.MoveOnly(entity.GridPos, entity.GridPos);
             BattlePhaseManager.Instance.SubmitCommand(entity, skipCmd);
         }
-        // Enemy vẫn submit bình thường
         SubmitEnemyCommands();
     }
+
     void SelectUnit(BattleEntity entity)
     {
         if (entity == null) return;
@@ -151,10 +150,7 @@ public class CommandPhaseController : MonoBehaviour
         var result = new List<GridPos>();
 
         if (move == null) return result;
-
-        // NoTarget → submit luôn, không highlight gì
-        if (move.hasNoTarget)
-            return result;
+        if (move.hasNoTarget) return result;
 
         int cStart, cEnd;
         switch (move.primaryScope)
@@ -185,8 +181,7 @@ public class CommandPhaseController : MonoBehaviour
     void Update()
     {
         if (BattlePhaseManager.Instance.CurrentPhase != BattlePhase.CommandPhase) return;
-
-        if (!_inputActive) return;
+        if (!_inputActive) return;      // ← GUARD: block hoàn toàn nếu chưa mở
 
         GridPos hoverPos = GetMouseGridPos();
 
@@ -258,7 +253,6 @@ public class CommandPhaseController : MonoBehaviour
 
         var grid = BattleGridManager.Instance;
 
-        // Preview Địa Hình
         if (move.GetTerrain() != null)
         {
             if (_validAttackCells.Contains(hoverPos))
@@ -268,9 +262,7 @@ public class CommandPhaseController : MonoBehaviour
                 grid.ShowHighlightColored(cells, new Color(1f, 0.6f, 0f, 0.75f));
             }
             else
-            {
                 ShowTerrainHighlight();
-            }
             return;
         }
 
@@ -319,14 +311,12 @@ public class CommandPhaseController : MonoBehaviour
 
         Debug.Log($"<color=green>[Player Command]</color> {_selectedEntity.Data.thingName} chọn chiêu: {move.moveName} (Category: {move.category})");
 
-        // Địa Hình → vào bước chọn ô đặt
         if (move.GetTerrain() != null)
         {
             GoToTerrainStep();
             return;
         }
 
-        // Thời Tiết cả 2 sân → submit luôn không cần chọn ô
         if (move.primaryScope == TargetScope.NoTarget)
         {
             var envCmd = BattleCommand.MoveOnly(_selectedEntity.GridPos, _pendingMove);
@@ -398,6 +388,7 @@ public class CommandPhaseController : MonoBehaviour
 
     void SubmitEnemyCommands()
     {
+        _inputActive = false;           // ← KHÓA ngay khi bắt đầu submit enemy
         var all = FindObjectsByType<BattleEntity>(FindObjectsInactive.Exclude);
         var players = new List<BattleEntity>();
         var enemies = new List<BattleEntity>();

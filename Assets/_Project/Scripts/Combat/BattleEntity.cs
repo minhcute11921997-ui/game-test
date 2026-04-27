@@ -67,14 +67,14 @@ public class BattleEntity : MonoBehaviour
     public int GetCurrentPP(MoveData move)
     {
         if (move == null) return 0;
-        if (!_currentPP.ContainsKey(move))
-            _currentPP[move] = move.maxPP;   // khởi tạo lần đầu
-        return _currentPP[move];
+        return _currentPP.TryGetValue(move, out int pp) ? pp : move.maxPP;
     }
 
     public bool UseMove(MoveData move)
     {
         if (move == null) return false;
+        if (!_currentPP.ContainsKey(move))
+            _currentPP[move] = move.maxPP;
         int pp = GetCurrentPP(move);
         if (pp <= 0)
         {
